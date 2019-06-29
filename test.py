@@ -15,6 +15,12 @@ immediate_error = '1 / 0'
 
 immediate_lambda = '(lambda: 4)()'
 
+immediate_call_1 = 'max(1, 2)'
+immediate_call_2 = '1 + 2'
+immediate_call_3 = 'int()'
+
+immediate_print = 'print("hello world")'
+
 testsrc = """
 def f(x):
     return x
@@ -156,3 +162,5 @@ def f():
     return g
 y = f()()
 """
+
+# See old CS 61A exams.

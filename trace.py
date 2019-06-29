@@ -1,21 +1,16 @@
 import bdb
-import inspect
 
-import models # TODO: Or some file that does the reverse-engineering, which imports models.
+import models
 
 class Tracer(bdb.Bdb):
     """
     <summary>
     """
 
-    def __init__(self, pyagram):
-        """
-        <summary>
-        """
+    def __init__(self):
         super().__init__()
-        self.pyagram = pyagram
-        self.frames = []
-        self.return_values = {}
+        self.state = None
+        self.snapshots = []
 
     def user_call(self, frame, argument_list):
         """
@@ -25,7 +20,7 @@ class Tracer(bdb.Bdb):
         :param argument_list: the arguments to the function call
         :return:
         """
-        self.update_frames(frame, True)
+        self.make_snapshot(frame, True)
 
     def user_line(self, frame):
         """
@@ -34,7 +29,7 @@ class Tracer(bdb.Bdb):
         :param frame:
         :return:
         """
-        self.update_frames(frame)
+        self.make_snapshot(frame)
 
     def user_return(self, frame, return_value):
         """
@@ -44,8 +39,8 @@ class Tracer(bdb.Bdb):
         :param return_value:
         :return:
         """
-        self.return_values[frame] = return_value
-        self.update_frames(frame)
+        self.state.get_frame(frame).terminate(return_value)
+        self.make_snapshot(frame)
 
     def user_exception(self, frame, exception_info):
         """
@@ -55,38 +50,25 @@ class Tracer(bdb.Bdb):
         :param exception_info:
         :return:
         """
-        self.update_frames(frame)
+        # TODO: Figure out how you want to address exceptions.
+        self.make_snapshot(frame)
 
-    def update_frames(self, frame, is_new_frame=False):
+    def make_snapshot(self, frame, is_new_frame=False):
         """
-        <summary> # Update the bindings in `frame`, according to the new state of the program.
+        <summary>
 
         :param frame:
         :param is_new_frame:
         :return:
         """
-        is_global_frame = len(self.frames) == 0
-        if is_global_frame or is_new_frame:
-            self.frames.append(frame)
-        # self.print_all_frames()
-
-        # TODO: ^ Don't delete that comment, it's good for debugging.
-
-        # TODO: Update self.pyagram.
-
-        # TODO: frame.f_lineno is the line number last evaluated. We want this info!
-        # TODO: Maybe useful ... frame.f_locals and frame.f_globals
-
-
-    def print_all_frames(self):
-        """
-        <summary> # for debugging
-
-        :return:
-        """
-        for num, frame in enumerate(self.frames):
-            # TODO: If you keep this function around, give the frame a __repr__.
-            print(f'Frame {num}: {frame.f_locals}')
-            if self.return_values.get(frame, False):
-                print(f'\tReturn: {repr(self.return_values[frame])}')
-        print('')
+        if self.state is None:
+            self.state = models.ProgramState(frame)
+        if is_new_frame:
+            # Make a frame, or maybe make a flag, or maybe terminate a flag.
+            # Used to be self.frames.append(frame)
+            # TODO: frame.f_lineno is the line number last evaluated. We want this info!
+            # TODO: Maybe useful ... frame.f_locals and frame.f_globals
+            pass
+        snapshot = models.ProgramStateSnapshot(self.state)
+        self.snapshots.append(snapshot)
+        # print(snapshot)

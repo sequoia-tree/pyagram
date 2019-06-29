@@ -1,12 +1,15 @@
+import wrap
 import trace
 
 class Pyagram:
     """
-    <summary>
+    <summary> # Basically a Pyagram object is a list of snapshot objects.
+
+    :param code:
     """
 
     def __init__(self, code):
+        code = wrap.wrap_calls(code)
         tracer = trace.Tracer(self)
         tracer.run(code, {}, {})
-
-    # Basically a Pyagram object is a list of InstantaneousState objects.
+        self.snapshots = tracer.snapshots
