@@ -3,6 +3,7 @@ import sys
 default = sys._getframe().f_locals
 import bdb, inspect, ast
 import test
+import wrap
 
 def stringtofile(str):
     f = open("userinput.py", "w")
@@ -55,7 +56,9 @@ class Pyagram(bdb.Bdb):
         self.funcs = {}
         self.lambdas = {}
 
+
     def linegetter(self, ln):
+        # TODO: need to update this to work with ASTs
         import linecache
         fn = 'userinput.py'
         line = linecache.getline(fn, ln)
@@ -65,38 +68,39 @@ class Pyagram(bdb.Bdb):
         # print(frame.f_locals)
         # print(frame.f_globals)
         # print(id(frame))
+
+        # for getting the line just evaluated
+        # uses old method of getting line
+        # TODO: need to update this to work with ASTs
         self.updateframes(frame)
         import linecache
         # astnode = ast.parse(test.test1)
         self.printall()
         # self.printvars(frame)
         line = self.linegetter(frame.f_lineno)
+
         print("line {}:".format(frame.f_lineno), line)
 
     def funcID(self, function):
         # TODO: create a function that gives non built in functions IDs to be
-        return id(function)
-
-    # def updatefun()
+        return id(function) # not currently used
 
     def updateframes(self, frame):
-        # TODO: add in the return values in the frames
-        #       this might need to be done inside of the user_return function
         # TODO: check if this function works for tests other than multframes
         #
         # DONE(6/23/19): update the framedict variable to have the frame number
         #   map to dictionaries of the defined variables in that specific frame
-        if not self.framedict:
+        if not self.framedict: # at the first line add the frame as global
             self.framedict[0] = frame
             self.idmap[id(frame)] = 0
-        elif self.framecount >= len(self.framedict):
+        elif self.framecount >= len(self.framedict): # when there is a new frame
             self.framedict[self.framecount] = frame
             self.idmap[id(frame)] = self.framecount
-        else:
+        else: # updating a new frame by replacing it
             # print(self.framecount, len(self.framedict))
             self.framedict[self.idmap[id(frame)]] = frame
 
-    def printframe(self, frame):
+    def printframe(self, frame): # not currently used
         lcls = frame.f_locals
         for var, binding in lcls.items():
             print(var, binding)
@@ -104,7 +108,7 @@ class Pyagram(bdb.Bdb):
     def printframes(self):
         for num, frame in self.framedict.items():
             qwer = {k: v for k, v in frame.f_locals.items() if k not in default}
-            print(num, qwer, id(frame))
+            print(num, qwer, id(frame)) # not currently used
 
     def printall(self): # basicly just printframes but it also prints the return value
         for num, frame in self.framedict.items():
@@ -125,9 +129,9 @@ class Pyagram(bdb.Bdb):
                 # args = inspect.
                 # flag = [funcname, ]
             else:
-                print(key, repr(val))
+                print(key, repr(val)) # not used because it doesn't work
 
-    def printfunction(self, function):
+    def printfunction(self, function): # not currently used
         pass
 
     def user_call(self, frame, args):
@@ -165,10 +169,10 @@ class Pyagram(bdb.Bdb):
 # print(first)
 temp = {'__name__': '__main__', '__doc__': None, '__package__': None, '__spec__': None, '__annotations__': {}, '__cached__': None}
 t = Pyagram()
-inputfile = stringtofile(test.testrepr)
+inputfile = stringtofile(test.testsrc)
 string = inputfile.read()
-
-t.run(string, {}, {})
+code = compile(wrap.addnop(string), filename = "<ast>", mode = "exec")
+t.run(code, {}, {})
 
 
 

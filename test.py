@@ -11,6 +11,12 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+testsrc = """
+def f(x):
+    return x
+z = f(f)(f(3))
+"""
+
 testrepr = """
 class C():
     def __repr__(self):

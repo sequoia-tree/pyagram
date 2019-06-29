@@ -85,12 +85,18 @@ class CallWrapper(ast.NodeTransformer):
 
 src = """
 def f(x):
-    return x + 1
+    return x
 
 y = f(4)
-z = f(f(3))
+z = f(f)(f(3))
 """
 
-src_ast = ast.parse(src)
-mod_ast = CallWrapper().visit(src_ast)
-ast.fix_missing_locations(mod_ast)
+def addnop(inputcode):
+    src_ast = ast.parse(inputcode)
+    mod_ast = CallWrapper().visit(src_ast)
+    ast.fix_missing_locations(mod_ast)
+    return mod_ast
+
+addnop(src)
+
+#
