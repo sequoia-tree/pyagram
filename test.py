@@ -11,10 +11,24 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+immediate_error = '1 / 0'
+
+immediate_lambda = '(lambda: 4)()'
+
 testsrc = """
 def f(x):
     return x
 z = f(f)(f(3))
+"""
+
+testrebind = """
+def f(x):
+    x += 1
+    y = 3
+    y = 4
+    return x + y
+
+z = f(10)
 """
 
 testrepr = """
@@ -142,5 +156,3 @@ def f():
     return g
 y = f()()
 """
-
-#
