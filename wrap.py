@@ -79,12 +79,14 @@ class CallWrapper(ast.NodeTransformer):
 
         # outer_call:
         #   lineno = -1
-        #   col_offset = id
+        #   col_offset = id # I guess we won't use the ID. But it's nice to have.
         # inner_call:
         #   lineno = -2
-        #   col_offset = id
+        #   col_offset = id # I guess we won't use the ID. But it's nice to have.
 
         self.generic_visit(node)
+
+        # TODO: Are there nodes other than Call nodes (eg listcomp, dictcomp, etc) that create their own frames? If so, we need to mutate those too.
 
         return outer_call
 

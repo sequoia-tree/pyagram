@@ -21,6 +21,14 @@ immediate_call_3 = 'int()'
 
 immediate_print = 'print("hello world")'
 
+return_call = """
+def f(x):
+    return g(x)
+def g(x):
+    return x
+y = f(4)
+"""
+
 testsrc = """
 def f(x):
     return x

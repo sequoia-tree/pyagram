@@ -15,6 +15,18 @@ class ProgramState:
         self.print_output = [] # TODO: How will you handle `print` statements?
         # TODO: I think the ProgramState should also track what line we're on. That way we can draw an arrow that points to the last-executed line. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
 
+    @property
+    def is_ongoing_flag_sans_frame(self):
+        return isinstance(self.curr_element, PyagramFlag) and self.curr_element.frame is None
+
+    @property
+    def is_ongoing_frame(self):
+        return isinstance(self.curr_element, PyagramFrame) and not self.curr_element.has_returned
+
+    @property
+    def is_complete_flag(self):
+        return isinstance(self.curr_element, PyagramFlag) and self.curr_element.has_returned
+
     def process_frame_open(self, frame):
         """
         <summary>
@@ -23,33 +35,21 @@ class ProgramState:
         :return:
         """
 
-        # Open SRC_CALL_PRECURSOR frame:
-        #   Start a flag with ID `id` and give it a banner.
-        #   self.curr_element: {any open flag with no terminal frame yet, any open frame}
-        # Open SRC_CALL frame:
-        #   Start a terminal frame for the current flag.
-        #   self.curr_element: {any open flag with no terminal frame yet}
-        # OPEN SRC_CALL_SUCCESSOR frame:
-        #   End the flag with ID `id`.
-        #   self.curr_element: {any closed frame}
-
-        # Close SRC_CALL_PRECURSOR frame:
-        #   Do nothing. This should come right after transitioning into a new flag.
-        #   self.curr_element: {the flag that we just opened}
-        # Close SRC_CALL frame:
-        #   End the frame for the current flag and record its return value.
-        #   self.curr_element: {any open frame}
-        # Close SRC_CALL_SUCCESSOR frame:
-        #   Do nothing. This should come right after closing the flag with ID `id`.
-        #   self.curr_element: {the flag that we just closed}
+        # Here's the gist, but you should verify its correctness ...
 
         frame_type = FrameTypes.identify_frame_type(frame)
         if frame_type is FrameTypes.SRC_CALL:
-            pass # TODO
+            assert self.is_ongoing_flag_sans_frame
+            self.curr_element = self.curr_element.add_frame(frame)
+            # TODO
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
-            pass # TODO
+            assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
+            self.curr_element = self.curr_element.add_flag()
+            # TODO
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
-            pass # TODO
+            assert self.is_complete_flag
+            self.curr_element = self.curr_element.close()
+            # TODO
         else:
             raise FrameTypes.illegal_frame_type(frame)
 
@@ -61,13 +61,20 @@ class ProgramState:
         :param return_value:
         :return:
         """
+
+        # Here's the gist, but you should verify its correctness ...
+
         frame_type = FrameTypes.identify_frame_type(frame)
         if frame_type is FrameTypes.SRC_CALL:
-            pass # TODO
+            assert self.is_ongoing_frame
+            self.curr_element = self.curr_element.close(return_value)
+            # TODO
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
-            pass # TODO
+            assert self.is_ongoing_flag_sans_frame
+            # TODO
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
-            pass # TODO
+            assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
+            # TODO
         else:
             raise FrameTypes.illegal_frame_type(frame)
 
@@ -104,9 +111,9 @@ class FrameTypes:
     <summary> # basically this is like an Enum class
     """
 
-    SRC_CALL_PRECURSOR = 0
-    SRC_CALL = 1
-    SRC_CALL_SUCCESSOR = 2
+    SRC_CALL_PRECURSOR = []
+    SRC_CALL = []
+    SRC_CALL_SUCCESSOR = []
 
     @staticmethod
     def identify_frame_type(frame):
@@ -116,6 +123,9 @@ class FrameTypes:
         :param frame:
         :return:
         """
+
+        # If the frame is a SRC_CALL_PRECURSOR, it's the frame for one of the "fake" inner_lambda functions we created in wrap.py. If it's a SRC_CALL_SUCCESSOR, it's the frame for one of the "fake" outer_lambda functions we created in wrap.py.
+
         lineno = frame.f_lineno
         if lineno == wrap.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
@@ -135,6 +145,22 @@ class PyagramElement:
 
     def __init__(self, opened_by):
         self.opened_by = opened_by
+        self.flags = []
+
+    def add_flag(self):
+        """
+        <summary>
+
+        :return:
+        """
+
+        # TODO: You need something like this ...
+        # for flag in self.curr_element.flags:
+        #     assert flag.has_returned
+
+        flag = PyagramFlag(self)
+        self.flags.append(flag)
+        return flag
 
 class PyagramFrame(PyagramElement):
     """
@@ -148,9 +174,8 @@ class PyagramFrame(PyagramElement):
         super().__init__(opened_by)
         self.parent = None # TODO
         self.bindings = frame.locals
-        self.flags = []
-        self.return_value = None
         self.has_returned = False
+        self.return_value = None
 
     def close(self, return_value):
         """
@@ -161,6 +186,7 @@ class PyagramFrame(PyagramElement):
         """
         self.return_value = return_value
         self.has_returned = True
+        return self.opened_by
 
 class PyagramFlag(PyagramElement):
     """
@@ -169,11 +195,18 @@ class PyagramFlag(PyagramElement):
     :param opened_by:
     """
 
-    def __init__(self):
+    def __init__(self, opened_by):
         super().__init__(opened_by)
         self.banner = None # TODO
-        self.flags = []
         self.frame = None
+
+    def close(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.opened_by
 
     @property
     def has_returned(self):
@@ -183,6 +216,31 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return self.frame and self.frame.has_returned
+
+    @property
+    def return_value(self):
+        """
+        <summary>
+
+        :return:
+        """
+        assert self.has_returned
+        return self.frame.return_value
+
+    def add_frame(self, frame):
+        """
+        <summary>
+
+        :param frame:
+        :return:
+        """
+
+        # TODO: You need something like this ...
+        # assert self.banner.is_complete
+
+        frame = PyagramFrame(self, frame)
+        self.frame = frame
+        return frame
 
 class PyagramBanner:
     """
