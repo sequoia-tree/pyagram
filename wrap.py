@@ -1,5 +1,8 @@
 import ast
 
+INNER_CALL_LINENO = -1
+OUTER_CALL_LINENO = -2
+
 class CallWrapper(ast.NodeTransformer):
     """
     <summary>
@@ -20,37 +23,31 @@ class CallWrapper(ast.NodeTransformer):
         """
 
         # Or I guess more accurately ...
-        # f(...) --> (lambda banner, call, id: call)(
-        #                (lambda flag_info, id: None)(),
+        # f(...) --> (lambda banner, call: call)(
+        #                (lambda: flag_info)(),
         #                f(...),
-        #                id,
         #            )
 
-        id = ast.Num(self.id_counter)
-        self.id_counter += 1
+
 
         flag_info = ast.NameConstant(None) # TODO: THIS IS TEMPORARY!
 
         inner_lambda = ast.Lambda(
             args=ast.arguments(
-                args=[
-                    ast.arg(arg='flag_info', annotation=None),
-                    ast.arg(arg='id', annotation=None),
-                ],
+                args=[],
                 vararg=None,
                 kwonlyargs=[],
                 kwarg=None,
                 defaults=[],
                 kw_defaults=[],
             ),
-            body=ast.NameConstant(None),
+            body=flag_info,
         )
         outer_lambda = ast.Lambda(
             args=ast.arguments(
                 args=[
                     ast.arg(arg='banner', annotation=None),
                     ast.arg(arg='call', annotation=None),
-                    ast.arg(arg='id', annotation=None),
                 ],
                 vararg=None,
                 kwonlyargs=[],
@@ -62,22 +59,30 @@ class CallWrapper(ast.NodeTransformer):
         )
         inner_call = ast.Call(
             func=inner_lambda,
-            args=[
-                flag_info,
-                id,
-            ],
+            args=[],
             keywords=[],
+            lineno=INNER_CALL_LINENO,
+            col_offset=self.id_counter,
         )
         outer_call = ast.Call(
             func=outer_lambda,
             args=[
                 inner_call,
                 node,
-                id,
             ],
             keywords=[],
+            lineno=OUTER_CALL_LINENO,
+            col_offset=self.id_counter,
         )
 
+        self.id_counter += 1
+
+        # outer_call:
+        #   lineno = -1
+        #   col_offset = id
+        # inner_call:
+        #   lineno = -2
+        #   col_offset = id
 
         self.generic_visit(node)
 

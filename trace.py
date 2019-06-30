@@ -39,7 +39,7 @@ class Tracer(bdb.Bdb):
         :param return_value:
         :return:
         """
-        self.state.get_frame(frame).terminate(return_value)
+        self.state.process_frame_close(frame, return_value)
         self.make_snapshot(frame)
 
     def user_exception(self, frame, exception_info):
@@ -64,11 +64,7 @@ class Tracer(bdb.Bdb):
         if self.state is None:
             self.state = models.ProgramState(frame)
         if is_new_frame:
-            # Make a frame, or maybe make a flag, or maybe terminate a flag.
-            # Used to be self.frames.append(frame)
-            # TODO: frame.f_lineno is the line number last evaluated. We want this info!
-            # TODO: Maybe useful ... frame.f_locals and frame.f_globals
-            pass
+            self.state.process_frame_open(frame)
         snapshot = models.ProgramStateSnapshot(self.state)
         self.snapshots.append(snapshot)
         # print(snapshot)
