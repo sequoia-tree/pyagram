@@ -2,6 +2,8 @@ import copy
 
 import wrap
 
+TERMINAL_WIDTH = 80
+
 class ProgramState:
     """
     <summary> # a mutable object representing the state of the program at the current timestep. as we go thru the program in trace.py, we will modify the ProgramState.
@@ -27,6 +29,31 @@ class ProgramState:
     def is_complete_flag(self):
         return isinstance(self.curr_element, PyagramFlag) and self.curr_element.has_returned
 
+    def __str__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        # TODO: Display the line number and the print output too!
+        curr_element = f'Current element: {repr(self.curr_element)}'
+        global_frame = str(self.global_frame)
+        return '\n'.join((
+            curr_element,
+            '',
+            global_frame,
+        ))
+
+    def display(self):
+        """
+        <summary>
+
+        :return:
+        """
+        print(self)
+        print('-' * TERMINAL_WIDTH)
+        input()
+
     def process_frame_open(self, frame):
         """
         <summary>
@@ -41,15 +68,12 @@ class ProgramState:
         if frame_type is FrameTypes.SRC_CALL:
             assert self.is_ongoing_flag_sans_frame
             self.curr_element = self.curr_element.add_frame(frame)
-            # TODO
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
             assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
             self.curr_element = self.curr_element.add_flag()
-            # TODO
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
             assert self.is_complete_flag
             self.curr_element = self.curr_element.close()
-            # TODO
         else:
             raise FrameTypes.illegal_frame_type(frame)
 
@@ -68,52 +92,29 @@ class ProgramState:
         if frame_type is FrameTypes.SRC_CALL:
             assert self.is_ongoing_frame
             self.curr_element = self.curr_element.close(return_value)
-            # TODO
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
             assert self.is_ongoing_flag_sans_frame
-            # TODO
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
             assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-            # TODO
         else:
             raise FrameTypes.illegal_frame_type(frame)
 
-class ProgramStateSnapshot:
-    """
-    <summary> # Represents the state of the program at a particular step in time.
-
-    :param state: a ProgramState instance to take snapshot of
-    """
-
-    def __init__(self, state):
-        # self.global_frame = copy.deepcopy(state.global_frame)
-        # self.print_output = copy.deepcopy(state.print_output)
-        pass
-        # TODO: Basically make a deepcopy of the `state` object.
-        # Note that a PyagramFrame's self.bindings updates automatically.
-        pass
-
-    def __repr__(self):
+    def snapshot(self):
         """
-        <summary>
+        <summary> # Represents the state of the program at a particular step in time.
 
         :return:
         """
-        # for num, frame in enumerate(self.frames):
-        #     print(f'Frame {num}: {frame.f_locals}')
-        #     if self.return_values.get(frame, False):
-        #         print(f'\tReturn: {repr(self.return_values[frame])}')
-        # print('')
-        return '' # TODO
+        return copy.deepcopy(self)
 
 class FrameTypes:
     """
     <summary> # basically this is like an Enum class
     """
 
-    SRC_CALL_PRECURSOR = []
-    SRC_CALL = []
-    SRC_CALL_SUCCESSOR = []
+    SRC_CALL_PRECURSOR = object()
+    SRC_CALL = object()
+    SRC_CALL_SUCCESSOR = object()
 
     @staticmethod
     def identify_frame_type(frame):
@@ -144,8 +145,19 @@ class PyagramElement:
     """
 
     def __init__(self, opened_by):
+        cls = type(self)
+        self.id = cls.COUNT
+        cls.COUNT += 1
         self.opened_by = opened_by
         self.flags = []
+
+    def flags_to_text(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return '\n'.join(f'\n{flag}' for flag in self.flags) + ('\n' if self.flags else '')
 
     def add_flag(self):
         """
@@ -157,6 +169,10 @@ class PyagramElement:
         # TODO: You need something like this ...
         # for flag in self.curr_element.flags:
         #     assert flag.has_returned
+        # Though I guess it's only necessary to check the most recent flag has been closed. This particular code is a bit redundant.
+        # For example:
+        if self.flags:
+            assert self.flags[-1].has_returned
 
         flag = PyagramFlag(self)
         self.flags.append(flag)
@@ -170,12 +186,64 @@ class PyagramFrame(PyagramElement):
     :param frame: the corresponding built-in frame object
     """
 
+    COUNT = 0
+
     def __init__(self, opened_by, frame):
         super().__init__(opened_by)
         self.parent = None # TODO
-        self.bindings = frame.locals
+        self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
+
+    def __repr__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return f'Frame {self.id}'
+
+    def __str__(self):
+        """
+        <summary>
+
+        :return:
+        """
+
+        header = f'{repr(self)} (parent: {repr(self.parent)})'
+
+        str_len = lambda key_or_value: len(str(key_or_value))
+        binding = lambda key, value: f'|{key:>{max_key_length}}: {str(value):<{max_value_length}}|'
+
+
+        max_key_length = len('return')
+        max_value_length = 1
+        if self.bindings: # TODO: Clean up this if/else statement.
+            max_key_length = max(
+                max_key_length,
+                str_len(max(self.bindings.keys(), key=str_len)),
+            )
+            max_value_length = max(
+                max_value_length,
+                str_len(max(self.bindings.values(), key=str_len)),
+            )
+            bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
+        else:
+            bindings = f'|{" ":{max_key_length + max_value_length + 2}}|'
+
+        if self.has_returned:
+            bindings = '\n'.join((bindings, binding('return', self.return_value)))
+        separator = f'+{"-" * (max_key_length + max_value_length + 2)}+'
+
+        flags = self.flags_to_text()
+
+        return f'\n'.join((
+            header,
+            separator,
+            bindings,
+            separator,
+            flags,
+        ))
 
     def close(self, return_value):
         """
@@ -195,18 +263,12 @@ class PyagramFlag(PyagramElement):
     :param opened_by:
     """
 
+    COUNT = 0
+
     def __init__(self, opened_by):
         super().__init__(opened_by)
         self.banner = None # TODO
         self.frame = None
-
-    def close(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return self.opened_by
 
     @property
     def has_returned(self):
@@ -224,8 +286,44 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
-        assert self.has_returned
+        assert self.has_returned # TODO: Maybe throw a more appropriate exception.
         return self.frame.return_value
+
+    def __repr__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return f'Flag {self.id}'
+
+    def __str__(self, prefix=''):
+        """
+        <summary>
+
+        :return:
+        """
+
+        flagpole = '| '
+
+        header = f'{repr(self)}'
+        banner = '+--------+\n| BANNER |\n+--------+' # TODO
+        flags = prepend(flagpole, self.flags_to_text())
+        frame = prepend(flagpole, f'{self.frame}')
+        return '\n'.join((
+            header,
+            banner,
+            flags,
+            frame,
+        ))
+
+    def close(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.opened_by
 
     def add_frame(self, frame):
         """
@@ -247,5 +345,16 @@ class PyagramBanner:
     <summary>
     """
 
-    def __init__(self):
-        pass
+    pass
+
+# TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
+
+def prepend(prefix, text):
+    """
+    <summary> # prepend prefix to every line in text
+
+    :param text:
+    :param prefix:
+    :return:
+    """
+    return prefix + text.replace('\n', f'\n{prefix}')

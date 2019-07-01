@@ -11,6 +11,13 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+test_two_funcs = """
+f = lambda x: x + 1
+g = lambda x: x - 1
+h = lambda x, y: x + y
+x = h(f(4), g(4))
+"""
+
 immediate_error = '1 / 0'
 
 immediate_lambda = '(lambda: 4)()'

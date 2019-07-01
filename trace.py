@@ -65,6 +65,6 @@ class Tracer(bdb.Bdb):
             self.state = models.ProgramState(frame)
         if is_new_frame:
             self.state.process_frame_open(frame)
-        snapshot = models.ProgramStateSnapshot(self.state)
+        snapshot = self.state.snapshot()
         self.snapshots.append(snapshot)
-        # print(snapshot)
+        snapshot.display() # For debugging.

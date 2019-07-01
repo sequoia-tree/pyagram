@@ -2,5 +2,6 @@ import pyagram
 
 import test
 
-code = test.immediate_lambda
+code = test.testnested
 pyagram = pyagram.Pyagram(code)
+pass # TODO: Serialize to JSON.
