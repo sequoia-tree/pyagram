@@ -18,6 +18,40 @@ h = lambda x, y: x + y
 x = h(f(4), g(4))
 """
 
+# See if it tracks __init__, __str__, and __repr__.
+test_init1 = """
+class A:
+    a = 10
+
+a = A()
+"""
+test_init2 = """
+class A:
+    def __init__(self, x):
+        self.x = x
+    a = 10
+
+a = A(4)
+"""
+test_str = """
+class A:
+    a = 10
+
+a = A()
+b = str(a)
+"""
+test_str_extra = """
+class A:
+    a = 10
+
+x = (lambda x: x)(4)
+a = A()
+b = str(a)
+"""
+
+# Test various implicit function calls. (Are magic methods the only functions that called implicitly? What about `@property` tags? What about when `__str__` implicitly calls `__repr__`? What about default arguments, they happen implicitly as soon as you define the function right?)
+# Also make sure it continues working smoothly AFTER the implicit function call has been handled; there's a concern that it can handle the implicit call OK but then messes up.
+
 immediate_error = '1 / 0'
 
 immediate_lambda = '(lambda: 4)()'

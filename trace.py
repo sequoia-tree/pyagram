@@ -12,7 +12,7 @@ class Tracer(bdb.Bdb):
         self.state = None
         self.snapshots = []
 
-    def user_call(self, frame, argument_list):
+    def user_call(self, frame, args):
         """
         <summary>
 
@@ -20,6 +20,7 @@ class Tracer(bdb.Bdb):
         :param argument_list: the arguments to the function call
         :return:
         """
+        # TODO: just FYI (make note of this in the docstring), `args` is deprecated.
         self.make_snapshot(frame, True)
 
     def user_line(self, frame):
@@ -67,4 +68,3 @@ class Tracer(bdb.Bdb):
             self.state.process_frame_open(frame)
         snapshot = self.state.snapshot()
         self.snapshots.append(snapshot)
-        snapshot.display() # For debugging.

@@ -2,8 +2,6 @@ import copy
 
 import wrap
 
-TERMINAL_WIDTH = 80
-
 class ProgramState:
     """
     <summary> # a mutable object representing the state of the program at the current timestep. as we go thru the program in trace.py, we will modify the ProgramState.
@@ -15,7 +13,7 @@ class ProgramState:
         self.global_frame = PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
         self.print_output = [] # TODO: How will you handle `print` statements?
-        # TODO: I think the ProgramState should also track what line we're on. That way we can draw an arrow that points to the last-executed line. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
+        # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -44,16 +42,6 @@ class ProgramState:
             global_frame,
         ))
 
-    def display(self):
-        """
-        <summary>
-
-        :return:
-        """
-        print(self)
-        print('-' * TERMINAL_WIDTH)
-        input()
-
     def process_frame_open(self, frame):
         """
         <summary>
@@ -61,19 +49,19 @@ class ProgramState:
         :param frame:
         :return:
         """
-
-        # Here's the gist, but you should verify its correctness ...
-
         frame_type = FrameTypes.identify_frame_type(frame)
         if frame_type is FrameTypes.SRC_CALL:
-            assert self.is_ongoing_flag_sans_frame
-            self.curr_element = self.curr_element.add_frame(frame)
+
+            is_implicit_function_call = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
+            if is_implicit_function_call:
+                self.open_pyagram_flag()
+                self.open_pyagram_banner(flag_info=None) # TODO: what is the appropriate flag_info for an implicit call?
+            self.open_pyagram_frame(frame)
+
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
-            assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-            self.curr_element = self.curr_element.add_flag()
+            self.open_pyagram_flag()
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
-            assert self.is_complete_flag
-            self.curr_element = self.curr_element.close()
+            pass
         else:
             raise FrameTypes.illegal_frame_type(frame)
 
@@ -85,19 +73,48 @@ class ProgramState:
         :param return_value:
         :return:
         """
-
-        # Here's the gist, but you should verify its correctness ...
-
         frame_type = FrameTypes.identify_frame_type(frame)
         if frame_type is FrameTypes.SRC_CALL:
-            assert self.is_ongoing_frame
-            self.curr_element = self.curr_element.close(return_value)
+            self.close_pyagram_flag_and_frame(return_value)
         elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
-            assert self.is_ongoing_flag_sans_frame
+            self.open_pyagram_banner(return_value)
         elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
-            assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
+            pass
         else:
             raise FrameTypes.illegal_frame_type(frame)
+
+    def open_pyagram_flag(self):
+        # TODO: Docstrings for this and the other methods below it.
+        assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
+        self.curr_element = self.curr_element.add_flag()
+
+    def open_pyagram_banner(self, flag_info):
+        assert self.is_ongoing_flag_sans_frame
+        pass # TODO: wrap.py's flag_info is accessible through `flag_info`.
+
+    def open_pyagram_frame(self, frame):
+        assert self.is_ongoing_flag_sans_frame
+        self.curr_element = self.curr_element.add_frame(frame)
+
+    def close_pyagram_flag_and_frame(self, return_value):
+        if self.is_ongoing_flag_sans_frame:
+
+            # The problem is that when you don't write your own __init__ function, bdb doesn't open a frame for object-instantiation! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
+            # Most straightforward solution: (1) AND (2)
+            # (1): Whenever you close a flag that doesn't have its own frame, delete it. (It
+            #      doesn't matter whether it has subflags or not. No frame = delete it, period.)
+            # (2): In your book say __init__ only gets called if it is indeed defined.
+
+            flag = self.curr_element
+            flag.opened_by.flags.remove(flag)
+            self.curr_element = flag.opened_by
+        elif self.is_ongoing_frame:
+            is_global_frame = self.curr_element is self.global_frame
+            self.curr_element = self.curr_element.close(return_value)
+            if not is_global_frame:
+                self.curr_element = self.curr_element.close()
+        else:
+            assert False
 
     def snapshot(self):
         """
@@ -166,11 +183,9 @@ class PyagramElement:
         :return:
         """
 
-        # TODO: You need something like this ...
         # for flag in self.curr_element.flags:
         #     assert flag.has_returned
-        # Though I guess it's only necessary to check the most recent flag has been closed. This particular code is a bit redundant.
-        # For example:
+        # But I guess it's only necessary to check the most recent flag has been closed. This particular code (the one above, that is) is a bit redundant.
         if self.flags:
             assert self.flags[-1].has_returned
 
@@ -214,7 +229,6 @@ class PyagramFrame(PyagramElement):
 
         str_len = lambda key_or_value: len(str(key_or_value))
         binding = lambda key, value: f'|{key:>{max_key_length}}: {str(value):<{max_value_length}}|'
-
 
         max_key_length = len('return')
         max_value_length = 1
@@ -335,6 +349,7 @@ class PyagramFlag(PyagramElement):
 
         # TODO: You need something like this ...
         # assert self.banner.is_complete
+        # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
 
         frame = PyagramFrame(self, frame)
         self.frame = frame
@@ -347,8 +362,6 @@ class PyagramBanner:
 
     pass
 
-# TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
-
 def prepend(prefix, text):
     """
     <summary> # prepend prefix to every line in text
@@ -358,3 +371,5 @@ def prepend(prefix, text):
     :return:
     """
     return prefix + text.replace('\n', f'\n{prefix}')
+
+# TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
