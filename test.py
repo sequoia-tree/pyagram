@@ -18,7 +18,7 @@ h = lambda x, y: x + y
 x = h(f(4), g(4))
 """
 
-# See if it tracks __init__, __str__, and __repr__.
+# See if it tracks __init__, __str__, and __repr__. Try it for when the user defines each of these magic methods, as well as for when the user does not.
 test_init1 = """
 class A:
     a = 10
@@ -27,15 +27,24 @@ a = A()
 """
 test_init2 = """
 class A:
+    a = 10
     def __init__(self, x):
         self.x = x
-    a = 10
 
 a = A(4)
 """
-test_str = """
+test_str1 = """
 class A:
     a = 10
+
+a = A()
+b = str(a)
+"""
+test_str2 = """
+class A:
+    a = 10
+    def __str__(self):
+        return f'object A [a={self.a}]'
 
 a = A()
 b = str(a)

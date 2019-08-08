@@ -12,6 +12,7 @@ class ProgramState:
     def __init__(self, global_frame):
         self.global_frame = PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
+        self.hidden_flags = set()
         self.print_output = [] # TODO: How will you handle `print` statements?
         # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
 
@@ -98,17 +99,19 @@ class ProgramState:
 
     def close_pyagram_flag_and_frame(self, return_value):
         if self.is_ongoing_flag_sans_frame:
+            # this flag has no frame; it should not get visualized
 
             # The problem is that when you don't write your own __init__ function, bdb doesn't open a frame for object-instantiation! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
             # Most straightforward solution: (1) AND (2)
-            # (1): Whenever you close a flag that doesn't have its own frame, delete it. (It
-            #      doesn't matter whether it has subflags or not. No frame = delete it, period.)
+            # (1): Whenever you close a flag that doesn't have its own frame, delete it. (But do not delete the sub-flags! Those might still be useful.)
             # (2): In your book say __init__ only gets called if it is indeed defined.
 
             flag = self.curr_element
-            flag.opened_by.flags.remove(flag)
+            self.hidden_flags.add(flag)
             self.curr_element = flag.opened_by
         elif self.is_ongoing_frame:
+
+            # close frame and then the flag
             is_global_frame = self.curr_element is self.global_frame
             self.curr_element = self.curr_element.close(return_value)
             if not is_global_frame:
@@ -216,6 +219,7 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
+        # Perhaps return 'Global' if self.id == 0 else f'Frame {self.id}'
         return f'Frame {self.id}'
 
     def __str__(self):
@@ -227,19 +231,19 @@ class PyagramFrame(PyagramElement):
 
         header = f'{repr(self)} (parent: {repr(self.parent)})'
 
-        str_len = lambda key_or_value: len(str(key_or_value))
-        binding = lambda key, value: f'|{key:>{max_key_length}}: {str(value):<{max_value_length}}|'
+        fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
+        binding = lambda key, value: f'|{key:>{max_key_length}}: {repr(value):<{max_value_length}}|'
 
         max_key_length = len('return')
         max_value_length = 1
         if self.bindings: # TODO: Clean up this if/else statement.
             max_key_length = max(
                 max_key_length,
-                str_len(max(self.bindings.keys(), key=str_len)),
+                fn_len(str)(max(self.bindings.keys(), key=fn_len(str))),
             )
             max_value_length = max(
                 max_value_length,
-                str_len(max(self.bindings.values(), key=str_len)),
+                fn_len(repr)(max(self.bindings.values(), key=fn_len(repr))),
             )
             bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
         else:

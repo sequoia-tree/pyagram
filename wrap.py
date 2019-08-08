@@ -36,7 +36,7 @@ class CallWrapper(ast.NodeTransformer):
         )
         call_bitmap = ast.Tuple( # TODO: Which args are calls vs directly evaluated.
             elts=[], # TODO
-            ctx=ast.Load(),
+            ctx=ast.Load(), # TODO: You also need to know whether the function is the result of a call not.
         )
         # TODO: NOTE: For f(a, b=c, *d, **e) you'd get ...
         # args = [
