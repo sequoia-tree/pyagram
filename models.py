@@ -1,4 +1,6 @@
 import copy
+import gc
+import types
 
 import wrap
 
@@ -119,6 +121,58 @@ class ProgramState:
         else:
             assert False
 
+    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
+        """
+        <summary>
+
+        :param frame:
+        :param is_frame_open:
+        :param is_frame_close:
+        :param return_value:
+        :return:
+        """
+        if is_frame_open:
+            self.process_frame_open(frame)
+        if is_frame_close:
+            self.process_frame_close(frame, return_value)
+        self.enforce_unique_code_objects()
+
+    def enforce_unique_code_objects(self):
+        """
+        <summary>
+
+        :return:
+        """
+        # TODO: Idk if this even works but you gotta get the runtime down ...
+        # TODO: Only call this function when necessary. It takes too long.
+        # TODO: Alternative idea. When a frame opens, use gc.get_referrers to see if the code object is unique. (I suspect most are.) If it is not unique then backtrack, enforce uniqueness of that code object, and redo?
+        for object in gc.get_objects():
+            is_function = isinstance(object, types.FunctionType)
+            is_already_processed = object in PyagramFrame.CODE_TO_FUNC.values()
+            if is_function and not is_already_processed:
+                old_code = object.__code__
+                new_code = types.CodeType(
+                    old_code.co_argcount,
+                    old_code.co_kwonlyargcount,
+                    old_code.co_nlocals,
+                    old_code.co_stacksize,
+                    old_code.co_flags,
+                    old_code.co_code,
+                    old_code.co_consts,
+                    old_code.co_names,
+                    old_code.co_varnames,
+                    old_code.co_filename,
+                    old_code.co_name,
+                    old_code.co_firstlineno,
+                    old_code.co_lnotab,
+                    old_code.co_freevars,
+                    old_code.co_cellvars,
+                )
+                object.__code__ = new_code
+                PyagramFrame.CODE_TO_FUNC[new_code] = object
+        # Enforces that no two functions have the same code object.
+        # Also maintains a {code object: function} mapping.
+
     def snapshot(self):
         """
         <summary> # Represents the state of the program at a particular step in time.
@@ -205,10 +259,13 @@ class PyagramFrame(PyagramElement):
     """
 
     COUNT = 0
+    CODE_TO_FUNC = {}
 
     def __init__(self, opened_by, frame):
         super().__init__(opened_by)
-        self.parent = None # TODO
+        if self.opened_by is not None:
+            self.parent = None # TODO
+            self.function = PyagramFrame.CODE_TO_FUNC[frame.f_code]
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
@@ -229,7 +286,7 @@ class PyagramFrame(PyagramElement):
         :return:
         """
 
-        header = f'{repr(self)} (parent: {repr(self.parent)})'
+        header = f'{repr(self)}'
 
         fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
         binding = lambda key, value: f'|{key:>{max_key_length}}: {repr(value):<{max_value_length}}|'

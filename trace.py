@@ -17,11 +17,11 @@ class Tracer(bdb.Bdb):
         <summary>
 
         :param frame: the frame that gets opened
-        :param argument_list: the arguments to the function call
+        :param args: the arguments to the function call (pretty sure this is deprecated tho)
         :return:
         """
-        # TODO: just FYI (make note of this in the docstring), `args` is deprecated.
-        self.make_snapshot(frame, True)
+        self.step(frame, is_frame_open=True)
+        self.snapshot()
 
     def user_line(self, frame):
         """
@@ -30,7 +30,8 @@ class Tracer(bdb.Bdb):
         :param frame:
         :return:
         """
-        self.make_snapshot(frame)
+        self.step(frame)
+        self.snapshot()
 
     def user_return(self, frame, return_value):
         """
@@ -40,8 +41,8 @@ class Tracer(bdb.Bdb):
         :param return_value:
         :return:
         """
-        self.state.process_frame_close(frame, return_value)
-        self.make_snapshot(frame)
+        self.step(frame, is_frame_close=True, return_value=return_value)
+        self.snapshot()
 
     def user_exception(self, frame, exception_info):
         """
@@ -52,19 +53,28 @@ class Tracer(bdb.Bdb):
         :return:
         """
         # TODO: Figure out how you want to address exceptions.
-        self.make_snapshot(frame)
+        self.step(frame)
+        self.snapshot()
 
-    def make_snapshot(self, frame, is_new_frame=False):
+    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
         """
         <summary>
 
         :param frame:
-        :param is_new_frame:
+        :param is_frame_open:
+        :param is_frame_close:
+        :param return_value:
         :return:
         """
         if self.state is None:
             self.state = models.ProgramState(frame)
-        if is_new_frame:
-            self.state.process_frame_open(frame)
+        self.state.step(frame, is_frame_open, is_frame_close, return_value)
+
+    def snapshot(self):
+        """
+        <summary>
+
+        :return:
+        """
         snapshot = self.state.snapshot()
         self.snapshots.append(snapshot)
