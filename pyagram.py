@@ -1,6 +1,7 @@
 import wrap
 import trace
 
+TERMINAL_HEIGHT = 60
 TERMINAL_WIDTH = 80
 
 class Pyagram:
@@ -28,6 +29,13 @@ class Pyagram:
         :return:
         """
         for snapshot in self.snapshots:
-            print(snapshot)
-            print('-' * TERMINAL_WIDTH)
+            diagram = str(snapshot)
+            diagram_height = diagram.count('\n') + 1
+            separator = '-' * TERMINAL_WIDTH
+            separator_height = 1
+            padding = TERMINAL_HEIGHT - (diagram_height + separator_height + 1)
+            print(diagram)
+            print(separator)
+            if padding > 0:
+                print('\n' * (padding - 1))
             input()
