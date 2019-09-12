@@ -18,6 +18,19 @@ h = lambda x, y: x + y
 x = h(f(4), g(4))
 """
 
+test_same_code_obj = """
+def f():
+    def g():
+        return
+    return g
+
+g1 = f()
+g2 = f()
+
+g1()
+g2()
+""" # g1's frame and g2's frame should show that they were opened by different functions, even though said functions share the same code object
+
 # See if it tracks __init__, __str__, and __repr__. Try it for when the user defines each of these magic methods, as well as for when the user does not.
 test_init1 = """
 class A:

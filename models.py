@@ -135,43 +135,7 @@ class ProgramState:
             self.process_frame_open(frame)
         if is_frame_close:
             self.process_frame_close(frame, return_value)
-        self.enforce_unique_code_objects()
-
-    def enforce_unique_code_objects(self):
-        """
-        <summary>
-
-        :return:
-        """
-        # TODO: Idk if this even works but you gotta get the runtime down ...
-        # TODO: Only call this function when necessary. It takes too long.
-        # TODO: Alternative idea. When a frame opens, use gc.get_referrers to see if the code object is unique. (I suspect most are.) If it is not unique then backtrack, enforce uniqueness of that code object, and redo?
-        for object in gc.get_objects():
-            is_function = isinstance(object, types.FunctionType)
-            is_already_processed = object in PyagramFrame.CODE_TO_FUNC.values()
-            if is_function and not is_already_processed:
-                old_code = object.__code__
-                new_code = types.CodeType(
-                    old_code.co_argcount,
-                    old_code.co_kwonlyargcount,
-                    old_code.co_nlocals,
-                    old_code.co_stacksize,
-                    old_code.co_flags,
-                    old_code.co_code,
-                    old_code.co_consts,
-                    old_code.co_names,
-                    old_code.co_varnames,
-                    old_code.co_filename,
-                    old_code.co_name,
-                    old_code.co_firstlineno,
-                    old_code.co_lnotab,
-                    old_code.co_freevars,
-                    old_code.co_cellvars,
-                )
-                object.__code__ = new_code
-                PyagramFrame.CODE_TO_FUNC[new_code] = object
-        # Enforces that no two functions have the same code object.
-        # Also maintains a {code object: function} mapping.
+        self.snapshot()
 
     def snapshot(self):
         """
@@ -211,6 +175,12 @@ class FrameTypes:
 
     @staticmethod
     def illegal_frame_type(frame):
+        """
+        <summary>
+
+        :param frame:
+        :return:
+        """
         return ValueError(f'frame object {frame} has no pyagram counterpart')
 
 class PyagramElement:
@@ -259,13 +229,12 @@ class PyagramFrame(PyagramElement):
     """
 
     COUNT = 0
-    CODE_TO_FUNC = {}
 
     def __init__(self, opened_by, frame):
         super().__init__(opened_by)
         if self.opened_by is not None:
             self.parent = None # TODO
-            self.function = PyagramFrame.CODE_TO_FUNC[frame.f_code]
+            self.function = PyagramFrame.get_function(frame)
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
@@ -288,27 +257,36 @@ class PyagramFrame(PyagramElement):
 
         header = f'{repr(self)}'
 
-        fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
-        binding = lambda key, value: f'|{key:>{max_key_length}}: {repr(value):<{max_value_length}}|'
+        if self.bindings or self.has_returned:
 
-        max_key_length = len('return')
-        max_value_length = 1
-        if self.bindings: # TODO: Clean up this if/else statement.
-            max_key_length = max(
-                max_key_length,
-                fn_len(str)(max(self.bindings.keys(), key=fn_len(str))),
-            )
-            max_value_length = max(
-                max_value_length,
-                fn_len(repr)(max(self.bindings.values(), key=fn_len(repr))),
-            )
-            bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
+            fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
+            binding = lambda key, value: f'|{key:>{max_key_length}}: {repr(value):<{max_value_length}}|'
+
+            max_var_key_length, ret_key_length, max_var_value_length, ret_value_length = 0, 0, 0, 0
+            if self.bindings:
+                max_var_key_length = fn_len(str)(max(self.bindings.keys(), key=fn_len(str)))
+                max_var_value_length = fn_len(repr)(max(self.bindings.values(), key=fn_len(repr)))
+            if self.has_returned:
+                ret_key_length = len('return')
+                ret_value_length = len(str(self.return_value))
+            max_key_length = max(max_var_key_length, ret_key_length)
+            max_value_length = max(max_var_value_length, ret_value_length)
+
+            bindings = []
+            if self.bindings:
+                var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
+                bindings.append(var_bindings)
+            if self.has_returned:
+                ret_binding = binding('return', self.return_value)
+                bindings.append(ret_binding)
+            max_binding_length = max_key_length + max_value_length + 2
+            bindings = '\n'.join(bindings)
+
         else:
-            bindings = f'|{" ":{max_key_length + max_value_length + 2}}|'
+            max_binding_length = max(0, len(header) - 2)
+            bindings = f'|{" " * max_binding_length}|'
 
-        if self.has_returned:
-            bindings = '\n'.join((bindings, binding('return', self.return_value)))
-        separator = f'+{"-" * (max_key_length + max_value_length + 2)}+'
+        separator = f'+{"-" * max_binding_length}+'
 
         flags = self.flags_to_text()
 
@@ -330,6 +308,59 @@ class PyagramFrame(PyagramElement):
         self.return_value = return_value
         self.has_returned = True
         return self.opened_by
+
+    @staticmethod
+    def get_function(frame):
+        """
+        <summary>
+
+        :param frame:
+        :return:
+        """
+        function = None
+        for referrer in gc.get_referrers(frame.f_code):
+            if isinstance(referrer, types.FunctionType):
+                if function is None:
+                    function = referrer
+                else:
+                    # TODO [NOW]: Code object is referred to by 2+ functions. Backtrack to the previous step, enforce uniqueness of this code object, and redo. (But one of said functions may already be assigned to 1+ PyagramFrames; if so, that function should continue pointing to this code object, and all the other functions should be changed s.t. they point to a copy of this code object.)
+                    # TODO [NOW]: To backtrack, the Tracer object might need to maintain a deepcopy of its previous state. (It's fine if the Tracer has a pointer to the ProgramState, and the ProgramState has a pointer back to the Tracer. The deepcopy won't be some infinite-memory thing; Python is smarter than that.) Then here, you'd just have to reset the Tracer to its previous state.
+                    # TODO [NOW]: Shoot. It might be impossible to backtrack, because the original Tracer object is the one being run. Hmm ... ideally you could find a way to do it without backtracking, but I'm sure there's a way to get backtracking to work (it just doesn't seem like such an easy thing to do).
+                    pass
+
+        # Maybe this is useful:
+        # # TODO: Idk if this even works but you gotta get the runtime down ...
+        # # TODO: Only call this function when necessary. It takes too long.
+        # # TODO: Alternative idea. When a frame opens, use gc.get_referrers to see if the code object is unique. (I suspect most are.) If it is not unique then backtrack, enforce uniqueness of that code object, and redo?
+        # for object in gc.get_objects():
+        #     is_function = isinstance(object, types.FunctionType)
+        #     is_already_processed = object in PyagramFrame.CODE_TO_FUNC.values()
+        #     if is_function and not is_already_processed:
+        #         old_code = object.__code__
+        #         new_code = types.CodeType(
+        #             old_code.co_argcount,
+        #             old_code.co_kwonlyargcount,
+        #             old_code.co_nlocals,
+        #             old_code.co_stacksize,
+        #             old_code.co_flags,
+        #             old_code.co_code,
+        #             old_code.co_consts,
+        #             old_code.co_names,
+        #             old_code.co_varnames,
+        #             old_code.co_filename,
+        #             old_code.co_name,
+        #             old_code.co_firstlineno,
+        #             old_code.co_lnotab,
+        #             old_code.co_freevars,
+        #             old_code.co_cellvars,
+        #         )
+        #         object.__code__ = new_code
+        #         PyagramFrame.CODE_TO_FUNC[new_code] = object
+        # # Enforces that no two functions have the same code object.
+        # # Also maintains a {code object: function} mapping.
+
+        assert function is not None
+        return function
 
 class PyagramFlag(PyagramElement):
     """
