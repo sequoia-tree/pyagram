@@ -44,6 +44,7 @@ class ProgramState:
         curr_element = f'Current element: {repr(self.curr_element)}'
         global_frame = str(self.global_frame)
         tracked_objs = str(self.tracked_objs)
+        # TODO: You could make this a little prettier, especially when tracked_objs is empty.
         return '\n'.join((
             curr_element,
             '',
@@ -294,7 +295,7 @@ class PyagramFrame(PyagramElement):
         super().__init__(opened_by)
         self.is_global_frame = self.id == 0
         if not self.is_global_frame:
-            self.parent = None # TODO
+            self.parent = get_parent(frame)
             self.function = get_function(frame)
         self.globals = frame.f_globals
         self.bindings = frame.f_locals
@@ -369,9 +370,14 @@ class PyagramFrame(PyagramElement):
         :param tracked_objs:
         :return:
         """
+        # Two goals:
+        # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
+        # (2) Obtain a reference to all objects floating around in memory; wrap them in a PyagramObject instance and store the reference in the ProgramState's tracked_objs.
         pyagram_objects = {PyagramObject(object) for object in self.bindings.values()}
         if not self.is_global_frame:
             pyagram_objects.add(PyagramObject(self.function))
+        if self.has_returned:
+            pyagram_objects.add(PyagramObject(self.return_value))
         while pyagram_objects:
             pyagram_object = pyagram_objects.pop()
             object = pyagram_object.object
@@ -385,7 +391,7 @@ class PyagramFrame(PyagramElement):
                         for referent in gc.get_referents(object)
                         if referent is not self.globals and not tracked_objs.is_tracked(referent)
                     })
-                # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
+        # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         super().step(tracked_objs)
 
     def close(self, return_value):
@@ -520,14 +526,14 @@ class PyagramObject:
         """
         return f'PyagramObject {repr(self.object)}'
 
-def is_referent_type(object):
+def get_parent(frame):
     """
     <summary>
 
-    :param object:
+    :param frame:
     :return:
     """
-    return not isinstance(object, NON_REFERENT_TYPES)
+    pass # TODO
 
 def get_function(frame):
     """
@@ -543,6 +549,15 @@ def get_function(frame):
             function = referrer
     assert function is not None
     return function
+
+def is_referent_type(object):
+    """
+    <summary>
+
+    :param object:
+    :return:
+    """
+    return not isinstance(object, NON_REFERENT_TYPES)
 
 def enforce_one_function_per_code_object(function):
     """
@@ -592,3 +607,4 @@ def prepend(prefix, text):
 
 # TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
 # TODO: And put the functions that aren't in classes (e.g. `get_function`) in their own file, utils.py?
+# TODO: Rename configs.py?

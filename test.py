@@ -34,6 +34,17 @@ d = c + b
 e = d
 """
 
+# test a function in a list
+# also test a lambda in a list, like [1, 2, lambda x: x]
+
+nested_2 = """
+a = [1, 2, 3, [4, 5, 6]]
+b = a[0]
+c = a[1]
+d = a[2]
+e = a[3]
+"""
+
 cyclic_lists = """
 a = [1, 2, 3]
 b = [a, 4, 5]
