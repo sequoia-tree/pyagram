@@ -3,6 +3,9 @@ import gc
 import types
 
 import wrap
+import configs
+
+NON_REFERENT_TYPES = (int, float, str, bool)
 
 class ProgramState:
     """
@@ -15,6 +18,7 @@ class ProgramState:
         self.global_frame = PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
         self.hidden_flags = set()
+        self.tracked_objs = ProgramMemory() # TODO: Come up with a better variable name.
         self.print_output = [] # TODO: How will you handle `print` statements?
         # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
 
@@ -39,11 +43,41 @@ class ProgramState:
         # TODO: Display the line number and the print output too!
         curr_element = f'Current element: {repr(self.curr_element)}'
         global_frame = str(self.global_frame)
+        tracked_objs = str(self.tracked_objs)
         return '\n'.join((
             curr_element,
             '',
             global_frame,
+            configs.SEPARATOR,
+            '',
+            tracked_objs,
+            '',
         ))
+
+    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
+        """
+        <summary>
+
+        :param frame:
+        :param is_frame_open:
+        :param is_frame_close:
+        :param return_value:
+        :return:
+        """
+        if is_frame_open:
+            self.process_frame_open(frame)
+        if is_frame_close:
+            self.process_frame_close(frame, return_value)
+        self.global_frame.step(self.tracked_objs)
+        self.snapshot()
+
+    def snapshot(self):
+        """
+        <summary> # Represents the state of the program at a particular step in time.
+
+        :return:
+        """
+        return copy.deepcopy(self)
 
     def process_frame_open(self, frame):
         """
@@ -121,29 +155,45 @@ class ProgramState:
         else:
             assert False
 
-    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
+class ProgramMemory:
+    """
+    <summary>
+    """
+
+    def __init__(self):
+        self.object_ids = set()
+        self.pyagram_objects = [] # TODO: When drawing these objects on the web-page, make sure each object in this ordered container is drawn independently of how many objects come after it. Otherwise the same object might be drawn at different locations during different steps.
+
+    def __str__(self):
         """
         <summary>
 
-        :param frame:
-        :param is_frame_open:
-        :param is_frame_close:
-        :param return_value:
         :return:
         """
-        if is_frame_open:
-            self.process_frame_open(frame)
-        if is_frame_close:
-            self.process_frame_close(frame, return_value)
-        self.snapshot()
+        return '\n'.join(
+            f'{id(pyagram_object.object)}: {repr(pyagram_object)}'
+            for pyagram_object in self.pyagram_objects
+        )
 
-    def snapshot(self):
+    def track(self, pyagram_object):
         """
-        <summary> # Represents the state of the program at a particular step in time.
+        <summary>
 
         :return:
         """
-        return copy.deepcopy(self)
+        object_id = id(pyagram_object.object)
+        if object_id not in self.object_ids:
+            self.object_ids.add(object_id)
+            self.pyagram_objects.append(pyagram_object)
+
+    def is_tracked(self, object):
+        """
+        <summary>
+
+        :param object:
+        :return:
+        """
+        return id(object) in self.object_ids
 
 class FrameTypes:
     """
@@ -195,6 +245,16 @@ class PyagramElement:
         self.opened_by = opened_by
         self.flags = []
 
+    def step(self, tracked_objs):
+        """
+        <summary>
+
+        :param tracked_objs:
+        :return:
+        """
+        for flag in self.flags:
+            flag.step(tracked_objs)
+
     def flags_to_text(self):
         """
         <summary>
@@ -232,9 +292,11 @@ class PyagramFrame(PyagramElement):
 
     def __init__(self, opened_by, frame):
         super().__init__(opened_by)
-        if self.opened_by is not None:
+        self.is_global_frame = self.id == 0
+        if not self.is_global_frame:
             self.parent = None # TODO
-            self.function = PyagramFrame.get_function(frame)
+            self.function = get_function(frame)
+        self.globals = frame.f_globals
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
@@ -245,8 +307,10 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
-        # Perhaps return 'Global' if self.id == 0 else f'Frame {self.id}'
-        return f'Frame {self.id}'
+        if self.is_global_frame:
+            return 'Global'
+        else:
+            return f'Frame {self.id} ({value_str(self.function)})'
 
     def __str__(self):
         """
@@ -260,15 +324,15 @@ class PyagramFrame(PyagramElement):
         if self.bindings or self.has_returned:
 
             fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
-            binding = lambda key, value: f'|{key:>{max_key_length}}: {repr(value):<{max_value_length}}|'
+            binding = lambda key, value: f'|{key:>{max_key_length}}: {value_str(value):<{max_value_length}}|'
 
             max_var_key_length, ret_key_length, max_var_value_length, ret_value_length = 0, 0, 0, 0
             if self.bindings:
                 max_var_key_length = fn_len(str)(max(self.bindings.keys(), key=fn_len(str)))
-                max_var_value_length = fn_len(repr)(max(self.bindings.values(), key=fn_len(repr)))
+                max_var_value_length = fn_len(value_str)(max(self.bindings.values(), key=fn_len(value_str)))
             if self.has_returned:
                 ret_key_length = len('return')
-                ret_value_length = len(str(self.return_value))
+                ret_value_length = len(value_str(self.return_value))
             max_key_length = max(max_var_key_length, ret_key_length)
             max_value_length = max(max_var_value_length, ret_value_length)
 
@@ -298,6 +362,32 @@ class PyagramFrame(PyagramElement):
             flags,
         ))
 
+    def step(self, tracked_objs):
+        """
+        <summary>
+
+        :param tracked_objs:
+        :return:
+        """
+        pyagram_objects = {PyagramObject(object) for object in self.bindings.values()}
+        if not self.is_global_frame:
+            pyagram_objects.add(PyagramObject(self.function))
+        while pyagram_objects:
+            pyagram_object = pyagram_objects.pop()
+            object = pyagram_object.object
+            if is_referent_type(object):
+                tracked_objs.track(pyagram_object)
+                if isinstance(object, types.FunctionType):
+                    enforce_one_function_per_code_object(object)
+                else:
+                    pyagram_objects.update({
+                        PyagramObject(referent)
+                        for referent in gc.get_referents(object)
+                        if referent is not self.globals and not tracked_objs.is_tracked(referent)
+                    })
+                # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
+        super().step(tracked_objs)
+
     def close(self, return_value):
         """
         <summary>
@@ -308,59 +398,6 @@ class PyagramFrame(PyagramElement):
         self.return_value = return_value
         self.has_returned = True
         return self.opened_by
-
-    @staticmethod
-    def get_function(frame):
-        """
-        <summary>
-
-        :param frame:
-        :return:
-        """
-        function = None
-        for referrer in gc.get_referrers(frame.f_code):
-            if isinstance(referrer, types.FunctionType):
-                if function is None:
-                    function = referrer
-                else:
-                    # TODO [NOW]: Code object is referred to by 2+ functions. Backtrack to the previous step, enforce uniqueness of this code object, and redo. (But one of said functions may already be assigned to 1+ PyagramFrames; if so, that function should continue pointing to this code object, and all the other functions should be changed s.t. they point to a copy of this code object.)
-                    # TODO [NOW]: To backtrack, the Tracer object might need to maintain a deepcopy of its previous state. (It's fine if the Tracer has a pointer to the ProgramState, and the ProgramState has a pointer back to the Tracer. The deepcopy won't be some infinite-memory thing; Python is smarter than that.) Then here, you'd just have to reset the Tracer to its previous state.
-                    # TODO [NOW]: Shoot. It might be impossible to backtrack, because the original Tracer object is the one being run. Hmm ... ideally you could find a way to do it without backtracking, but I'm sure there's a way to get backtracking to work (it just doesn't seem like such an easy thing to do).
-                    pass
-
-        # Maybe this is useful:
-        # # TODO: Idk if this even works but you gotta get the runtime down ...
-        # # TODO: Only call this function when necessary. It takes too long.
-        # # TODO: Alternative idea. When a frame opens, use gc.get_referrers to see if the code object is unique. (I suspect most are.) If it is not unique then backtrack, enforce uniqueness of that code object, and redo?
-        # for object in gc.get_objects():
-        #     is_function = isinstance(object, types.FunctionType)
-        #     is_already_processed = object in PyagramFrame.CODE_TO_FUNC.values()
-        #     if is_function and not is_already_processed:
-        #         old_code = object.__code__
-        #         new_code = types.CodeType(
-        #             old_code.co_argcount,
-        #             old_code.co_kwonlyargcount,
-        #             old_code.co_nlocals,
-        #             old_code.co_stacksize,
-        #             old_code.co_flags,
-        #             old_code.co_code,
-        #             old_code.co_consts,
-        #             old_code.co_names,
-        #             old_code.co_varnames,
-        #             old_code.co_filename,
-        #             old_code.co_name,
-        #             old_code.co_firstlineno,
-        #             old_code.co_lnotab,
-        #             old_code.co_freevars,
-        #             old_code.co_cellvars,
-        #         )
-        #         object.__code__ = new_code
-        #         PyagramFrame.CODE_TO_FUNC[new_code] = object
-        # # Enforces that no two functions have the same code object.
-        # # Also maintains a {code object: function} mapping.
-
-        assert function is not None
-        return function
 
 class PyagramFlag(PyagramElement):
     """
@@ -415,13 +452,24 @@ class PyagramFlag(PyagramElement):
         header = f'{repr(self)}'
         banner = '+--------+\n| BANNER |\n+--------+' # TODO
         flags = prepend(flagpole, self.flags_to_text())
-        frame = prepend(flagpole, f'{self.frame}')
+        frame = prepend(flagpole, str(self.frame) if self.frame else '')
         return '\n'.join((
             header,
             banner,
             flags,
             frame,
         ))
+
+    def step(self, tracked_objs):
+        """
+        <summary>
+
+        :param tracked_objs:
+        :return:
+        """
+        super().step(tracked_objs)
+        if self.frame:
+            self.frame.step(tracked_objs)
 
     def close(self):
         """
@@ -454,6 +502,84 @@ class PyagramBanner:
 
     pass
 
+class PyagramObject:
+    """
+    <summary>
+
+    :param object:
+    """
+
+    def __init__(self, object):
+        self.object = object
+
+    def __repr__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return f'PyagramObject {repr(self.object)}'
+
+def is_referent_type(object):
+    """
+    <summary>
+
+    :param object:
+    :return:
+    """
+    return not isinstance(object, NON_REFERENT_TYPES)
+
+def get_function(frame):
+    """
+    <summary>
+
+    :param frame:
+    :return:
+    """
+    function = None
+    for referrer in gc.get_referrers(frame.f_code):
+        if isinstance(referrer, types.FunctionType):
+            assert function is None, f'multiple functions refer to code object {frame.f_code}'
+            function = referrer
+    assert function is not None
+    return function
+
+def enforce_one_function_per_code_object(function):
+    """
+    <summary>
+
+    :param function:
+    :return:
+    """
+    old_code = function.__code__
+    new_code = types.CodeType(
+        old_code.co_argcount,
+        old_code.co_kwonlyargcount,
+        old_code.co_nlocals,
+        old_code.co_stacksize,
+        old_code.co_flags,
+        old_code.co_code,
+        old_code.co_consts,
+        old_code.co_names,
+        old_code.co_varnames,
+        old_code.co_filename,
+        old_code.co_name,
+        old_code.co_firstlineno,
+        old_code.co_lnotab,
+        old_code.co_freevars,
+        old_code.co_cellvars,
+    )
+    function.__code__ = new_code
+
+def value_str(object):
+    """
+    <summary>
+
+    :param object:
+    :return:
+    """
+    return f'*{id(object)}' if is_referent_type(object) else repr(object)
+
 def prepend(prefix, text):
     """
     <summary> # prepend prefix to every line in text
@@ -465,3 +591,4 @@ def prepend(prefix, text):
     return prefix + text.replace('\n', f'\n{prefix}')
 
 # TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
+# TODO: And put the functions that aren't in classes (e.g. `get_function`) in their own file, utils.py?

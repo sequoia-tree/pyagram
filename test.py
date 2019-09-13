@@ -18,6 +18,28 @@ h = lambda x, y: x + y
 x = h(f(4), g(4))
 """
 
+test_mut = """
+a = [1, 2, 3]
+a.append(4)
+b = a
+b = 5
+"""
+
+nested_lists = """
+a = [1, 2, 3]
+b = [4, 5, 6]
+a.append(b)
+c = a
+d = c + b
+e = d
+"""
+
+cyclic_lists = """
+a = [1, 2, 3]
+b = [a, 4, 5]
+a.append(b)
+"""
+
 test_same_code_obj = """
 def f():
     def g():
