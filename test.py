@@ -49,10 +49,33 @@ global_lookup = """
 x = 1
 def f():
     return x
+
 def g():
     return f()
+
 a = f()
 b = g()
+"""
+
+parent_lookup1 = """
+def f():
+    x = 1
+    def g():
+        return x
+    return g
+
+g = f()
+x = g()
+"""
+
+parent_lookup2 = """
+def f(x):
+    def g():
+        return x
+    return g
+
+g = f(4)
+x = g()
 """
 
 ret_lambda = """

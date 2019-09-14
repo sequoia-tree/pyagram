@@ -13,7 +13,7 @@ class Pyagram:
     def __init__(self, code):
         code = wrap.wrap_calls(code)
         tracer = trace.Tracer()
-        tracer.run(code, {}, {})
+        tracer.run(code, globals={}, locals={}) # TODO: For import statements, perhaps you could just load stuff into `globals`? Is that a good approach, or no?
         # TODO: How to use tracer.state.hidden_flags:
         # TODO: (1) Do not display the flags in hidden_flags, but do display their sub-flags etc.
         # TODO:     (E.g. Pass in a hidden_flags argument to the ProgramState printing function.)
