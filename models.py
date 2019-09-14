@@ -290,17 +290,28 @@ class PyagramFrame(PyagramElement):
     """
 
     COUNT = 0
+    FUNCTION_PARENTS = {}
 
     def __init__(self, opened_by, frame):
         super().__init__(opened_by)
         self.is_global_frame = self.id == 0
         if not self.is_global_frame:
-            self.parent = get_parent(frame)
             self.function = get_function(frame)
         self.globals = frame.f_globals
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
+        self.is_new_frame = True
+
+    @property
+    def parent(self):
+        """
+        <summary>
+
+        :return:
+        """
+        assert not self.is_global_frame and self.function
+        return PyagramFrame.FUNCTION_PARENTS[self.function]
 
     def __repr__(self):
         """
@@ -308,10 +319,7 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
-        if self.is_global_frame:
-            return 'Global'
-        else:
-            return f'Frame {self.id} ({value_str(self.function)})'
+        return 'Global' if self.is_global_frame else f'Frame {self.id}'
 
     def __str__(self):
         """
@@ -320,7 +328,7 @@ class PyagramFrame(PyagramElement):
         :return:
         """
 
-        header = f'{repr(self)}'
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({value_str(self.function)})')
 
         if self.bindings or self.has_returned:
 
@@ -385,6 +393,8 @@ class PyagramFrame(PyagramElement):
                 tracked_objs.track(pyagram_object)
                 if isinstance(object, types.FunctionType):
                     enforce_one_function_per_code_object(object)
+                    if object not in PyagramFrame.FUNCTION_PARENTS:
+                        get_parent(self, object)
                 else:
                     pyagram_objects.update({
                         PyagramObject(referent)
@@ -392,6 +402,7 @@ class PyagramFrame(PyagramElement):
                         if referent is not self.globals and not tracked_objs.is_tracked(referent)
                     })
         # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
+        self.is_new_frame = False
         super().step(tracked_objs)
 
     def close(self, return_value):
@@ -524,16 +535,29 @@ class PyagramObject:
 
         :return:
         """
-        return f'PyagramObject {repr(self.object)}'
+        result = repr(self.object)
+        if isinstance(self.object, types.FunctionType):
+            result = ' '.join((
+                result,
+                f'[p = {repr(PyagramFrame.FUNCTION_PARENTS[self.object])}]'
+            ))
+        return result
 
-def get_parent(frame):
+def get_parent(frame, function):
     """
     <summary>
 
     :param frame:
+    :param function:
     :return:
     """
-    pass # TODO
+    if not frame.is_global_frame and frame.is_new_frame:
+        parent = frame.opened_by
+        while isinstance(parent, PyagramFlag):
+            parent = parent.opened_by
+    else:
+        parent = frame
+    PyagramFrame.FUNCTION_PARENTS[function] = parent
 
 def get_function(frame):
     """

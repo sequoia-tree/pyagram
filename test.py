@@ -11,6 +11,65 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+lambda1 = """
+x = (lambda x, y: x + y)(3, 4)
+x = (lambda x, y: x + y)((lambda: 3)(), (lambda z: z ** 2)(2)) + 1
+"""
+
+lambda_arg1 = """
+def f():
+    def g(h):
+        return h()
+    return g(lambda: 4)
+g = f()
+"""
+
+lambda_arg2 = """
+def f(g):
+    return g(lambda: 4)
+def g(h):
+    return h()
+x = f(g)
+"""
+
+lambda_arg3 = """
+def f(funcs):
+    total = 0
+    for func in funcs:
+        total += func(total)
+    return total
+
+def g():
+    return f([lambda x: 1, lambda x: 2, lambda x: x])
+
+x = g()
+"""
+
+global_lookup = """
+x = 1
+def f():
+    return x
+def g():
+    return f()
+a = f()
+b = g()
+"""
+
+ret_lambda = """
+def f(x):
+    return (lambda: x)()
+def g(x):
+    def h(y):
+        return x + y()
+    return h(lambda: 5)
+a = f(4)
+b = g(3)
+"""
+
+curry1 = """
+x = (lambda x: lambda y: lambda z: x + y + (lambda x: x + z)(y))(1)(2)(3)
+"""
+
 test_two_funcs = """
 f = lambda x: x + 1
 g = lambda x: x - 1
