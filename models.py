@@ -2,7 +2,7 @@ import copy
 import gc
 import types
 
-import wrap
+import enums
 import configs
 
 NON_REFERENT_TYPES = (int, float, str, bool)
@@ -19,20 +19,36 @@ class ProgramState:
         self.global_frame = PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
         self.hidden_flags = set()
-        self.tracked_objs = ProgramMemory() # TODO: Come up with a better variable name.
+        self.tracked_objs = ProgramMemory()
+        self.curr_line_no = None
         self.print_output = [] # TODO: How will you handle `print` statements?
-        # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno).
+        # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno). Or you can use the negative lineno as an indicator to not make a snapshot.
 
     @property
     def is_ongoing_flag_sans_frame(self):
+        """
+        <summary>
+
+        :return:
+        """
         return isinstance(self.curr_element, PyagramFlag) and self.curr_element.frame is None
 
     @property
     def is_ongoing_frame(self):
+        """
+        <summary>
+
+        :return:
+        """
         return isinstance(self.curr_element, PyagramFrame) and not self.curr_element.has_returned
 
     @property
     def is_complete_flag(self):
+        """
+        <summary>
+
+        :return:
+        """
         return isinstance(self.curr_element, PyagramFlag) and self.curr_element.has_returned
 
     def __str__(self):
@@ -41,8 +57,8 @@ class ProgramState:
 
         :return:
         """
-        # TODO: Display the line number and the print output too!
-        curr_element = f'Current element: {repr(self.curr_element)}'
+        # TODO: Display the print output too!
+        curr_element = f'Current element: {repr(self.curr_element)} (line {self.curr_line_no})'
         global_frame = str(self.global_frame)
         tracked_objs = str(self.tracked_objs)
         # TODO: You could make this a little prettier, especially when tracked_objs is empty.
@@ -66,6 +82,7 @@ class ProgramState:
         :param return_value:
         :return:
         """
+        self.curr_line_no = frame.f_lineno
         if is_frame_open:
             self.process_frame_open(frame)
         if is_frame_close:
@@ -78,6 +95,7 @@ class ProgramState:
 
         :return:
         """
+        # don't maintain the `snapshots` list in the ProgramState object, or else every deepcopy of the ProgramState will include a deepcopy of the entire list of past ProgramStates!
         return copy.deepcopy(self)
 
     def process_frame_open(self, frame):
@@ -87,8 +105,8 @@ class ProgramState:
         :param frame:
         :return:
         """
-        frame_type = FrameTypes.identify_frame_type(frame)
-        if frame_type is FrameTypes.SRC_CALL:
+        frame_type = enums.FrameTypes.identify_frame_type(frame)
+        if frame_type is enums.FrameTypes.SRC_CALL:
 
             is_implicit_function_call = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
             if is_implicit_function_call:
@@ -96,12 +114,12 @@ class ProgramState:
                 self.open_pyagram_banner(flag_info=None) # TODO: what is the appropriate flag_info for an implicit call?
             self.open_pyagram_frame(frame)
 
-        elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag()
-        elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         else:
-            raise FrameTypes.illegal_frame_type(frame)
+            raise enums.FrameTypes.illegal_frame_type(frame_type)
 
     def process_frame_close(self, frame, return_value):
         """
@@ -111,15 +129,15 @@ class ProgramState:
         :param return_value:
         :return:
         """
-        frame_type = FrameTypes.identify_frame_type(frame)
-        if frame_type is FrameTypes.SRC_CALL:
+        frame_type = enums.FrameTypes.identify_frame_type(frame)
+        if frame_type is enums.FrameTypes.SRC_CALL:
             self.close_pyagram_flag_and_frame(return_value)
-        elif frame_type is FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_banner(return_value)
-        elif frame_type is FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         else:
-            raise FrameTypes.illegal_frame_type(frame)
+            raise enums.FrameTypes.illegal_frame_type(frame_type)
 
     def open_pyagram_flag(self):
         # TODO: Docstrings for this and the other methods below it.
@@ -195,44 +213,6 @@ class ProgramMemory:
         :return:
         """
         return id(object) in self.object_ids
-
-class FrameTypes:
-    """
-    <summary> # basically this is like an Enum class
-    """
-
-    SRC_CALL_PRECURSOR = object()
-    SRC_CALL = object()
-    SRC_CALL_SUCCESSOR = object()
-
-    @staticmethod
-    def identify_frame_type(frame):
-        """
-        <summary>
-
-        :param frame:
-        :return:
-        """
-
-        # If the frame is a SRC_CALL_PRECURSOR, it's the frame for one of the "fake" inner_lambda functions we created in wrap.py. If it's a SRC_CALL_SUCCESSOR, it's the frame for one of the "fake" outer_lambda functions we created in wrap.py.
-
-        lineno = frame.f_lineno
-        if lineno == wrap.INNER_CALL_LINENO:
-            return FrameTypes.SRC_CALL_PRECURSOR
-        if lineno == wrap.OUTER_CALL_LINENO:
-            return FrameTypes.SRC_CALL_SUCCESSOR
-        assert 0 < lineno
-        return FrameTypes.SRC_CALL
-
-    @staticmethod
-    def illegal_frame_type(frame):
-        """
-        <summary>
-
-        :param frame:
-        :return:
-        """
-        return ValueError(f'frame object {frame} has no pyagram counterpart')
 
 class PyagramElement:
     """
@@ -446,7 +426,7 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
-        assert self.has_returned # TODO: Maybe throw a more appropriate exception.
+        assert self.has_returned
         return self.frame.return_value
 
     def __repr__(self):
@@ -629,6 +609,6 @@ def prepend(prefix, text):
     """
     return prefix + text.replace('\n', f'\n{prefix}')
 
-# TODO: Split models.py into state.py, pyagram_element.py, and enum.py?
+# TODO: Split models.py into state.py and pyagram_element.py?
 # TODO: And put the functions that aren't in classes (e.g. `get_function`) in their own file, utils.py?
 # TODO: Rename configs.py?

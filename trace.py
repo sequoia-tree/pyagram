@@ -1,6 +1,8 @@
 import bdb
 
+import enums
 import models
+import wrap
 
 class Tracer(bdb.Bdb):
     """
@@ -21,7 +23,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         self.step(frame, is_frame_open=True)
-        self.snapshot()
+        self.snapshot(enums.TraceTypes.USER_CALL)
 
     def user_line(self, frame):
         """
@@ -31,7 +33,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         self.step(frame)
-        self.snapshot()
+        self.snapshot(enums.TraceTypes.USER_LINE)
 
     def user_return(self, frame, return_value):
         """
@@ -42,7 +44,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         self.step(frame, is_frame_close=True, return_value=return_value)
-        self.snapshot()
+        self.snapshot(enums.TraceTypes.USER_RETURN)
 
     def user_exception(self, frame, exception_info):
         """
@@ -54,7 +56,7 @@ class Tracer(bdb.Bdb):
         """
         # TODO: Figure out how you want to address exceptions.
         self.step(frame)
-        self.snapshot()
+        self.snapshot(enums.TraceTypes.USER_EXCEPTION)
 
     def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
         """
@@ -70,11 +72,23 @@ class Tracer(bdb.Bdb):
             self.state = models.ProgramState(frame)
         self.state.step(frame, is_frame_open, is_frame_close, return_value)
 
-    def snapshot(self):
+    def snapshot(self, trace_type):
         """
         <summary>
 
         :return:
         """
-        snapshot = self.state.snapshot()
-        self.snapshots.append(snapshot)
+        if trace_type is enums.TraceTypes.USER_CALL:
+            take_snapshot = False
+        elif trace_type is enums.TraceTypes.USER_LINE:
+            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO
+        elif trace_type is enums.TraceTypes.USER_RETURN:
+            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO \
+                        and self.state.curr_line_no != wrap.INNER_CALL_LINENO
+        elif trace_type is enums.TraceTypes.USER_EXCEPTION:
+            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO
+        else:
+            raise enums.TraceTypes.illegal_trace_type(trace_type)
+        if take_snapshot:
+            snapshot = self.state.snapshot()
+            self.snapshots.append(snapshot)

@@ -109,6 +109,7 @@ class CallWrapper(ast.NodeTransformer):
         # inner_call:
         #   lineno = -2
         #   col_offset = id # I guess we won't use the ID. But it's nice to have.
+        # So an outer_call and inner_call correspond to one another iff they have the same ID.
 
         self.generic_visit(node)
 

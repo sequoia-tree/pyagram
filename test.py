@@ -11,6 +11,13 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+plain = """
+def f(x):
+    return x
+
+a = f(4)
+"""
+
 lambda1 = """
 x = (lambda x, y: x + y)(3, 4)
 x = (lambda x, y: x + y)((lambda: 3)(), (lambda z: z ** 2)(2)) + 1
@@ -43,6 +50,16 @@ def g():
     return f([lambda x: 1, lambda x: 2, lambda x: x])
 
 x = g()
+"""
+
+simultaneous_identical_code_objs = """
+def f(x=None):
+    return lambda: x
+
+def g(a, b):
+    return None
+
+a = g(f(), f(f()))
 """
 
 global_lookup = """
