@@ -11,6 +11,14 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+return_mutative = """
+def f():
+    return 5
+
+x = 4
+x = f()
+"""
+
 plain = """
 def f(x):
     return x

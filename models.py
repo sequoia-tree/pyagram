@@ -2,7 +2,7 @@ import copy
 import gc
 import types
 
-import configs
+import display
 import enums
 
 NON_REFERENT_TYPES = (int, float, str, bool)
@@ -55,19 +55,22 @@ class ProgramState:
 
         :return:
         """
-        # TODO: Display the print output too!
         curr_element = f'Current element: {repr(self.curr_element)} (line {self.curr_line_no})'
+        global_frame_header = display.separator('program execution')
         global_frame = str(self.global_frame)
+        tracked_objs_header = display.separator('objects in memory')
         tracked_objs = str(self.tracked_objs)
-        # TODO: You could make this a little prettier, especially when tracked_objs is empty.
+        print_output_header = display.separator('print output')
+        print_output = '\n'.join(self.print_output)
         return '\n'.join((
             curr_element,
             '',
+            global_frame_header,
+            '',
             global_frame,
-            configs.SEPARATOR,
-            '',
-            tracked_objs,
-            '',
+            tracked_objs_header + (f'\n\n{tracked_objs}\n' if tracked_objs else ''),
+            print_output_header + (f'\n{print_output}' if print_output else ''),
+            display.separator(),
         ))
 
     def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
@@ -137,22 +140,39 @@ class ProgramState:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
     def open_pyagram_flag(self, flag_info):
-        # TODO: Docstrings for this and the other methods below it.
+        """
+        <summary>
+
+        :param flag_info:
+        :return:
+        """
         # TODO: wrap.py's flag_info is accessible through `flag_info`.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.curr_element = self.curr_element.add_flag()
 
     def open_pyagram_frame(self, frame, is_implicit):
+        """
+        <summary>
+
+        :param frame:
+        :param is_implicit:
+        :return:
+        """
         assert self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.add_frame(frame, is_implicit)
 
     def close_pyagram_flag(self):
+        """
+        <summary>
+
+        :return:
+        """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
 
-            # The problem is that when you don't write your own __init__ function, bdb doesn't open a frame for object-instantiation! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
+            # The problem is that when you call a built-in function (like append or min), or when you don't write your own __init__ function, bdb doesn't open a frame! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
             # Most straightforward solution: (1) AND (2)
-            # (1): Whenever you close a flag that doesn't have its own frame, delete it. (But do not delete the sub-flags! Those might still be useful.)
+            # (1): Whenever you close a flag that doesn't have its own frame, give it a frame.
             # (2): In your book say __init__ only gets called if it is indeed defined.
 
             pass # TODO: Instead of this HIDDEN_FLAGS nonsense, add a 'fake' frame that displays the return value.
@@ -160,6 +180,12 @@ class ProgramState:
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):
+        """
+        <summary>
+
+        :param return_value:
+        :return:
+        """
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
         self.curr_element = self.curr_element.close(return_value)
@@ -417,8 +443,9 @@ class PyagramFrame(PyagramElement):
         :param return_value:
         :return:
         """
-        self.return_value = return_value
-        self.has_returned = True
+        if not self.is_global_frame:
+            self.return_value = return_value
+            self.has_returned = True
         return self.opened_by
 
 class PyagramFlag(PyagramElement):
@@ -601,4 +628,3 @@ def prepend(prefix, text):
     return prefix + text.replace('\n', f'\n{prefix}')
 
 # TODO: Move PyagramElement and its subclasses into pyagram_elements.py? And put the state stuff in program_state.py? And the random functions into utils.py?
-# TODO: Rename configs.py?
