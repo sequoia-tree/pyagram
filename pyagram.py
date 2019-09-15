@@ -15,11 +15,6 @@ class Pyagram:
         tracer = trace.Tracer()
         global_bindings = {}
         tracer.run(code, globals=global_bindings, locals=global_bindings)
-        # TODO: How to use tracer.state.hidden_flags:
-        # TODO: (1) Do not display the flags in hidden_flags, but do display their sub-flags etc.
-        # TODO:     (E.g. Pass in a hidden_flags argument to the ProgramState printing function.)
-        # TODO: (2) Perhaps skip snapshots that correspond to opening / closing hidden flags.
-        # TODO:     (But again, we want the snapshots in-between, corresponding to their sub-flags.)
         self.snapshots = tracer.snapshots
 
     def display(self):

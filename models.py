@@ -2,8 +2,8 @@ import copy
 import gc
 import types
 
-import enums
 import configs
+import enums
 
 NON_REFERENT_TYPES = (int, float, str, bool)
 FUNCTION_PARENTS = {}
@@ -18,11 +18,9 @@ class ProgramState:
     def __init__(self, global_frame):
         self.global_frame = PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
-        self.hidden_flags = set()
         self.tracked_objs = ProgramMemory()
         self.curr_line_no = None
         self.print_output = [] # TODO: How will you handle `print` statements?
-        # TODO: Also track the current lineno. The code that handles this should probably be in ProgramState.step, but you'll want to avoid setting the self.lineno to -1 or -2 (since your fabricated lambdas have -1 and -2 for their lineno). Or you can use the negative lineno as an indicator to not make a snapshot.
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -108,16 +106,15 @@ class ProgramState:
         frame_type = enums.FrameTypes.identify_frame_type(frame)
         if frame_type is enums.FrameTypes.SRC_CALL:
 
-            is_implicit_function_call = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
-            if is_implicit_function_call:
-                self.open_pyagram_flag()
-                self.open_pyagram_banner(flag_info=None) # TODO: what is the appropriate flag_info for an implicit call?
-            self.open_pyagram_frame(frame)
+            is_implicit = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
+            if is_implicit:
+                self.open_pyagram_flag(flag_info=None) # TODO: what is the appropriate flag_info for an implicit call?
+            self.open_pyagram_frame(frame, is_implicit)
 
         elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_flag()
-        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
+        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
+            self.close_pyagram_flag()
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
@@ -131,48 +128,43 @@ class ProgramState:
         """
         frame_type = enums.FrameTypes.identify_frame_type(frame)
         if frame_type is enums.FrameTypes.SRC_CALL:
-            self.close_pyagram_flag_and_frame(return_value)
+            self.close_pyagram_frame(return_value)
         elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_banner(return_value)
+            self.open_pyagram_flag(return_value)
         elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
-    def open_pyagram_flag(self):
+    def open_pyagram_flag(self, flag_info):
         # TODO: Docstrings for this and the other methods below it.
+        # TODO: wrap.py's flag_info is accessible through `flag_info`.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.curr_element = self.curr_element.add_flag()
 
-    def open_pyagram_banner(self, flag_info):
+    def open_pyagram_frame(self, frame, is_implicit):
         assert self.is_ongoing_flag_sans_frame
-        pass # TODO: wrap.py's flag_info is accessible through `flag_info`.
+        self.curr_element = self.curr_element.add_frame(frame, is_implicit)
 
-    def open_pyagram_frame(self, frame):
-        assert self.is_ongoing_flag_sans_frame
-        self.curr_element = self.curr_element.add_frame(frame)
-
-    def close_pyagram_flag_and_frame(self, return_value):
+    def close_pyagram_flag(self):
+        assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
-            # this flag has no frame; it should not get visualized
 
             # The problem is that when you don't write your own __init__ function, bdb doesn't open a frame for object-instantiation! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
             # Most straightforward solution: (1) AND (2)
             # (1): Whenever you close a flag that doesn't have its own frame, delete it. (But do not delete the sub-flags! Those might still be useful.)
             # (2): In your book say __init__ only gets called if it is indeed defined.
 
-            flag = self.curr_element
-            self.hidden_flags.add(flag)
-            self.curr_element = flag.opened_by
-        elif self.is_ongoing_frame:
+            pass # TODO: Instead of this HIDDEN_FLAGS nonsense, add a 'fake' frame that displays the return value.
 
-            # close frame and then the flag
-            is_global_frame = self.curr_element is self.global_frame
-            self.curr_element = self.curr_element.close(return_value)
-            if not is_global_frame:
-                self.curr_element = self.curr_element.close()
-        else:
-            assert False
+        self.curr_element = self.curr_element.close()
+
+    def close_pyagram_frame(self, return_value):
+        assert self.is_ongoing_frame
+        is_implicit = self.curr_element.is_implicit
+        self.curr_element = self.curr_element.close(return_value)
+        if is_implicit:
+            self.curr_element = self.curr_element.close()
 
 class ProgramMemory:
     """
@@ -214,6 +206,30 @@ class ProgramMemory:
         """
         return id(object) in self.object_ids
 
+class PyagramObject:
+    """
+    <summary> # a hashable wrapper for potentially unhashable objects
+
+    :param object:
+    """
+
+    def __init__(self, object):
+        self.object = object
+
+    def __repr__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        result = repr(self.object)
+        if isinstance(self.object, types.FunctionType):
+            result = ' '.join((
+                result,
+                f'[p = {repr(FUNCTION_PARENTS[self.object])}]'
+            ))
+        return result
+
 class PyagramElement:
     """
     <summary>
@@ -242,7 +258,9 @@ class PyagramElement:
 
         :return:
         """
-        return '\n'.join(f'\n{flag}' for flag in self.flags) + ('\n' if self.flags else '')
+        result = '\n'.join(f'\n{flag}' for flag in self.flags)
+        result = result + '\n' if result.strip('\n') else ''
+        return result
 
     def add_flag(self):
         """
@@ -251,11 +269,9 @@ class PyagramElement:
         :return:
         """
 
-        # for flag in self.curr_element.flags:
-        #     assert flag.has_returned
-        # But I guess it's only necessary to check the most recent flag has been closed. This particular code (the one above, that is) is a bit redundant.
-        if self.flags:
-            assert self.flags[-1].has_returned
+        # TODO: If you managed to give a 'fake' frame to those flags which otherwise wouldn't have one (see close_pyagram_flag) then uncomment the sanity check below.
+        # if self.flags:
+        #     assert self.flags[-1].has_returned
 
         flag = PyagramFlag(self)
         self.flags.append(flag)
@@ -271,10 +287,10 @@ class PyagramFrame(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by, frame):
+    def __init__(self, opened_by, frame, is_implicit=False):
         super().__init__(opened_by)
         self.is_new_frame = True
-        self.is_global_frame = self.id == 0
+        self.is_implicit = is_implicit
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
@@ -282,6 +298,15 @@ class PyagramFrame(PyagramElement):
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
+
+    @property
+    def is_global_frame(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.opened_by is None
 
     @property
     def parent(self):
@@ -407,7 +432,6 @@ class PyagramFlag(PyagramElement):
 
     def __init__(self, opened_by):
         super().__init__(opened_by)
-        self.banner = None # TODO
         self.frame = None
 
     @property
@@ -443,9 +467,7 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
-
         flagpole = '| '
-
         header = f'{repr(self)}'
         banner = '+--------+\n| BANNER |\n+--------+' # TODO
         flags = prepend(flagpole, self.flags_to_text())
@@ -476,7 +498,7 @@ class PyagramFlag(PyagramElement):
         """
         return self.opened_by
 
-    def add_frame(self, frame):
+    def add_frame(self, frame, is_implicit):
         """
         <summary>
 
@@ -488,40 +510,9 @@ class PyagramFlag(PyagramElement):
         # assert self.banner.is_complete
         # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
 
-        frame = PyagramFrame(self, frame)
+        frame = PyagramFrame(self, frame, is_implicit)
         self.frame = frame
         return frame
-
-class PyagramBanner:
-    """
-    <summary>
-    """
-
-    pass
-
-class PyagramObject:
-    """
-    <summary> # a hashable wrapper for potentially unhashable objects
-
-    :param object:
-    """
-
-    def __init__(self, object):
-        self.object = object
-
-    def __repr__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        result = repr(self.object)
-        if isinstance(self.object, types.FunctionType):
-            result = ' '.join((
-                result,
-                f'[p = {repr(FUNCTION_PARENTS[self.object])}]'
-            ))
-        return result
 
 def get_parent(frame, function):
     """
@@ -609,6 +600,5 @@ def prepend(prefix, text):
     """
     return prefix + text.replace('\n', f'\n{prefix}')
 
-# TODO: Split models.py into state.py and pyagram_element.py?
-# TODO: And put the functions that aren't in classes (e.g. `get_function`) in their own file, utils.py?
+# TODO: Move PyagramElement and its subclasses into pyagram_elements.py? And put the state stuff in program_state.py? And the random functions into utils.py?
 # TODO: Rename configs.py?

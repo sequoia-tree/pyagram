@@ -18,6 +18,29 @@ def f(x):
 a = f(4)
 """
 
+nested_append = """
+a = []
+a.append(a.append(1))
+"""
+
+hidden_flags0 = """
+def f():
+    return 0
+
+a = []
+a.extend([a.append(1), f()])
+"""
+
+hidden_flags1 = """
+def f(*args):
+    return args[0]
+
+a = []
+a.extend([a.append(1), f(2), f(3), f(a.append([4, f(5)]))])
+b = f(6)
+a.append(6)
+"""
+
 lambda1 = """
 x = (lambda x, y: x + y)(3, 4)
 x = (lambda x, y: x + y)((lambda: 3)(), (lambda z: z ** 2)(2)) + 1
@@ -52,6 +75,16 @@ def g():
 x = g()
 """
 
+lineno1 = """
+def f():
+    return 3
+
+def g(a, b):
+    return a + b
+
+a = g(f(), g(1, 2))
+""" # After f() returns, but before g(1, 2), the lineno should go back to 8.
+
 simultaneous_identical_code_objs = """
 def f(x=None):
     return lambda: x
@@ -60,6 +93,14 @@ def g(a, b):
     return None
 
 a = g(f(), f(f()))
+"""
+
+identical_code_objs2 = """
+def f():
+    return lambda: 0
+
+a = f() and f()
+b = f()() and f()()
 """
 
 global_lookup = """
