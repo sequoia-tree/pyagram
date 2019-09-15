@@ -10,3 +10,22 @@ def separator(title=''):
     """
     title = f'{title.upper()} ' if title else ''
     return f'{title}{"-" * (TERMINAL_WIDTH - len(title))}'
+
+def prepend(prefix, text):
+    """
+    <summary> # prepend prefix to every line in text
+
+    :param text:
+    :param prefix:
+    :return:
+    """
+    return prefix + text.replace('\n', f'\n{prefix}')
+
+def value_str(object):
+    """
+    <summary>
+
+    :param object:
+    :return:
+    """
+    return f'*{id(object)}' if is_referent_type(object) else repr(object)

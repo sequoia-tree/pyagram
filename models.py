@@ -303,6 +303,99 @@ class PyagramElement:
         self.flags.append(flag)
         return flag
 
+class PyagramFlag(PyagramElement):
+    """
+    <summary>
+
+    :param opened_by:
+    """
+
+    COUNT = 0
+
+    def __init__(self, opened_by):
+        super().__init__(opened_by)
+        self.frame = None
+
+    @property
+    def has_returned(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.frame and self.frame.has_returned
+
+    @property
+    def return_value(self):
+        """
+        <summary>
+
+        :return:
+        """
+        assert self.has_returned
+        return self.frame.return_value
+
+    def __repr__(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return f'Flag {self.id}'
+
+    def __str__(self, prefix=''):
+        """
+        <summary>
+
+        :return:
+        """
+        flagpole = '| '
+        header = f'{repr(self)}'
+        banner = '+--------+\n| BANNER |\n+--------+' # TODO
+        flags = display.prepend(flagpole, self.flags_to_text())
+        frame = display.prepend(flagpole, str(self.frame) if self.frame else '')
+        return '\n'.join((
+            header,
+            banner,
+            flags,
+            frame,
+        ))
+
+    def step(self, tracked_objs):
+        """
+        <summary>
+
+        :param tracked_objs:
+        :return:
+        """
+        super().step(tracked_objs)
+        if self.frame:
+            self.frame.step(tracked_objs)
+
+    def close(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.opened_by
+
+    def add_frame(self, frame, is_implicit):
+        """
+        <summary>
+
+        :param frame:
+        :return:
+        """
+
+        # TODO: You need something like this ...
+        # assert self.banner.is_complete
+        # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
+
+        frame = PyagramFrame(self, frame, is_implicit)
+        self.frame = frame
+        return frame
+
 class PyagramFrame(PyagramElement):
     """
     <summary>
@@ -359,20 +452,20 @@ class PyagramFrame(PyagramElement):
         :return:
         """
 
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({value_str(self.function)})')
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({display.value_str(self.function)})')
 
         if self.bindings or self.has_returned:
 
             fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
-            binding = lambda key, value: f'|{key:>{max_key_length}}: {value_str(value):<{max_value_length}}|'
+            binding = lambda key, value: f'|{key:>{max_key_length}}: {display.value_str(value):<{max_value_length}}|'
 
             max_var_key_length, ret_key_length, max_var_value_length, ret_value_length = 0, 0, 0, 0
             if self.bindings:
                 max_var_key_length = fn_len(str)(max(self.bindings.keys(), key=fn_len(str)))
-                max_var_value_length = fn_len(value_str)(max(self.bindings.values(), key=fn_len(value_str)))
+                max_var_value_length = fn_len(display.value_str)(max(self.bindings.values(), key=fn_len(display.value_str)))
             if self.has_returned:
                 ret_key_length = len('return')
-                ret_value_length = len(value_str(self.return_value))
+                ret_value_length = len(display.value_str(self.return_value))
             max_key_length = max(max_var_key_length, ret_key_length)
             max_value_length = max(max_var_value_length, ret_value_length)
 
@@ -448,99 +541,6 @@ class PyagramFrame(PyagramElement):
             self.has_returned = True
         return self.opened_by
 
-class PyagramFlag(PyagramElement):
-    """
-    <summary>
-
-    :param opened_by:
-    """
-
-    COUNT = 0
-
-    def __init__(self, opened_by):
-        super().__init__(opened_by)
-        self.frame = None
-
-    @property
-    def has_returned(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return self.frame and self.frame.has_returned
-
-    @property
-    def return_value(self):
-        """
-        <summary>
-
-        :return:
-        """
-        assert self.has_returned
-        return self.frame.return_value
-
-    def __repr__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return f'Flag {self.id}'
-
-    def __str__(self, prefix=''):
-        """
-        <summary>
-
-        :return:
-        """
-        flagpole = '| '
-        header = f'{repr(self)}'
-        banner = '+--------+\n| BANNER |\n+--------+' # TODO
-        flags = prepend(flagpole, self.flags_to_text())
-        frame = prepend(flagpole, str(self.frame) if self.frame else '')
-        return '\n'.join((
-            header,
-            banner,
-            flags,
-            frame,
-        ))
-
-    def step(self, tracked_objs):
-        """
-        <summary>
-
-        :param tracked_objs:
-        :return:
-        """
-        super().step(tracked_objs)
-        if self.frame:
-            self.frame.step(tracked_objs)
-
-    def close(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return self.opened_by
-
-    def add_frame(self, frame, is_implicit):
-        """
-        <summary>
-
-        :param frame:
-        :return:
-        """
-
-        # TODO: You need something like this ...
-        # assert self.banner.is_complete
-        # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
-
-        frame = PyagramFrame(self, frame, is_implicit)
-        self.frame = frame
-        return frame
-
 def get_parent(frame, function):
     """
     <summary>
@@ -608,23 +608,4 @@ def enforce_one_function_per_code_object(function):
     )
     function.__code__ = new_code
 
-def value_str(object):
-    """
-    <summary>
-
-    :param object:
-    :return:
-    """
-    return f'*{id(object)}' if is_referent_type(object) else repr(object)
-
-def prepend(prefix, text):
-    """
-    <summary> # prepend prefix to every line in text
-
-    :param text:
-    :param prefix:
-    :return:
-    """
-    return prefix + text.replace('\n', f'\n{prefix}')
-
-# TODO: Move PyagramElement and its subclasses into pyagram_elements.py? And put the state stuff in program_state.py? And the random functions into utils.py?
+# TODO: Move PyagramElement and its subclasses into pyagram_elements.py? And put the state stuff in program_state.py? And the misc other functions into utils.py?

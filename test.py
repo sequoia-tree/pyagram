@@ -11,6 +11,16 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+rebind_params = """
+def f(x, y):
+    x = x + 10
+    y = 100
+    return x + y + z
+
+z = 100
+a = f(90, 5)
+"""
+
 return_mutative = """
 def f():
     return 5
