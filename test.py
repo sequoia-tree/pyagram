@@ -176,6 +176,17 @@ def g(a, b):
 a = g(f(), f(f()))
 """
 
+simultaneous2 = """
+def f():
+    x = 4
+    g, h = (lambda: x), (lambda: x)
+    return g, h
+
+g, h = f()
+a = g()
+b = h()
+"""
+
 identical_code_objs2 = """
 def f():
     return lambda: 0
