@@ -1,13 +1,10 @@
 import copy
 import gc
-import inspect
 import types
 
 import display
 import enums
 import utils
-
-FUNCTION_PARENTS = {}
 
 class ProgramState:
     """
@@ -202,6 +199,7 @@ class ProgramMemory:
     """
 
     def __init__(self):
+        self.function_parents = {}
         self.object_ids = set()
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
 
@@ -212,7 +210,7 @@ class ProgramMemory:
         :return:
         """
         return '\n'.join(
-            f'{id(object)}: {mem_str(object)}'
+            f'{id(object)}: {display.mem_str(object, self.function_parents)}'
             for object in self.objects
         )
 
@@ -235,6 +233,23 @@ class ProgramMemory:
         :return:
         """
         return id(object) in self.object_ids
+
+    def record_parent(self, frame, function):
+        """
+        <summary>
+
+        :param frame:
+        :param function:
+        :return:
+        """
+        if function not in self.function_parents:
+            if not frame.is_global_frame and frame.is_new_frame:
+                parent = frame.opened_by
+                while isinstance(parent, PyagramFlag):
+                    parent = parent.opened_by
+            else:
+                parent = frame
+            self.function_parents[function] = parent
 
 class PyagramElement:
     """
@@ -407,16 +422,6 @@ class PyagramFrame(PyagramElement):
         """
         return self.opened_by is None
 
-    @property
-    def parent(self):
-        """
-        <summary>
-
-        :return:
-        """
-        assert not self.is_global_frame and self.function
-        return FUNCTION_PARENTS[self.function]
-
     def __repr__(self):
         """
         <summary>
@@ -432,20 +437,20 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return_key = 'return'
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({obj_str(self.function)})')
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({display.obj_str(self.function)})')
         if self.bindings or self.has_returned:
             str_len = utils.mapped_len(str)
-            obj_str_len = utils.mapped_len(obj_str)
+            obj_str_len = utils.mapped_len(display.obj_str)
             max_var_key_len, ret_key_len, max_var_value_len, ret_value_len = 0, 0, 0, 0
             if self.bindings:
                 max_var_key_len = str_len(max(self.bindings.keys(), key=str_len))
                 max_var_value_len = obj_str_len(max(self.bindings.values(), key=obj_str_len))
             if self.has_returned:
                 ret_key_len = len(str(return_key))
-                ret_value_len = len(obj_str(self.return_value))
+                ret_value_len = len(display.obj_str(self.return_value))
             max_key_len = max(max_var_key_len, ret_key_len)
             max_value_len = max(max_var_value_len, ret_value_len)
-            binding = get_binding(max_key_len, max_value_len)
+            binding = display.get_binding(max_key_len, max_value_len)
             bindings = []
             if self.bindings:
                 var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
@@ -489,8 +494,7 @@ class PyagramFrame(PyagramElement):
                 tracked_objs.track(object)
                 if isinstance(object, types.FunctionType):
                     utils.enforce_one_function_per_code_object(object)
-                    if object not in FUNCTION_PARENTS:
-                        track_parent(self, object)
+                    tracked_objs.record_parent(self, object)
                     referents = utils.get_defaults(object)
                 else:
                     referents = list(gc.get_referents(object))
@@ -515,62 +519,10 @@ class PyagramFrame(PyagramElement):
             self.has_returned = True
         return self.opened_by
 
-def track_parent(frame, function):
-    """
-    <summary>
-
-    :param frame:
-    :param function:
-    :return:
-    """
-    if not frame.is_global_frame and frame.is_new_frame:
-        parent = frame.opened_by
-        while isinstance(parent, PyagramFlag):
-            parent = parent.opened_by
-    else:
-        parent = frame
-    FUNCTION_PARENTS[function] = parent
-
-def get_binding(max_key_len, max_value_len):
-    """
-    <summary>
-
-    :param max_key_len:
-    :param max_value_len:
-    :return:
-    """
-    return lambda key, value: f'|{key:>{max_key_len}}: {obj_str(value):<{max_value_len}}|'
-
-def obj_str(object):
-    """
-    <summary>
-
-    :param object:
-    :return:
-    """
-    return f'*{id(object)}' if utils.is_referent_type(object) else repr(object)
-
-def mem_str(object):
-    """
-    <summary>
-
-    :param object:
-    :return:
-    """
-    if isinstance(object, types.FunctionType):
-        name = object.__name__
-        args = ', '.join(
-            name if param.default is inspect.Parameter.empty else f'{name}={obj_str(param.default)}'
-            for name, param in inspect.signature(object).parameters.items()
-        )
-        parent = FUNCTION_PARENTS[object]
-        return f'function {name}({args}) [p={repr(parent)}]'
-        # TODO: So it seems the signature has the REAL default objects' IDs; the ones displayed in the 'OBJECTS IN MEMORY' section are actually FAKE. The problem is that when you make a deepcopy of the current state you also make a deepcopy of each object -- which produces the fake IDs, as well as the illusion that each object's ID changes over time. What you should do:
-        #   (*) Do away with this deepcopying nonsense.
-        #   (*) Upon opening the banner, the PyagramFlag should have (1) the string of code for the function being called, and (2) the string of code for all the arguments. (The latter should be one long string of code, not many small ones.)
-        #   (*) Instead of making a deepcopy, you should make a JSON serializable!
-        #   (*) Then, once you have a JSON at the very end, you can go back and add the flag banner values. (Between FUNCTION_PARENTS.keys() -- which should be completely filled out, by the end of the diagram -- as well as inspect.signature, you should be able to do this just fine I think. (How?))
-    else:
-        return repr(object)
+# TODO: So it seems the signature has the REAL default objects' IDs; the ones displayed in the 'OBJECTS IN MEMORY' section are actually FAKE. The problem is that when you make a deepcopy of the current state you also make a deepcopy of each object -- which produces the fake IDs, as well as the illusion that each object's ID changes over time. What you should do:
+#   (*) Upon opening the banner, the PyagramFlag should have (1) the string of code for the function being called, and (2) the string of code for all the arguments. (The latter should be one long string of code, not many small ones.)
+#   (*) Do away with this deepcopying nonsense.
+#   (*) Instead of making a deepcopy, `snapshot` should return a JSON!
+#   (*) Then, once you have a JSON at the very end, you can go back and add the flag banner values. (Between FUNCTION_PARENTS.keys() -- which should be completely filled out, by the end of the diagram -- as well as inspect.signature, you should be able to do this just fine I think. (How?))
 
 # TODO: Move PyagramElement and its subclasses into pyagram_elements.py, and the state stuff into program_state.py?
