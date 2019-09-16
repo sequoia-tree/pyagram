@@ -1,5 +1,6 @@
 import copy
 import gc
+import inspect
 import types
 
 import display
@@ -175,7 +176,10 @@ class ProgramState:
             # (1): Whenever you close a flag that doesn't have its own frame, give it a frame.
             # (2): In your book say __init__ only gets called if it is indeed defined.
 
-            pass # TODO: Instead of this HIDDEN_FLAGS nonsense, add a 'fake' frame that displays the return value.
+            pass
+
+            # TODO: Instead of this HIDDEN_FLAGS nonsense, add a 'fake' frame that displays the return value.
+            # TODO: To get the return value, you don't actually need the frame! (Which is good, since BDB doesn't give us access to the frame.) You can get it upon the closing of the frame for the outer-lambda wrapper (see `wrap.py`) instead, as its return value is the same!
 
         self.curr_element = self.curr_element.close()
 
@@ -199,7 +203,7 @@ class ProgramMemory:
 
     def __init__(self):
         self.object_ids = set()
-        self.objects = [] # TODO: When drawing these objects on the web-page, make sure each object in this ordered container is drawn independently of how many objects come after it. Otherwise the same object might be drawn at different locations during different steps.
+        self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
 
     def __str__(self):
         """
@@ -554,8 +558,19 @@ def mem_str(object):
     :return:
     """
     if isinstance(object, types.FunctionType):
+        name = object.__name__
+        args = ', '.join(
+            name if param.default is inspect.Parameter.empty else f'{name}={obj_str(param.default)}'
+            for name, param in inspect.signature(object).parameters.items()
+        )
         parent = FUNCTION_PARENTS[object]
-        return f'function {object.__name__} [p={repr(parent)}]'
+        return f'function {name}({args}) [p={repr(parent)}]'
+        # TODO: So it seems the signature has the REAL default objects' IDs; the ones displayed in the 'OBJECTS IN MEMORY' section are actually FAKE. The problem is that when you make a deepcopy of the current state you also make a deepcopy of each object -- which produces the fake IDs, as well as the illusion that each object's ID changes over time. What you should do:
+        #   (*) Do away with this deepcopying nonsense.
+        #   (*) Make it print one step at a time in the terminal, as it goes, instead of all at once. Then it can print the ProgramState as it currently is, rather than a muddled-up deepcopy of it.
+        #   (*) Upon opening the banner, the PyagramFlag should have (1) the string of code for the function being called, and (2) the string of code for all the arguments. (The latter should be one long string of code, not many small ones.)
+        #   (*) Instead of making a deepcopy, you should make a JSON serializable!
+        #   (*) Then, once you have a JSON at the very end, you can go back and add the flag banner values. (Between FUNCTION_PARENTS.keys() -- which should be completely filled out, by the end of the diagram -- as well as inspect.signature, you should be able to do this just fine I think. (How?))
     else:
         return repr(object)
 

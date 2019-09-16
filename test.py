@@ -54,8 +54,8 @@ d = f(16)
 default4 = """
 a = [1, 2, 3]
 
-def f(x=a):
-    return x[0]
+def f(x=a, y=[4, 5, 6]):
+    return x[-1]
 
 y = f()
 a.append(4)
