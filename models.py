@@ -567,7 +567,6 @@ def mem_str(object):
         return f'function {name}({args}) [p={repr(parent)}]'
         # TODO: So it seems the signature has the REAL default objects' IDs; the ones displayed in the 'OBJECTS IN MEMORY' section are actually FAKE. The problem is that when you make a deepcopy of the current state you also make a deepcopy of each object -- which produces the fake IDs, as well as the illusion that each object's ID changes over time. What you should do:
         #   (*) Do away with this deepcopying nonsense.
-        #   (*) Make it print one step at a time in the terminal, as it goes, instead of all at once. Then it can print the ProgramState as it currently is, rather than a muddled-up deepcopy of it.
         #   (*) Upon opening the banner, the PyagramFlag should have (1) the string of code for the function being called, and (2) the string of code for all the arguments. (The latter should be one long string of code, not many small ones.)
         #   (*) Instead of making a deepcopy, you should make a JSON serializable!
         #   (*) Then, once you have a JSON at the very end, you can go back and add the flag banner values. (Between FUNCTION_PARENTS.keys() -- which should be completely filled out, by the end of the diagram -- as well as inspect.signature, you should be able to do this just fine I think. (How?))

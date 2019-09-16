@@ -1,5 +1,6 @@
 import bdb
 
+import display
 import enums
 import models
 import wrap
@@ -9,8 +10,9 @@ class Tracer(bdb.Bdb):
     <summary>
     """
 
-    def __init__(self):
+    def __init__(self, debug):
         super().__init__()
+        self.debug = debug
         self.state = None
         self.snapshots = []
 
@@ -90,5 +92,21 @@ class Tracer(bdb.Bdb):
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
         if take_snapshot:
+            if self.debug:
+                self.display()
             snapshot = self.state.snapshot()
             self.snapshots.append(snapshot)
+
+    def display(self):
+        """
+        <summary>
+
+        :return:
+        """
+        result = str(self.state)
+        result_height = result.count('\n') + 1
+        padding = display.TERMINAL_HEIGHT - (result_height + 1)
+        print(result)
+        if padding > 0:
+            print('\n' * (padding - 1))
+        input()
