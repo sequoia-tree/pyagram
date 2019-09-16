@@ -2,7 +2,7 @@ import bdb
 
 import display
 import enums
-import models
+import state
 import wrap
 
 class Tracer(bdb.Bdb):
@@ -71,7 +71,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         if self.state is None:
-            self.state = models.ProgramState(frame)
+            self.state = state.ProgramState(frame)
         self.state.step(frame, is_frame_open, is_frame_close, return_value)
 
     def snapshot(self, trace_type):
