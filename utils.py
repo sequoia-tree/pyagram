@@ -62,12 +62,29 @@ def get_defaults(function):
     :param function:
     :return:
     """
-    signature = inspect.signature(function)
+    parameters = inspect.signature(function).parameters.values()
     return [
         parameter.default
-        for parameter in signature.parameters.values()
+        for parameter in parameters
         if parameter.default is not inspect.Parameter.empty
     ]
+
+def sort_parameter_bindings(bindings, function):
+    """
+    <summary>
+
+    :param bindings:
+    :param function:
+    :return:
+    """
+    parameter_names = inspect.signature(function).parameters.keys()
+    assert bindings.keys() == parameter_names
+    sorted_parameter_bindings = {
+        parameter_name: bindings[parameter_name]
+        for parameter_name in parameter_names
+    }
+    bindings.clear()
+    bindings.update(sorted_parameter_bindings)
 
 def mapped_len(function):
     """
@@ -77,3 +94,12 @@ def mapped_len(function):
     :return:
     """
     return lambda object: len(function(object))
+
+def impute_flag_banners(snapshots, final_state):
+    """
+    <summary>
+
+    :param snapshots:
+    :return:
+    """
+    pass # TODO

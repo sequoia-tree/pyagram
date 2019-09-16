@@ -62,6 +62,22 @@ a.append(4)
 z = f()
 """
 
+kwargs1 = """
+def f(x, y):
+    return x + y
+
+def x():
+    print('x')
+    return 1
+
+def y():
+    print('y')
+    return 2
+
+f(x(), y()) # Should see x y 3
+f(y=y(), x=x()) # Should see y x 3
+"""
+
 rebind_params = """
 def f(x, y):
     x = x + 10

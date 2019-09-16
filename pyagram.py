@@ -1,4 +1,5 @@
 import trace
+import utils
 import wrap
 
 class Pyagram:
@@ -14,3 +15,4 @@ class Pyagram:
         global_bindings = {}
         tracer.run(code, globals=global_bindings, locals=global_bindings)
         self.snapshots = tracer.snapshots
+        utils.impute_flag_banners(self.snapshots, tracer.state)

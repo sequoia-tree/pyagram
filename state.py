@@ -168,17 +168,10 @@ class ProgramState:
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
-
-            # The problem is that when you call a built-in function (like append or min), or when you don't write your own __init__ function, bdb doesn't open a frame! (So you're making the flag, assuming bdb will open the frame, but that never happens ... !)
-            # Most straightforward solution: (1) AND (2)
-            # (1): Whenever you close a flag that doesn't have its own frame, give it a frame.
-            # (2): In your book say __init__ only gets called if it is indeed defined.
-
+            # If we call a built-in function, we open a flag but bdb never gives us a frame to open, so we are forced to close the flag without having a frame!
             pass
-
-            # TODO: Instead of this HIDDEN_FLAGS nonsense, add a 'fake' frame that displays the return value.
+            # TODO: Add a 'fake' frame that displays the return value.
             # TODO: To get the return value, you don't actually need the frame! (Which is good, since BDB doesn't give us access to the frame.) You can get it upon the closing of the frame for the outer-lambda wrapper (see `wrap.py`) instead, as its return value is the same!
-
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):

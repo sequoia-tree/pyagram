@@ -158,11 +158,12 @@ class PyagramFrame(PyagramElement):
         super().__init__(opened_by)
         self.is_new_frame = True
         self.is_implicit = is_implicit
+        self.bindings = frame.f_locals
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
             self.function = utils.get_function(frame)
-        self.bindings = frame.f_locals
+            utils.sort_parameter_bindings(self.bindings, self.function)
         self.has_returned = False
         self.return_value = None
 
