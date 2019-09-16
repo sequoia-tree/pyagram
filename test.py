@@ -11,6 +11,57 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+default1 = """
+def f(x=4):
+    return x
+
+a = f()
+b = f(5)
+"""
+
+default2 = """
+z = 100
+
+def g():
+    return z
+
+def f(x=g()):
+    return x
+
+a = f()
+z = 50
+b = f()
+"""
+
+default3 = """
+a = 100
+
+def g():
+    return [4]
+
+def h():
+    return a
+
+def f(x, y=g() + [5, 6], z=h()):
+    return x + y[0] + z
+
+b = f(6, [14]) # We should see [4, 5, 6] in memory at this point!
+c = f(6)
+a = 0
+d = f(16)
+"""
+
+default4 = """
+a = [1, 2, 3]
+
+def f(x=a):
+    return x[0]
+
+y = f()
+a.append(4)
+z = f()
+"""
+
 rebind_params = """
 def f(x, y):
     x = x + 10
@@ -19,6 +70,18 @@ def f(x, y):
 
 z = 100
 a = f(90, 5)
+"""
+
+rebind_param_pointers = """
+def f(x, y):
+    x.append(4)
+    y = y()
+    x = x[-2]
+    y = 100
+    return x[0] + y
+
+a = [1, lambda: 2, [3]]
+b = f(a, a[1])
 """
 
 return_mutative = """

@@ -4,8 +4,8 @@ import types
 
 import display
 import enums
+import utils
 
-NON_REFERENT_TYPES = (int, float, str, bool)
 FUNCTION_PARENTS = {}
 
 class ProgramState:
@@ -199,7 +199,7 @@ class ProgramMemory:
 
     def __init__(self):
         self.object_ids = set()
-        self.pyagram_objects = [] # TODO: When drawing these objects on the web-page, make sure each object in this ordered container is drawn independently of how many objects come after it. Otherwise the same object might be drawn at different locations during different steps.
+        self.objects = [] # TODO: When drawing these objects on the web-page, make sure each object in this ordered container is drawn independently of how many objects come after it. Otherwise the same object might be drawn at different locations during different steps.
 
     def __str__(self):
         """
@@ -208,20 +208,20 @@ class ProgramMemory:
         :return:
         """
         return '\n'.join(
-            f'{id(pyagram_object.object)}: {repr(pyagram_object)}'
-            for pyagram_object in self.pyagram_objects
+            f'{id(object)}: {mem_str(object)}'
+            for object in self.objects
         )
 
-    def track(self, pyagram_object):
+    def track(self, object):
         """
         <summary>
 
         :return:
         """
-        object_id = id(pyagram_object.object)
+        object_id = id(object)
         if object_id not in self.object_ids:
             self.object_ids.add(object_id)
-            self.pyagram_objects.append(pyagram_object)
+            self.objects.append(object)
 
     def is_tracked(self, object):
         """
@@ -231,30 +231,6 @@ class ProgramMemory:
         :return:
         """
         return id(object) in self.object_ids
-
-class PyagramObject:
-    """
-    <summary> # a hashable wrapper for potentially unhashable objects
-
-    :param object:
-    """
-
-    def __init__(self, object):
-        self.object = object
-
-    def __repr__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        result = repr(self.object)
-        if isinstance(self.object, types.FunctionType):
-            result = ' '.join((
-                result,
-                f'[p = {repr(FUNCTION_PARENTS[self.object])}]'
-            ))
-        return result
 
 class PyagramElement:
     """
@@ -278,16 +254,6 @@ class PyagramElement:
         for flag in self.flags:
             flag.step(tracked_objs)
 
-    def flags_to_text(self):
-        """
-        <summary>
-
-        :return:
-        """
-        result = '\n'.join(f'\n{flag}' for flag in self.flags)
-        result = result + '\n' if result.strip('\n') else ''
-        return result
-
     def add_flag(self):
         """
         <summary>
@@ -302,6 +268,16 @@ class PyagramElement:
         flag = PyagramFlag(self)
         self.flags.append(flag)
         return flag
+
+    def flags_to_text(self):
+        """
+        <summary>
+
+        :return:
+        """
+        result = '\n'.join(f'\n{flag}' for flag in self.flags)
+        result = result + '\n' if result.strip('\n') else ''
+        return result
 
 class PyagramFlag(PyagramElement):
     """
@@ -413,7 +389,7 @@ class PyagramFrame(PyagramElement):
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
-            self.function = get_function(frame)
+            self.function = utils.get_function(frame)
         self.bindings = frame.f_locals
         self.has_returned = False
         self.return_value = None
@@ -451,42 +427,35 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
-
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({value_str(self.function)})')
-
+        return_key = 'return'
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({obj_str(self.function)})')
         if self.bindings or self.has_returned:
-
-            fn_len = lambda fn: lambda key_or_value: len(fn(key_or_value))
-            binding = lambda key, value: f'|{key:>{max_key_length}}: {value_str(value):<{max_value_length}}|'
-
-            max_var_key_length, ret_key_length, max_var_value_length, ret_value_length = 0, 0, 0, 0
+            str_len = utils.mapped_len(str)
+            obj_str_len = utils.mapped_len(obj_str)
+            max_var_key_len, ret_key_len, max_var_value_len, ret_value_len = 0, 0, 0, 0
             if self.bindings:
-                max_var_key_length = fn_len(str)(max(self.bindings.keys(), key=fn_len(str)))
-                max_var_value_length = fn_len(value_str)(max(self.bindings.values(), key=fn_len(value_str)))
+                max_var_key_len = str_len(max(self.bindings.keys(), key=str_len))
+                max_var_value_len = obj_str_len(max(self.bindings.values(), key=obj_str_len))
             if self.has_returned:
-                ret_key_length = len('return')
-                ret_value_length = len(value_str(self.return_value))
-            max_key_length = max(max_var_key_length, ret_key_length)
-            max_value_length = max(max_var_value_length, ret_value_length)
-
+                ret_key_len = len(str(return_key))
+                ret_value_len = len(obj_str(self.return_value))
+            max_key_len = max(max_var_key_len, ret_key_len)
+            max_value_len = max(max_var_value_len, ret_value_len)
+            binding = get_binding(max_key_len, max_value_len)
             bindings = []
             if self.bindings:
                 var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
                 bindings.append(var_bindings)
             if self.has_returned:
-                ret_binding = binding('return', self.return_value)
+                ret_binding = binding(return_key, self.return_value)
                 bindings.append(ret_binding)
-            max_binding_length = max_key_length + max_value_length + 2
+            max_binding_len = max_key_len + max_value_len + 2
             bindings = '\n'.join(bindings)
-
         else:
-            max_binding_length = max(0, len(header) - 2)
-            bindings = f'|{" " * max_binding_length}|'
-
-        separator = f'+{"-" * max_binding_length}+'
-
+            max_binding_len = max(0, len(header) - 2)
+            bindings = f'|{" " * max_binding_len}|'
+        separator = f'+{"-" * max_binding_len}+'
         flags = self.flags_to_text()
-
         return f'\n'.join((
             header,
             separator,
@@ -504,27 +473,28 @@ class PyagramFrame(PyagramElement):
         """
         # Two goals:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
-        # (2) Obtain a reference to all objects floating around in memory; wrap them in a PyagramObject instance and store the reference in the ProgramState's tracked_objs.
-        pyagram_objects = {PyagramObject(object) for object in self.bindings.values()}
+        # (2) Obtain a reference to all objects floating around in memory; store said references in the ProgramState's tracked_objs.
+        objects = list(self.bindings.values())
         if not self.is_global_frame:
-            pyagram_objects.add(PyagramObject(self.function))
+            objects.append(self.function)
         if self.has_returned:
-            pyagram_objects.add(PyagramObject(self.return_value))
-        while pyagram_objects:
-            pyagram_object = pyagram_objects.pop()
-            object = pyagram_object.object
-            if is_referent_type(object):
-                tracked_objs.track(pyagram_object)
+            objects.append(self.return_value)
+        while objects:
+            object = objects.pop()
+            if utils.is_referent_type(object):
+                tracked_objs.track(object)
                 if isinstance(object, types.FunctionType):
-                    enforce_one_function_per_code_object(object)
+                    utils.enforce_one_function_per_code_object(object)
                     if object not in FUNCTION_PARENTS:
-                        get_parent(self, object)
+                        track_parent(self, object)
+                    referents = utils.get_defaults(object)
                 else:
-                    pyagram_objects.update({
-                        PyagramObject(referent)
-                        for referent in gc.get_referents(object)
-                        if not tracked_objs.is_tracked(referent)
-                    })
+                    referents = list(gc.get_referents(object))
+                objects.extend(
+                    referent
+                    for referent in referents
+                    if not tracked_objs.is_tracked(referent)
+                )
         # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.is_new_frame = False
         super().step(tracked_objs)
@@ -541,7 +511,7 @@ class PyagramFrame(PyagramElement):
             self.has_returned = True
         return self.opened_by
 
-def get_parent(frame, function):
+def track_parent(frame, function):
     """
     <summary>
 
@@ -557,64 +527,36 @@ def get_parent(frame, function):
         parent = frame
     FUNCTION_PARENTS[function] = parent
 
-def get_function(frame):
+def get_binding(max_key_len, max_value_len):
     """
     <summary>
 
-    :param frame:
+    :param max_key_len:
+    :param max_value_len:
     :return:
     """
-    function = None
-    for referrer in gc.get_referrers(frame.f_code):
-        if isinstance(referrer, types.FunctionType):
-            assert function is None, f'multiple functions refer to code object {frame.f_code}'
-            function = referrer
-    assert function is not None
-    return function
+    return lambda key, value: f'|{key:>{max_key_len}}: {obj_str(value):<{max_value_len}}|'
 
-def is_referent_type(object):
+def obj_str(object):
     """
     <summary>
 
     :param object:
     :return:
     """
-    return not isinstance(object, NON_REFERENT_TYPES)
+    return f'*{id(object)}' if utils.is_referent_type(object) else repr(object)
 
-def enforce_one_function_per_code_object(function):
-    """
-    <summary>
-
-    :param function:
-    :return:
-    """
-    old_code = function.__code__
-    new_code = types.CodeType(
-        old_code.co_argcount,
-        old_code.co_kwonlyargcount,
-        old_code.co_nlocals,
-        old_code.co_stacksize,
-        old_code.co_flags,
-        old_code.co_code,
-        old_code.co_consts,
-        old_code.co_names,
-        old_code.co_varnames,
-        old_code.co_filename,
-        old_code.co_name,
-        old_code.co_firstlineno,
-        old_code.co_lnotab,
-        old_code.co_freevars,
-        old_code.co_cellvars,
-    )
-    function.__code__ = new_code
-
-def value_str(object):
+def mem_str(object):
     """
     <summary>
 
     :param object:
     :return:
     """
-    return f'*{id(object)}' if is_referent_type(object) else repr(object)
+    if isinstance(object, types.FunctionType):
+        parent = FUNCTION_PARENTS[object]
+        return f'function {object.__name__} [p={repr(parent)}]'
+    else:
+        return repr(object)
 
-# TODO: Move PyagramElement and its subclasses into pyagram_elements.py? And put the state stuff in program_state.py? And the misc other functions into utils.py?
+# TODO: Move PyagramElement and its subclasses into pyagram_elements.py, and the state stuff into program_state.py?

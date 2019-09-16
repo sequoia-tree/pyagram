@@ -20,12 +20,3 @@ def prepend(prefix, text):
     :return:
     """
     return prefix + text.replace('\n', f'\n{prefix}')
-
-def value_str(object):
-    """
-    <summary>
-
-    :param object:
-    :return:
-    """
-    return f'*{id(object)}' if is_referent_type(object) else repr(object)
