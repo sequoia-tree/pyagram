@@ -2,7 +2,7 @@ import copy
 
 import display
 import enums
-import pyagram_elements
+import pyagram_element
 
 class ProgramState:
     """
@@ -12,9 +12,9 @@ class ProgramState:
     """
 
     def __init__(self, global_frame):
-        self.global_frame = pyagram_elements.PyagramFrame(None, global_frame)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame)
         self.curr_element = self.global_frame
-        self.tracked_objs = ProgramMemory()
+        self.tracked_objs = MemoryState()
         self.curr_line_no = None
         self.print_output = [] # TODO: How will you handle `print` statements?
 
@@ -25,7 +25,7 @@ class ProgramState:
 
         :return:
         """
-        is_flag = isinstance(self.curr_element, pyagram_elements.PyagramFlag)
+        is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.frame is None
 
     @property
@@ -35,7 +35,7 @@ class ProgramState:
 
         :return:
         """
-        is_frame = isinstance(self.curr_element, pyagram_elements.PyagramFrame)
+        is_frame = isinstance(self.curr_element, pyagram_element.PyagramFrame)
         return is_frame and not self.curr_element.has_returned
 
     @property
@@ -45,7 +45,7 @@ class ProgramState:
 
         :return:
         """
-        is_flag = isinstance(self.curr_element, pyagram_elements.PyagramFlag)
+        is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.has_returned
 
     def __str__(self):
@@ -187,7 +187,7 @@ class ProgramState:
         if is_implicit:
             self.curr_element = self.curr_element.close()
 
-class ProgramMemory:
+class MemoryState:
     """
     <summary>
     """
@@ -239,7 +239,7 @@ class ProgramMemory:
         if function not in self.function_parents:
             if not frame.is_global_frame and frame.is_new_frame:
                 parent = frame.opened_by
-                while isinstance(parent, pyagram_elements.PyagramFlag):
+                while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by
             else:
                 parent = frame
