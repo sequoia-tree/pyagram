@@ -204,7 +204,7 @@ class MemoryState:
         :return:
         """
         return '\n'.join(
-            f'{id(object)}: {display.mem_str(object, self.function_parents)}'
+            f'{id(object)}: {display.value_str(object, self.function_parents)}'
             for object in self.objects
         )
 

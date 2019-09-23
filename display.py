@@ -34,9 +34,9 @@ def get_binding(max_key_len, max_value_len):
     :param max_value_len:
     :return:
     """
-    return lambda key, value: f'|{key:>{max_key_len}}: {obj_str(value):<{max_value_len}}|'
+    return lambda key, value: f'|{key:>{max_key_len}}: {value_repr(value):<{max_value_len}}|'
 
-def obj_str(object):
+def value_repr(object):
     """
     <summary>
 
@@ -45,7 +45,7 @@ def obj_str(object):
     """
     return f'*{id(object)}' if utils.is_referent_type(object) else repr(object)
 
-def mem_str(object, function_parents):
+def value_str(object, function_parents):
     """
     <summary>
 
@@ -55,7 +55,7 @@ def mem_str(object, function_parents):
     if isinstance(object, types.FunctionType):
         name = object.__name__
         args = ', '.join(
-            name if param.default is inspect.Parameter.empty else f'{name}={obj_str(param.default)}'
+            name if param.default is inspect.Parameter.empty else f'{name}={value_repr(param.default)}'
             for name, param in inspect.signature(object).parameters.items()
         )
         parent = function_parents[object]
