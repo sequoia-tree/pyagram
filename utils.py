@@ -4,19 +4,12 @@ import types
 
 NON_REFERENT_TYPES = (int, float, str, bool)
 
-def snapshot(program_state):
-    """
-    <summary> # Represents the state at a particular step in time.
-
-    :return:
-    """
-    return (program_state.snapshot(), program_state.memory_state.snapshot())
-
 def reference_snapshot(object, memory_state):
     """
     <summary> # snapshot a reference to a value (may be a referent type or not)
 
     :param object:
+    :param memory_state:
     :return:
     """
     if is_referent_type(object):

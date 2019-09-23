@@ -9,9 +9,9 @@ class PyagramElement:
     <summary>
     """
 
-    def __init__(self, opened_by, program_state):
+    def __init__(self, opened_by, state):
         self.opened_by = opened_by
-        self.program_state = self.opened_by.program_state if program_state is None else program_state
+        self.state = self.opened_by.state if state is None else state
         cls = type(self)
         self.id = cls.COUNT
         cls.COUNT += 1
@@ -60,8 +60,8 @@ class PyagramFlag(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by, *, program_state=None):
-        super().__init__(opened_by, program_state)
+    def __init__(self, opened_by, *, state=None):
+        super().__init__(opened_by, state)
         self.frame = None
 
     @property
@@ -126,7 +126,7 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return {
-            'is-curr-element': self is self.program_state.curr_element,
+            'is-curr-element': self is self.state.program_state.curr_element,
             'pyagram-flag': self,
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
@@ -166,8 +166,8 @@ class PyagramFrame(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by, frame, *, program_state=None, is_implicit=False):
-        super().__init__(opened_by, program_state)
+    def __init__(self, opened_by, frame, *, state=None, is_implicit=False):
+        super().__init__(opened_by, state)
         self.is_new_frame = True
         self.is_implicit = is_implicit
         self.bindings = frame.f_locals
@@ -247,7 +247,7 @@ class PyagramFrame(PyagramElement):
         """
         # Two goals:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
-        # (2) Obtain a reference to all objects floating around in memory; store said references in the ProgramState's memory_state.
+        # (2) Obtain a reference to all objects floating around in memory; store said references in the MemoryState.
         objects = list(self.bindings.values())
         if not self.is_global_frame:
             objects.append(self.function)
@@ -256,17 +256,17 @@ class PyagramFrame(PyagramElement):
         while objects:
             object = objects.pop()
             if utils.is_referent_type(object):
-                self.program_state.memory_state.track(object)
+                self.state.memory_state.track(object)
                 if isinstance(object, types.FunctionType):
                     utils.enforce_one_function_per_code_object(object)
-                    self.program_state.memory_state.record_parent(self, object)
+                    self.state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)
                 else:
                     referents = list(gc.get_referents(object))
                 objects.extend(
                     referent
                     for referent in referents
-                    if not self.program_state.memory_state.is_tracked(referent)
+                    if not self.state.memory_state.is_tracked(referent)
                 )
         # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.is_new_frame = False
@@ -279,14 +279,14 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return {
-            'is-curr-element': self is self.program_state.curr_element,
+            'is-curr-element': self is self.state.program_state.curr_element,
             'id': self.id,
             'parent-id': 
                 None
                 if self.is_global_frame
-                else self.program_state.memory_state.function_parents[self.function].id,
+                else self.state.memory_state.function_parents[self.function].id,
             'bindings': {
-                key: utils.reference_snapshot(value, self.program_state.memory_state)
+                key: utils.reference_snapshot(value, self.state.memory_state)
                 for key, value in self.bindings.items()
             },
             'has-returned': self.has_returned,

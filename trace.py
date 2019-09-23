@@ -61,7 +61,7 @@ class Tracer(bdb.Bdb):
         self.step(frame)
         self.snapshot(enums.TraceTypes.USER_EXCEPTION)
 
-    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
+    def step(self, frame, *, is_frame_open=False, is_frame_close=False, return_value=None):
         """
         <summary>
 
@@ -72,7 +72,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         if self.state is None:
-            self.state = state.ProgramState(frame)
+            self.state = state.State(frame)
         self.state.step(frame, is_frame_open, is_frame_close, return_value)
 
     def snapshot(self, trace_type):
@@ -84,18 +84,18 @@ class Tracer(bdb.Bdb):
         if trace_type is enums.TraceTypes.USER_CALL:
             take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_LINE:
-            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO \
-                        and self.state.curr_line_no != wrap.INNER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO \
+                        and self.state.program_state.curr_line_no != wrap.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
-            take_snapshot = self.state.curr_line_no != wrap.OUTER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
         if take_snapshot:
             if self.debug:
                 self.display()
-            snapshot = utils.snapshot(self.state)
+            snapshot = self.state.snapshot()
             self.snapshots.append(snapshot)
 
     def display(self):

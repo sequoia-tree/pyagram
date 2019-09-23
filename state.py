@@ -1,23 +1,74 @@
-import copy
-
 import display
 import enums
 import pyagram_element
 import utils
 
-class ProgramState:
+class State:
     """
-    <summary> # a mutable object representing the state of the program at the current timestep. as we go thru the program in trace.py, we will modify the ProgramState.
+    <summary>
 
     :param global_frame:
     """
 
     def __init__(self, global_frame):
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, program_state=self)
-        self.curr_element = self.global_frame
+        self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState()
-        self.curr_line_no = None
         self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
+    
+    def __str__(self):
+        """
+        <summary>
+        """
+        program_state_header = display.separator('program execution')
+        program_state = str(self.program_state)
+        memory_state_header = display.separator('objects in memory')
+        memory_state = str(self.memory_state)
+        print_output_header = display.separator('print output')
+        print_output = self.print_output
+        return '\n'.join((
+            program_state_header,
+            '',
+            program_state,
+            memory_state_header + ('' if memory_state == '' else f'\n\n{memory_state}\n'),
+            print_output_header + ('' if print_output is None else f'\n{print_output}'),
+            display.separator(),
+        ))
+    
+    def step(self, frame, is_frame_open, is_frame_close, return_value):
+        """
+        <summary>
+
+        :param frame: As in trace.Tracer.step.
+        :param is_frame_open: As in trace.Tracer.step.
+        :param is_frame_close: As in trace.Tracer.step.
+        :param return_value: As in trace.Tracer.step.
+        :return: None.
+        """
+        self.program_state.step(frame, is_frame_open, is_frame_close, return_value)
+        self.memory_state.step()
+
+    def snapshot(self):
+        """
+        <summary> # Represents the state at a particular step in time.
+        """
+        return {
+            'program-state': self.program_state.snapshot(),
+            'memory-state': self.memory_state.snapshot(),
+            'print-output': self.print_output, # This is a string, or **None** if nothing has been printed yet!
+        }
+
+class ProgramState:
+    """
+    <summary> # a mutable object representing the state of the program at the current timestep. as we go thru the program in trace.py, we will modify the ProgramState.
+
+    :param state:
+    :param global_frame:
+    """
+
+    def __init__(self, state, global_frame):
+        self.curr_line_no = None
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.curr_element = self.global_frame
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -56,32 +107,22 @@ class ProgramState:
         :return:
         """
         curr_element = f'Current element: {repr(self.curr_element)} (line {self.curr_line_no})'
-        global_frame_header = display.separator('program execution')
         global_frame = str(self.global_frame)
-        memory_state_header = display.separator('objects in memory')
-        memory_state = str(self.memory_state)
-        print_output_header = display.separator('print output')
-        print_output = self.print_output
         return '\n'.join((
             curr_element,
             '',
-            global_frame_header,
-            '',
             global_frame,
-            memory_state_header + ('' if memory_state == '' else f'\n\n{memory_state}\n'),
-            print_output_header + ('' if print_output is None else f'\n{print_output}'),
-            display.separator(),
         ))
 
-    def step(self, frame, is_frame_open=False, is_frame_close=False, return_value=None):
+    def step(self, frame, is_frame_open, is_frame_close, return_value):
         """
         <summary>
 
-        :param frame:
-        :param is_frame_open:
-        :param is_frame_close:
-        :param return_value:
-        :return:
+        :param frame: As in state.State.step.
+        :param is_frame_open: As in state.State.step.
+        :param is_frame_close: As in state.State.step.
+        :param return_value: As in state.State.step.
+        :return: None.
         """
         self.curr_line_no = frame.f_lineno
         if is_frame_open:
@@ -97,9 +138,8 @@ class ProgramState:
         :return:
         """
         return {
-            'global-frame': self.global_frame.snapshot(),
             'curr-line-no': self.curr_line_no,
-            'print-output': self.print_output, # This is a string, or **None** if nothing has been printed yet!
+            'global-frame': self.global_frame.snapshot(),
         }
 
     def process_frame_open(self, frame):
@@ -211,6 +251,12 @@ class MemoryState:
             f'{id(object)}: {display.value_str(object, self.function_parents)}'
             for object in self.objects
         )
+
+    def step(self):
+        """
+        <summary>
+        """
+        pass
 
     def snapshot(self):
         """
