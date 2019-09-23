@@ -3,7 +3,7 @@ import types
 
 import utils
 
-TERMINAL_HEIGHT = 60
+TERMINAL_HEIGHT = 58
 TERMINAL_WIDTH = 80
 
 def separator(title=''):

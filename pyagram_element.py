@@ -9,22 +9,22 @@ class PyagramElement:
     <summary>
     """
 
-    def __init__(self, opened_by):
+    def __init__(self, opened_by, program_state):
+        self.opened_by = opened_by
+        self.program_state = self.opened_by.program_state if program_state is None else program_state
         cls = type(self)
         self.id = cls.COUNT
         cls.COUNT += 1
-        self.opened_by = opened_by
         self.flags = []
 
-    def step(self, tracked_objs):
+    def step(self):
         """
         <summary>
 
-        :param tracked_objs:
         :return:
         """
         for flag in self.flags:
-            flag.step(tracked_objs)
+            flag.step()
 
     def add_flag(self):
         """
@@ -60,8 +60,8 @@ class PyagramFlag(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by):
-        super().__init__(opened_by)
+    def __init__(self, opened_by, *, program_state=None):
+        super().__init__(opened_by, program_state)
         self.frame = None
 
     @property
@@ -108,17 +108,29 @@ class PyagramFlag(PyagramElement):
             flags,
             frame,
         ))
-
-    def step(self, tracked_objs):
+    
+    def step(self):
         """
         <summary>
 
-        :param tracked_objs:
         :return:
         """
-        super().step(tracked_objs)
+        super().step()
         if self.frame:
-            self.frame.step(tracked_objs)
+            self.frame.step()
+
+    def snapshot(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return {
+            'is-curr-element': self is self.program_state.curr_element,
+            'pyagram-flag': self,
+            'frame': None if self.frame is None else self.frame.snapshot(),
+            'flags': [flag.snapshot() for flag in self.flags],
+        }
 
     def close(self):
         """
@@ -140,7 +152,7 @@ class PyagramFlag(PyagramElement):
         # assert self.banner.is_complete
         # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
 
-        frame = PyagramFrame(self, frame, is_implicit)
+        frame = PyagramFrame(self, frame, is_implicit=is_implicit)
         self.frame = frame
         return frame
 
@@ -154,8 +166,8 @@ class PyagramFrame(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by, frame, is_implicit=False):
-        super().__init__(opened_by)
+    def __init__(self, opened_by, frame, *, program_state=None, is_implicit=False):
+        super().__init__(opened_by, program_state)
         self.is_new_frame = True
         self.is_implicit = is_implicit
         self.bindings = frame.f_locals
@@ -227,16 +239,15 @@ class PyagramFrame(PyagramElement):
             flags,
         ))
 
-    def step(self, tracked_objs):
+    def step(self):
         """
         <summary>
 
-        :param tracked_objs:
         :return:
         """
         # Two goals:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
-        # (2) Obtain a reference to all objects floating around in memory; store said references in the ProgramState's tracked_objs.
+        # (2) Obtain a reference to all objects floating around in memory; store said references in the ProgramState's memory_state.
         objects = list(self.bindings.values())
         if not self.is_global_frame:
             objects.append(self.function)
@@ -245,21 +256,43 @@ class PyagramFrame(PyagramElement):
         while objects:
             object = objects.pop()
             if utils.is_referent_type(object):
-                tracked_objs.track(object)
+                self.program_state.memory_state.track(object)
                 if isinstance(object, types.FunctionType):
                     utils.enforce_one_function_per_code_object(object)
-                    tracked_objs.record_parent(self, object)
+                    self.program_state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)
                 else:
                     referents = list(gc.get_referents(object))
                 objects.extend(
                     referent
                     for referent in referents
-                    if not tracked_objs.is_tracked(referent)
+                    if not self.program_state.memory_state.is_tracked(referent)
                 )
         # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.is_new_frame = False
-        super().step(tracked_objs)
+        super().step()
+
+    def snapshot(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return {
+            'is-curr-element': self is self.program_state.curr_element,
+            'id': self.id,
+            'parent-id': 
+                None
+                if self.is_global_frame
+                else self.program_state.memory_state.function_parents[self.function].id,
+            'bindings': {
+                key: utils.reference_snapshot(value, self.program_state.memory_state)
+                for key, value in self.bindings.items()
+            },
+            'has-returned': self.has_returned,
+            'return-value': self.return_value,
+            'flags': [flag.snapshot() for flag in self.flags],
+        }
 
     def close(self, return_value):
         """

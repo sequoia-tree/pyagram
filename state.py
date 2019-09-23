@@ -3,6 +3,7 @@ import copy
 import display
 import enums
 import pyagram_element
+import utils
 
 class ProgramState:
     """
@@ -12,11 +13,11 @@ class ProgramState:
     """
 
     def __init__(self, global_frame):
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, program_state=self)
         self.curr_element = self.global_frame
-        self.tracked_objs = MemoryState()
+        self.memory_state = MemoryState()
         self.curr_line_no = None
-        self.print_output = [] # TODO: How will you handle `print` statements?
+        self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -57,18 +58,18 @@ class ProgramState:
         curr_element = f'Current element: {repr(self.curr_element)} (line {self.curr_line_no})'
         global_frame_header = display.separator('program execution')
         global_frame = str(self.global_frame)
-        tracked_objs_header = display.separator('objects in memory')
-        tracked_objs = str(self.tracked_objs)
+        memory_state_header = display.separator('objects in memory')
+        memory_state = str(self.memory_state)
         print_output_header = display.separator('print output')
-        print_output = '\n'.join(self.print_output)
+        print_output = self.print_output
         return '\n'.join((
             curr_element,
             '',
             global_frame_header,
             '',
             global_frame,
-            tracked_objs_header + (f'\n\n{tracked_objs}\n' if tracked_objs else ''),
-            print_output_header + (f'\n{print_output}' if print_output else ''),
+            memory_state_header + ('' if memory_state == '' else f'\n\n{memory_state}\n'),
+            print_output_header + ('' if print_output is None else f'\n{print_output}'),
             display.separator(),
         ))
 
@@ -87,16 +88,19 @@ class ProgramState:
             self.process_frame_open(frame)
         if is_frame_close:
             self.process_frame_close(frame, return_value)
-        self.global_frame.step(self.tracked_objs)
+        self.global_frame.step()
 
     def snapshot(self):
         """
-        <summary> # Represents the state of the program at a particular step in time.
+        <summary>
 
         :return:
         """
-        # don't maintain the `snapshots` list in the ProgramState object, or else every deepcopy of the ProgramState will include a deepcopy of the entire list of past ProgramStates!
-        return copy.deepcopy(self)
+        return {
+            'global-frame': self.global_frame.snapshot(),
+            'curr-line-no': self.curr_line_no,
+            'print-output': self.print_output, # This is a string, or **None** if nothing has been printed yet!
+        }
 
     def process_frame_open(self, frame):
         """
@@ -194,7 +198,7 @@ class MemoryState:
 
     def __init__(self):
         self.function_parents = {}
-        self.object_ids = set()
+        self.object_ids = {}
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
 
     def __str__(self):
@@ -208,6 +212,14 @@ class MemoryState:
             for object in self.objects
         )
 
+    def snapshot(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return [utils.object_snapshot(object) for object in self.objects]
+
     def track(self, object):
         """
         <summary>
@@ -216,7 +228,7 @@ class MemoryState:
         """
         object_id = id(object)
         if object_id not in self.object_ids:
-            self.object_ids.add(object_id)
+            self.object_ids[object_id] = len(self.objects)
             self.objects.append(object)
 
     def is_tracked(self, object):

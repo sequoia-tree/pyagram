@@ -3,6 +3,7 @@ import bdb
 import display
 import enums
 import state
+import utils
 import wrap
 
 class Tracer(bdb.Bdb):
@@ -94,7 +95,7 @@ class Tracer(bdb.Bdb):
         if take_snapshot:
             if self.debug:
                 self.display()
-            snapshot = self.state.snapshot()
+            snapshot = utils.snapshot(self.state)
             self.snapshots.append(snapshot)
 
     def display(self):
