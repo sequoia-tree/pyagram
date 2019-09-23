@@ -34,11 +34,11 @@ def get_binding(max_key_len, max_value_len):
     :param max_value_len:
     :return:
     """
-    return lambda key, value: f'|{key:>{max_key_len}}: {value_repr(value):<{max_value_len}}|'
+    return lambda key, value: f'|{key:>{max_key_len}}: {reference_str(value):<{max_value_len}}|'
 
-def value_repr(object):
+def reference_str(object):
     """
-    <summary>
+    <summary> # for displaying a reference to a value (may be a referent type or not)
 
     :param object:
     :return:
@@ -47,7 +47,7 @@ def value_repr(object):
 
 def value_str(object, function_parents):
     """
-    <summary>
+    <summary> # for displaying a value (may be a referent type or not)
 
     :param object:
     :return:
@@ -55,7 +55,7 @@ def value_str(object, function_parents):
     if isinstance(object, types.FunctionType):
         name = object.__name__
         args = ', '.join(
-            name if param.default is inspect.Parameter.empty else f'{name}={value_repr(param.default)}'
+            name if param.default is inspect.Parameter.empty else f'{name}={reference_str(param.default)}'
             for name, param in inspect.signature(object).parameters.items()
         )
         parent = function_parents[object]
