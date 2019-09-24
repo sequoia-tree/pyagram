@@ -1,5 +1,4 @@
 import inspect
-import types
 
 import utils
 
@@ -38,21 +37,21 @@ def get_binding(max_key_len, max_value_len):
 
 def reference_str(object):
     """
-    <summary> # for displaying a reference to a value (may be a referent type or not)
+    <summary> # for displaying a reference to a value (may be a primitive or referent type)
 
     :param object:
     :return:
     """
-    return f'*{id(object)}' if utils.is_referent_type(object) else repr(object)
+    return repr(object) if utils.is_primitive_type(object) else f'*{id(object)}'
 
 def value_str(object, function_parents):
     """
-    <summary> # for displaying a value (may be a referent type or not)
+    <summary> # for displaying a value (may be a primitive or referent type)
 
     :param object:
     :return:
     """
-    if isinstance(object, types.FunctionType):
+    if isinstance(object, utils.FUNCTION_TYPES):
         name = object.__name__
         args = ', '.join(
             name if param.default is inspect.Parameter.empty else f'{name}={reference_str(param.default)}'

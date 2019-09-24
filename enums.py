@@ -15,7 +15,7 @@ class TraceTypes:
         """
         <summary>
 
-        :param frame:
+        :param trace_type:
         :return:
         """
         return ValueError(f'object {trace_type} is not a TraceTypes enumeral')
@@ -34,7 +34,7 @@ class FrameTypes:
         """
         <summary>
 
-        :param frame:
+        :param frame_type:
         :return:
         """
         return ValueError(f'object {frame_type} is not a FrameTypes enumeral')

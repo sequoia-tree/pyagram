@@ -3,7 +3,6 @@ import bdb
 import display
 import enums
 import state
-import utils
 import wrap
 
 class Tracer(bdb.Bdb):

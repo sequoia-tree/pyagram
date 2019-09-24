@@ -1,5 +1,4 @@
 import gc
-import types
 
 import display
 import utils
@@ -255,9 +254,9 @@ class PyagramFrame(PyagramElement):
             objects.append(self.return_value)
         while objects:
             object = objects.pop()
-            if utils.is_referent_type(object):
+            if not utils.is_primitive_type(object):
                 self.state.memory_state.track(object)
-                if isinstance(object, types.FunctionType):
+                if isinstance(object, utils.FUNCTION_TYPES):
                     utils.enforce_one_function_per_code_object(object)
                     self.state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)

@@ -11,6 +11,13 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+return_none = """
+def f():
+    return
+
+x = f()
+"""
+
 default1 = """
 def f(x=4):
     return x
