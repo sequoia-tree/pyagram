@@ -248,7 +248,7 @@ class MemoryState:
         :return:
         """
         return '\n'.join(
-            f'{id(object)}: {display.value_str(object, self.function_parents)}'
+            f'{id(object)}: {utils.value_str(object, self.function_parents)}'
             for object in self.objects
         )
 
@@ -264,7 +264,7 @@ class MemoryState:
 
         :return:
         """
-        return [utils.object_snapshot(object) for object in self.objects]
+        return [utils.object_snapshot(object, self.function_parents) for object in self.objects]
 
     def track(self, object):
         """

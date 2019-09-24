@@ -202,20 +202,20 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return_key = 'return'
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({display.reference_str(self.function)})')
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({utils.reference_str(self.function)})')
         if self.bindings or self.has_returned:
             key_str_len = utils.mapped_len(str)
-            val_str_len = utils.mapped_len(display.reference_str)
+            val_str_len = utils.mapped_len(utils.reference_str)
             max_var_key_len, ret_key_len, max_var_value_len, ret_value_len = 0, 0, 0, 0
             if self.bindings:
                 max_var_key_len = key_str_len(max(self.bindings.keys(), key=key_str_len))
                 max_var_value_len = val_str_len(max(self.bindings.values(), key=val_str_len))
             if self.has_returned:
                 ret_key_len = len(str(return_key))
-                ret_value_len = len(display.reference_str(self.return_value))
+                ret_value_len = len(utils.reference_str(self.return_value))
             max_key_len = max(max_var_key_len, ret_key_len)
             max_value_len = max(max_var_value_len, ret_value_len)
-            binding = display.get_binding(max_key_len, max_value_len)
+            binding = utils.get_binding(max_key_len, max_value_len)
             bindings = []
             if self.bindings:
                 var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())

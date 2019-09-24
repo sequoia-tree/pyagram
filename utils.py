@@ -109,14 +109,43 @@ def mapped_len(function):
     """
     return lambda object: len(function(object))
 
-def impute_flag_banners(snapshots, final_state):
+def get_binding(max_key_len, max_value_len):
     """
     <summary>
 
-    :param snapshots:
+    :param max_key_len:
+    :param max_value_len:
     :return:
     """
-    pass # TODO
+    return lambda key, value: f'|{key:>{max_key_len}}: {reference_str(value):<{max_value_len}}|'
+
+def reference_str(object):
+    """
+    <summary> # for displaying a reference to a value (may be a primitive or referent type)
+
+    :param object:
+    :return:
+    """
+    return repr(object) if is_primitive_type(object) else f'*{id(object)}'
+
+def value_str(object, function_parents):
+    """
+    <summary> # for displaying a value (may be a primitive or referent type)
+
+    :param object:
+    :param function_parents:
+    :return:
+    """
+    if isinstance(object, FUNCTION_TYPES):
+        name = object.__name__
+        args = ', '.join(
+            name if param.default is inspect.Parameter.empty else f'{name}={reference_str(param.default)}'
+            for name, param in inspect.signature(object).parameters.items()
+        )
+        parent = function_parents[object]
+        return f'function {name}({args}) [p={repr(parent)}]'
+    else:
+        return repr(object)
 
 def reference_snapshot(object, memory_state):
     """
@@ -131,22 +160,22 @@ def reference_snapshot(object, memory_state):
     else:
         return memory_state.object_ids[id(object)]        
 
-def object_snapshot(object):
+def object_snapshot(object, function_parents):
     """
     <summary> # snapshot a value (may be a referent type only)
 
     :param object:
+    :param function_parents:
     :return:
     """
     object_type = type(object)
-    # if issubclass(type, ?):
-    #     snapshot =
-    # elif issubclass(object, ?):
-    #     snapshot =
-    # else:
-    #     snapshot =
-    #     # TODO: Get a snapshot of a generic object. Use gc.get_referents? Actually it might be safer to say "hey this is an unsupported type, sorry".
-    snapshot = None # TODO
+    if issubclass(type, SINGLE_INSTANCE_TYPES):
+        snapshot = str(object)
+    elif issubclass(object, FUNCTION_TYPES):
+        snapshot = value_str(object, function_parents)
+    # TODO: Test for a lot more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now)!
+    else:
+        snapshot = 'TODO' # TODO: Get a snapshot of a generic object. Use gc.get_referents? Actually it might be safer to say "hey this is an unsupported type, sorry".
     return {
         'type': None if object_type in SINGLE_INSTANCE_TYPES else object_type.__name__,
         'object': snapshot,
@@ -157,3 +186,12 @@ def object_snapshot(object):
           # Unordered, key-value ():
           # Maybe sequential vs unordered doesn't change
     }
+
+def impute_flag_banners(snapshots, final_state):
+    """
+    <summary>
+
+    :param snapshots:
+    :return:
+    """
+    pass # TODO
