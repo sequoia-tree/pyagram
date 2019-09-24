@@ -141,7 +141,7 @@ def value_str(object, function_parents):
         args = ', '.join(
             name if param.default is inspect.Parameter.empty else f'{name}={reference_str(param.default)}'
             for name, param in inspect.signature(object).parameters.items()
-        )
+        ) # TODO: You've made sure to print default args. Good. But you have yet to implement logic for printing modifiers like *, **, \ (being added in 3.8), etc. Remember, there are several types of param in the Signature object: POSITIONAL_ONLY, POSITIONAL_OR_KEYWORD, VAR_POSITIONAL, KEYWORD_ONLY, and VAR_KEYWORD.
         parent = function_parents[object]
         return f'function {name}({args}) [p={repr(parent)}]'
     else:
@@ -170,13 +170,17 @@ def object_snapshot(object, function_parents):
     """
     object_type = type(object)
     if issubclass(type, SINGLE_INSTANCE_TYPES):
+        category = SINGLE_INSTANCE_TYPES
         snapshot = str(object)
     elif issubclass(object, FUNCTION_TYPES):
-        snapshot = value_str(object, function_parents)
+        category = FUNCTION_TYPES
+        snapshot = '' # TODO: basically str(inspect.signature(object)) but you want the default args displayed too. if a default arg is a primitive, then just write it; if it's a referent type, then you want something like f(x, y=ptr to object, z=ptr to obj). it'd probably be easiest to serialize like {'function-name': str, 'parameters': [(str, *), (str, *), ...]} where "*" denotes the serialization of the default value if the param has one, or None if the param does not have one.
     # TODO: Test for a lot more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now)!
     else:
+        category = 'TODO' # TODO
         snapshot = 'TODO' # TODO: Get a snapshot of a generic object. Use gc.get_referents? Actually it might be safer to say "hey this is an unsupported type, sorry".
     return {
+        'category': category,
         'type': None if object_type in SINGLE_INSTANCE_TYPES else object_type.__name__,
         'object': snapshot,
         # TODO I think most built-in objects can be displayed as a sequence of boxes, or as one of 3 other preset structures. (Lists for example are a sequence of boxes since they're ordered and contain singleton elements.)
