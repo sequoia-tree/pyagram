@@ -9,7 +9,7 @@ PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Complete (or verify it's complet
 SINGLE_INSTANCE_TYPES = (None, NotImplemented, Ellipsis)
 FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Complete (or verify it's complete)
 
-def is_primitive_type(object): # TODO: rename 'non-referent' as 'primitive'
+def is_primitive_type(object):
     """
     <summary>
 
