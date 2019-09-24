@@ -128,18 +128,18 @@ def reference_str(object):
     """
     return repr(object) if is_primitive_type(object) else f'*{id(object)}'
 
-def value_str(object, function_parents):
+def object_str(object, memory_state):
     """
     <summary> # for displaying a value (may be a primitive or referent type)
 
     :param object:
-    :param function_parents:
+    :param memory_state:
     :return:
     """
     if isinstance(object, FUNCTION_TYPES):
         name = object.__name__
         parameters = inspect.signature(object)
-        parent = function_parents[object]
+        parent = memory_state.function_parents[object]
         return f'function {name}{parameters} [p={repr(parent)}]'
     else:
         return repr(object)
@@ -157,32 +157,32 @@ def reference_snapshot(object, memory_state):
     else:
         return memory_state.object_ids[id(object)]        
 
-def object_snapshot(object, function_parents):
+def object_snapshot(object, memory_state):
     """
     <summary> # snapshot a value (may be a referent type only)
 
     :param object:
-    :param function_parents:
+    :param memory_state:
     :return:
     """
     object_type = type(object)
-    if issubclass(type, SINGLE_INSTANCE_TYPES):
-        category = SINGLE_INSTANCE_TYPES
-        snapshot = str(object)
-        # TODO: More generalizable: Right now you're specifying which objects don't merit a 'label' -- namely, those in SINGLE_INSTANCE_TYPES. But you can't get all of them! There's always stuff like inspect.Parameter.empty that's way too niche, and the user can even make their own. Instead, just give everything a label. Then, note that the label for `None`, `NotImplemented`, etc is just "None", "NotImplemented", etc. -- so you can simply omit the 'object' instead of the 'label'. Really you only need the 'object' field for complex things that contain pointers to other functions, like containers or functions.
-    elif issubclass(object, FUNCTION_TYPES):
+    if issubclass(object, FUNCTION_TYPES):
         category = FUNCTION_TYPES
         snapshot = {
             'name': object.__name__,
             'parameters': [
                 {
                     'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                    'default': None if parameter.default is inspect.Parameter.empty else parameter.default
+                    'default': None if parameter.default is inspect.Parameter.empty else reference_snapshot(parameter.default, memory_state)
                 }
                 for parameter in inspect.signature(object).parameters.values()
             ],
-            'parent': f'[p={repr(function_parents[object])}]',
+            'parent': f'[p={repr(memory_state.function_parents[object])}]',
         }
+    elif issubclass(type, SINGLE_INSTANCE_TYPES):
+        category = SINGLE_INSTANCE_TYPES
+        snapshot = str(object)
+        # TODO: More generalizable: Right now you're specifying which objects don't merit a 'label' -- namely, those in SINGLE_INSTANCE_TYPES. But you can't get all of them! There's always stuff like inspect.Parameter.empty that's way too niche, and the user can even make their own. Instead, just give everything a label. Then, note that the label for `None`, `NotImplemented`, etc is just "None", "NotImplemented", etc. -- so you can simply omit the 'object' instead of the 'label'. Really you only need the 'object' field for complex things that contain pointers to other functions, like containers or functions.
     # TODO: Add more elifs for more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now) (not just normal classes, but also abstract classes and instances)!
     else:
         category = 'TODO' # TODO
