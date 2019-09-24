@@ -6,8 +6,8 @@ import types
 # Primitive types: Compare with `==`.
 PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Complete (or verify it's complete)
 # Referent types: Compare with `is`.
-SINGLE_INSTANCE_TYPES = (None, NotImplemented, Ellipsis)
-FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Complete (or verify it's complete)
+SINGLE_INSTANCE_TYPES = (None, Ellipsis, NotImplemented, Exception) #  TODO: And `Type` types? And what else?
+FUNCTION_TYPES = (types.FunctionType, types.MethodType)
 
 def is_primitive_type(object):
     """
@@ -138,12 +138,9 @@ def value_str(object, function_parents):
     """
     if isinstance(object, FUNCTION_TYPES):
         name = object.__name__
-        args = ', '.join(
-            name if param.default is inspect.Parameter.empty else f'{name}={reference_str(param.default)}'
-            for name, param in inspect.signature(object).parameters.items()
-        ) # TODO: You've made sure to print default args. Good. But you have yet to implement logic for printing modifiers like *, **, \ (being added in 3.8), etc. Remember, there are several types of param in the Signature object: POSITIONAL_ONLY, POSITIONAL_OR_KEYWORD, VAR_POSITIONAL, KEYWORD_ONLY, and VAR_KEYWORD.
+        parameters = inspect.signature(object)
         parent = function_parents[object]
-        return f'function {name}({args}) [p={repr(parent)}]'
+        return f'function {name}{parameters} [p={repr(parent)}]'
     else:
         return repr(object)
 
@@ -172,16 +169,28 @@ def object_snapshot(object, function_parents):
     if issubclass(type, SINGLE_INSTANCE_TYPES):
         category = SINGLE_INSTANCE_TYPES
         snapshot = str(object)
+        # TODO: More generalizable: Right now you're specifying which objects don't merit a 'label' -- namely, those in SINGLE_INSTANCE_TYPES. But you can't get all of them! There's always stuff like inspect.Parameter.empty that's way too niche, and the user can even make their own. Instead, just give everything a label. Then, note that the label for `None`, `NotImplemented`, etc is just "None", "NotImplemented", etc. -- so you can simply omit the 'object' instead of the 'label'. Really you only need the 'object' field for complex things that contain pointers to other functions, like containers or functions.
     elif issubclass(object, FUNCTION_TYPES):
         category = FUNCTION_TYPES
-        snapshot = '' # TODO: basically str(inspect.signature(object)) but you want the default args displayed too. if a default arg is a primitive, then just write it; if it's a referent type, then you want something like f(x, y=ptr to object, z=ptr to obj). it'd probably be easiest to serialize like {'function-name': str, 'parameters': [(str, *), (str, *), ...]} where "*" denotes the serialization of the default value if the param has one, or None if the param does not have one.
-    # TODO: Test for a lot more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now)!
+        snapshot = {
+            'name': object.__name__,
+            'parameters': [
+                {
+                    'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
+                    'default': None if parameter.default is inspect.Parameter.empty else parameter.default
+                }
+                for parameter in inspect.signature(object).parameters.values()
+            ],
+            'parent': f'[p={repr(function_parents[object])}]',
+        }
+    # TODO: Add more elifs for more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now) (not just normal classes, but also abstract classes and instances)!
     else:
         category = 'TODO' # TODO
         snapshot = 'TODO' # TODO: Get a snapshot of a generic object. Use gc.get_referents? Actually it might be safer to say "hey this is an unsupported type, sorry".
+        # TODO: Better idea: As a catch-all, use your method of OOP diagrams from your textbook. But first write down a few elifs to catch unsupported things like async and coroutines?
     return {
-        'category': category,
-        'type': None if object_type in SINGLE_INSTANCE_TYPES else object_type.__name__,
+        'category': category, # So the de-serializer knows how to decode `object`, since it varies depending on which category it's in.
+        'label': None if object_type in SINGLE_INSTANCE_TYPES else object_type.__name__,
         'object': snapshot,
         # TODO I think most built-in objects can be displayed as a sequence of boxes, or as one of 3 other preset structures. (Lists for example are a sequence of boxes since they're ordered and contain singleton elements.)
           # Sequential, singleton (tuple, list, etc): Sequence of connected boxes
@@ -189,6 +198,7 @@ def object_snapshot(object, function_parents):
           # Unordered, singleton ():
           # Unordered, key-value ():
           # Maybe sequential vs unordered doesn't change
+          # TODO: Draw a dict like a list, but instead of a 1xN box it's a 2xN box for key / vals?
     }
 
 def impute_flag_banners(snapshots, final_state):
