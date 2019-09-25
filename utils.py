@@ -7,25 +7,18 @@ import types
 # Primitive types: Compare with `==`.
 PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Finish.
 # Referent types: Compare with `is`.
-FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Finish. (E.g. What about method-wrapper types like None.__str__? And check out type([].append) too!) BUT hold your rahi -- we might only want to track user-defined functions ... I mean, we don't step inside built-ins or even know what their parent frames are. Wrapper_descriptor and slot_wrapper? Maybe we should make method-wrappers and co. get drawn not in the style of functions, but in the style of objects?
-ORDERED_COLLECTION_TYPES = (NotImplemented,) # TODO (*)
-UNORDERED_COLLECTION_TYPES = (NotImplemented,) # TODO (*)
-MAPPING_TYPES = (NotImplemented,) # TODO (*)
-ITERATOR_TYPES = (NotImplemented,) # TODO (*)
+FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Finish -- once you get around to implementing class / instance functionality. (E.g. What about method-wrapper types like None.__str__? And check out type([].append) too!) BUT hold your rahi -- we might only want to track user-defined functions ... I mean, we don't step inside built-ins or even know what their parent frames are. Wrapper_descriptor and slot_wrapper? Maybe we should make method-wrappers and co. get drawn not in the style of functions, but in the style of objects? Oh and one more thing: how do you plan to visualize class functions vs. bound methods (e.g. A.f vs. A().f)?
+ORDERED_COLLECTION_TYPES = (list, tuple, str)
+UNORDERED_COLLECTION_TYPES = (set, frozenset)
+MAPPING_TYPES = (dict, types.MappingProxyType) # TODO: Finish.
+ITERATOR_TYPES = () # TODO: Finish.
 GENERATOR_TYPES = (types.GeneratorType,)
-
-# TODO: (*) Some ideas ... note they are NOT comprehensive ...
-# TODO:     list
-# TODO:     tuple
-# TODO:     str [include for completeness, but it won't do anything since we check PRIMITIVES first]
-# TODO:     set
-# TODO:     frozenset
-# TODO:     dict
-# TODO:     odict
-# TODO:     ordereddict
-# TODO:     map [the output of a call to `map`]
-# TODO:     mappingproxy
-# TODO:     range_iterator
+# TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
+# TODO:     odict, odict_keys, ordereddict, etc.
+# TODO:     OrderedDict
+# TODO:     Counter
+# TODO:     What about namedtuple classes / instances?
+# TODO:     collections.*
 # TODO:     list_iterator
 # TODO:     tuple_iterator
 # TODO:     str_iterator
@@ -33,7 +26,8 @@ GENERATOR_TYPES = (types.GeneratorType,)
 # TODO:     dict_keyiterator
 # TODO:     dict_valueiterator
 # TODO:     dict_itemiterator
-# TODO:     None, NotImplemented, Ellipses
+# TODO:     range_iterator
+# TODO:     map [the output of a call to `map`; a kind of iterator]
 # TODO:     Various built-in Exceptions
 
 def is_primitive_type(object):
@@ -225,26 +219,26 @@ def object_snapshot(object, memory_state):
             for key, value in object.items()
         ]
     elif object_type in ITERATOR_TYPES:
-        encoding = NotImplemented # TODO: 'object-frame', 'iterator', or does it depend?
+        encoding = 'iterator'
         snapshot = NotImplemented # TODO
     elif object_type in GENERATOR_TYPES:
-        encoding = 'object-frame'
+        encoding = 'generator'
         snapshot = NotImplemented # TODO
     else:
         if hasattr(object, '__dict__'):
             encoding = 'object-frame'
-            snapshot = NotImplemented # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
+            snapshot = NotImplemented # TODO
+            # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
+            # TODO: If `object_type is Type` then write "class X [p=Y]", else "instance X [p=Y]".
+            # TODO: Some objects have a *lot* of items in their `.__dict__`. You have a few options:
+              # (*) Make it an option [default ON] to render the contents in object frames.
+              # (*) Limit the size of each object frame, but make the contents scrollable on the site.
+              # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
         else:
             encoding = 'object-repr'
             snapshot = repr(object)
-    # TODO: Where will you detect and catch unsupported constructs like async and coroutines?
-    # TODO: Make it an option [default ON] to render iterators and generators all fancy (i.e. as in your textbook). People should be able to view them in the generic OOP-diagram style, if they want to. (This is a reasonable use case, e.g. if someone wants to see the `__iter__` and has_next methods at play.)
-    # TODO: Some objects have a *lot* of items in their `.__dict__`. You have a few options:
-    #   (*) Make it an option [default ON] to render the contents in object frames.
-    #   (*) Limit the size of each object frame, but make the contents scrollable on the website.
-    #   (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
     return {
-        'encoding': encoding,
+        'encoding': encoding, # So the decoder knows the structure of `snapshot`.
         'label': object_type.__name__,
         'object': snapshot,
     }

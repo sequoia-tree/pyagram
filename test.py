@@ -18,6 +18,8 @@ def f():
 x = f()
 """
 
+# test instantiation like `a = type(b)(c, d)`
+
 default1 = """
 def f(x=4):
     return x
