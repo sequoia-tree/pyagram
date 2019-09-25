@@ -126,7 +126,7 @@ class PyagramFlag(PyagramElement):
         """
         return {
             'is-curr-element': self is self.state.program_state.curr_element,
-            'pyagram-flag': self,
+            'internal-object': self,
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
         }
@@ -169,6 +169,7 @@ class PyagramFrame(PyagramElement):
         super().__init__(opened_by, state)
         self.is_new_frame = True
         self.is_implicit = is_implicit
+        self.initial_bindings = None
         self.bindings = frame.f_locals
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
@@ -277,6 +278,12 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
+        bindings = {
+            key: utils.reference_snapshot(value, self.state.memory_state)
+            for key, value in self.bindings.items()
+        }
+        if self.initial_bindings is None:
+            self.initial_bindings = bindings
         return {
             'is-curr-element': self is self.state.program_state.curr_element,
             'id': self.id,
@@ -284,10 +291,7 @@ class PyagramFrame(PyagramElement):
                 None
                 if self.is_global_frame
                 else self.state.memory_state.function_parents[self.function].id,
-            'bindings': {
-                key: utils.reference_snapshot(value, self.state.memory_state)
-                for key, value in self.bindings.items()
-            },
+            'bindings': bindings,
             'has-returned': self.has_returned,
             'return-value': self.return_value,
             'flags': [flag.snapshot() for flag in self.flags],

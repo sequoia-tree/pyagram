@@ -28,36 +28,24 @@ class CallWrapper(ast.NodeTransformer):
         #                f(...),
         #            )
 
+        # TODO: Are there nodes other than Call nodes (eg listcomp, dictcomp, etc) that create their own frames? If so, we need to mutate those too. And also flag_info bitmap should account for them too (not just Call nodes).
 
+        # ----------------------------------------------------------------------
 
-        argument_code = ast.Tuple( # TODO: The code the student passes in for each arg.
-            elts=[],
+        # TODO: remember, `node` is an AST Call node.
+        function_code = None # TODO
+        argument_code = ast.Tuple(
+            elts=[], # TODO
             ctx=ast.Load(),
         )
-        call_bitmap = ast.Tuple( # TODO: Which args are calls vs directly evaluated.
-            elts=[], # TODO
-            ctx=ast.Load(), # TODO: You also need to know whether the function is the result of a call not.
+        call_bitmap = ast.Tuple(
+            elts=[], # TODO: The first elem can be whether the FUNCTION is the result of a call.
+            ctx=ast.Load(),
         )
-        # TODO: NOTE: For f(a, b=c, *d, **e) you'd get ...
-        # args = [
-        #            Name(id='a', ctx=Load()),
-        #            Starred(value=Name(id='d', ctx=Load()), ctx=Load())
-        #        ],
-        # keywords = [
-        #     keyword(arg='b', value=Name(id='c', ctx=Load())),
-        #     keyword(arg=None, value=Name(id='e', ctx=Load()))
-        # ]
-
-
-
         flag_info = ast.Tuple(
-            elts=[argument_code, call_bitmap],
-            ctx=ast.Load()
+            elts=[function_code, argument_code, call_bitmap],
+            ctx=ast.Load(),
         )
-        flag_info = ast.NameConstant(None)
-
-
-        # TODO: Maybe call them precursor_function, precursor_call, successor_function, and successor_call, instead of inner_lambda, inner_call, outer_lambda, and outer_call? Or work "wrapped" or "wrap" into the variable names?
         inner_lambda = ast.Lambda(
             args=ast.arguments(
                 args=[],
@@ -102,7 +90,6 @@ class CallWrapper(ast.NodeTransformer):
         )
 
         self.id_counter += 1
-
         # outer_call:
         #   lineno = -1
         #   col_offset = id # I guess we won't use the ID. But it's nice to have.
@@ -112,9 +99,6 @@ class CallWrapper(ast.NodeTransformer):
         # So an outer_call and inner_call correspond to one another iff they have the same ID.
 
         self.generic_visit(node)
-
-        # TODO: Are there nodes other than Call nodes (eg listcomp, dictcomp, etc) that create their own frames? If so, we need to mutate those too. And also flag_info bitmap should account for them too (not just Call nodes).
-
         return outer_call
 
 def wrap_calls(src_code):
