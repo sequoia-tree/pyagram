@@ -1,13 +1,40 @@
+import collections.abc
 import gc
 import inspect
 import numbers
 import types
 
 # Primitive types: Compare with `==`.
-PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Complete (or verify it's complete)
+PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Finish.
 # Referent types: Compare with `is`.
-SINGLE_INSTANCE_TYPES = (None, Ellipsis, NotImplemented, Exception) #  TODO: And `Type` types? And what else?
-FUNCTION_TYPES = (types.FunctionType, types.MethodType)
+FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Finish. (E.g. What about method-wrapper types like None.__str__? And check out type([].append) too!) BUT hold your rahi -- we might only want to track user-defined functions ... I mean, we don't step inside built-ins or even know what their parent frames are. Wrapper_descriptor and slot_wrapper? Maybe we should make method-wrappers and co. get drawn not in the style of functions, but in the style of objects?
+ORDERED_COLLECTION_TYPES = (NotImplemented,) # TODO (*)
+UNORDERED_COLLECTION_TYPES = (NotImplemented,) # TODO (*)
+MAPPING_TYPES = (NotImplemented,) # TODO (*)
+ITERATOR_TYPES = (NotImplemented,) # TODO (*)
+GENERATOR_TYPES = (types.GeneratorType,)
+
+# TODO: (*) Some ideas ... note they are NOT comprehensive ...
+# TODO:     list
+# TODO:     tuple
+# TODO:     str [include for completeness, but it won't do anything since we check PRIMITIVES first]
+# TODO:     set
+# TODO:     frozenset
+# TODO:     dict
+# TODO:     odict
+# TODO:     ordereddict
+# TODO:     map [the output of a call to `map`]
+# TODO:     mappingproxy
+# TODO:     range_iterator
+# TODO:     list_iterator
+# TODO:     tuple_iterator
+# TODO:     str_iterator
+# TODO:     set_iterator
+# TODO:     dict_keyiterator
+# TODO:     dict_valueiterator
+# TODO:     dict_itemiterator
+# TODO:     None, NotImplemented, Ellipses
+# TODO:     Various built-in Exceptions
 
 def is_primitive_type(object):
     """
@@ -63,7 +90,7 @@ def get_function(frame):
     """
     function = None
     for referrer in gc.get_referrers(frame.f_code):
-        if isinstance(referrer, FUNCTION_TYPES):
+        if is_function_type(referrer):
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer
     assert function is not None
@@ -166,42 +193,63 @@ def object_snapshot(object, memory_state):
     :return:
     """
     object_type = type(object)
-    if issubclass(object, FUNCTION_TYPES):
-        category = FUNCTION_TYPES
+    if object_type in FUNCTION_TYPES:
+        encoding = 'function'
         snapshot = {
             'name': object.__name__,
             'parameters': [
                 {
                     'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                    'default': None if parameter.default is inspect.Parameter.empty else reference_snapshot(parameter.default, memory_state)
+                    'default': None if parameter.default is inspect.Parameter.empty else reference_snapshot(parameter.default, memory_state),
                 }
                 for parameter in inspect.signature(object).parameters.values()
             ],
             'parent': f'[p={repr(memory_state.function_parents[object])}]',
         }
-    elif issubclass(type, SINGLE_INSTANCE_TYPES):
-        category = SINGLE_INSTANCE_TYPES
-        snapshot = str(object)
-        # TODO: More generalizable: Right now you're specifying which objects don't merit a 'label' -- namely, those in SINGLE_INSTANCE_TYPES. But you can't get all of them! There's always stuff like inspect.Parameter.empty that's way too niche, and the user can even make their own. Instead, just give everything a label. Then, note that the label for `None`, `NotImplemented`, etc is just "None", "NotImplemented", etc. -- so you can simply omit the 'object' instead of the 'label'. Really you only need the 'object' field for complex things that contain pointers to other functions, like containers or functions.
-    # TODO: Add more elifs for more classes of referent types. Eg lists, dicts, but also niche ones like range, dict_keys, etc. and of course don't forget about user-defined ones (but you can leave that one as just a TODO for now) (not just normal classes, but also abstract classes and instances)!
+    elif object_type in ORDERED_COLLECTION_TYPES:
+        encoding = 'ordered-collection'
+        snapshot = [
+            reference_snapshot(item, memory_state)
+            for item in object
+        ]
+    elif object_type in UNORDERED_COLLECTION_TYPES:
+        encoding = 'unordered-collection'
+        snapshot = [
+            reference_snapshot(item, memory_state)
+            for item in object
+        ]
+    elif object_type in MAPPING_TYPES:
+        encoding = 'mapping'
+        snapshot =  [
+            [reference_snapshot(key, memory_state), reference_snapshot(value, memory_state)]
+            for key, value in object.items()
+        ]
+    elif object_type in ITERATOR_TYPES:
+        encoding = NotImplemented # TODO: 'object-frame', 'iterator', or does it depend?
+        snapshot = NotImplemented # TODO
+    elif object_type in GENERATOR_TYPES:
+        encoding = 'object-frame'
+        snapshot = NotImplemented # TODO
     else:
-        category = 'TODO' # TODO
-        snapshot = 'TODO' # TODO: Get a snapshot of a generic object. Use gc.get_referents? Actually it might be safer to say "hey this is an unsupported type, sorry".
-        # TODO: Better idea: As a catch-all, use your method of OOP diagrams from your textbook. But first write down a few elifs to catch unsupported things like async and coroutines?
+        if hasattr(object, '__dict__'):
+            encoding = 'object-frame'
+            snapshot = NotImplemented # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
+        else:
+            encoding = 'object-repr'
+            snapshot = repr(object)
+    # TODO: Where will you detect and catch unsupported constructs like async and coroutines?
+    # TODO: Make it an option [default ON] to render iterators and generators all fancy (i.e. as in your textbook). People should be able to view them in the generic OOP-diagram style, if they want to. (This is a reasonable use case, e.g. if someone wants to see the `__iter__` and has_next methods at play.)
+    # TODO: Some objects have a *lot* of items in their `.__dict__`. You have a few options:
+    #   (*) Make it an option [default ON] to render the contents in object frames.
+    #   (*) Limit the size of each object frame, but make the contents scrollable on the website.
+    #   (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
     return {
-        'category': category, # So the de-serializer knows how to decode `object`, since it varies depending on which category it's in.
-        'label': None if object_type in SINGLE_INSTANCE_TYPES else object_type.__name__,
+        'encoding': encoding,
+        'label': object_type.__name__,
         'object': snapshot,
-        # TODO I think most built-in objects can be displayed as a sequence of boxes, or as one of 3 other preset structures. (Lists for example are a sequence of boxes since they're ordered and contain singleton elements.)
-          # Sequential, singleton (tuple, list, etc): Sequence of connected boxes
-          # Sequential, key-value (dictionary, etc):
-          # Unordered, singleton ():
-          # Unordered, key-value ():
-          # Maybe sequential vs unordered doesn't change
-          # TODO: Draw a dict like a list, but instead of a 1xN box it's a 2xN box for key / vals?
     }
 
-def impute_flag_banners(snapshots, final_state):
+def interpolate_flag_banners(snapshots, final_state):
     """
     <summary>
 

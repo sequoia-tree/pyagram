@@ -18,6 +18,8 @@ class State:
     def __str__(self):
         """
         <summary>
+
+        :return:
         """
         program_state_header = display.separator('program execution')
         program_state = str(self.program_state)
@@ -50,6 +52,8 @@ class State:
     def snapshot(self):
         """
         <summary> # Represents the state at a particular step in time.
+
+        :return:
         """
         return {
             'program-state': self.program_state.snapshot(),
@@ -237,9 +241,9 @@ class MemoryState:
     """
 
     def __init__(self):
-        self.function_parents = {}
         self.object_ids = {}
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
+        self.function_parents = {}
 
     def __str__(self):
         """
@@ -255,6 +259,8 @@ class MemoryState:
     def step(self):
         """
         <summary>
+
+        :return:
         """
         pass
 
