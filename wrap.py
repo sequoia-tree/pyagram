@@ -8,9 +8,10 @@ class CallWrapper(ast.NodeTransformer):
     <summary>
     """
 
-    def __init__(self):
+    def __init__(self, code_lines):
         super().__init__()
         self.id_counter = 0
+        self.code_lines = code_lines
 
     def visit_Call(self, node):
         """
@@ -33,9 +34,9 @@ class CallWrapper(ast.NodeTransformer):
         # ----------------------------------------------------------------------
 
         # TODO: remember, `node` is an AST Call node.
-        function_code = None # TODO
+        function_code = ast.NameConstant(None) # TODO
         argument_code = ast.Tuple(
-            elts=[], # TODO
+            elts=[], # TODO: Start reading at the line_no and col_offset. Beware of parentheses in strings, multiline function calls, etc.
             ctx=ast.Load(),
         )
         call_bitmap = ast.Tuple(
@@ -109,7 +110,7 @@ def wrap_calls(src_code):
     :return:
     """
     src_ast = ast.parse(src_code)
-    new_ast = CallWrapper().visit(src_ast)
+    new_ast = CallWrapper(src_code.split('\n')).visit(src_ast)
     ast.fix_missing_locations(new_ast)
     new_code = compile(new_ast, filename='<ast>', mode='exec')
     return new_code
