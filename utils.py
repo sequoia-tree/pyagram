@@ -253,7 +253,7 @@ def interpolate_flag_banners(snapshots, final_state):
     """
     pass # TODO
 
-def split_function_call(code_lines, line_no, col_offset):
+def split_function_call(code_lines, string_indices, line_no, col_offset):
     """
     <summary>
 
@@ -269,7 +269,21 @@ def split_function_call(code_lines, line_no, col_offset):
     
     pass # TODO: Before giving the code to the CallWrapper, use regex to get a list [(start, end), (start, end), ...] where each "start" or "end" respectively denotes the (line_no, col_offset) where a string starts or ends. Then in this function you can just jump over all the strings super easy and not worry about them! See `find_strings` above.
 
+    # Pass in `code`, `string_indices`, and a list where lst[i] = index of ith 
+    
+    # >>> code_lines = code.split('\n')
+    # >>> newline_indices = [len(line) for line in code_lines]
+    # >>> newline_indices.pop()
+    # 0
+    # >>> for i in range(1, len(newline_indices)):
+    # ...     newline_indices[i] += newline_indices[i-1] + 1
+    # ... 
+    # >>> newline_indices
+    # [0]
+
     # TODO: Keep track of each index where there's a legit (ie non-string) open-paren and each index where there's a legit close-paren. Stop when you see a close-paren that is not immediately followed by an open paren.
+
+    # TODO: Text Rachel and email Alex / Allon.
 
 def find_string_indices(code):
     """
@@ -283,10 +297,10 @@ def find_string_indices(code):
     
     # You must account for `'''` and `"""` explicitly; you can't just rely on the `'` pattern to find `'''` patterns and the `"` pattern to find `"""` patterns; they're fundamentally different. For example try `" \""" "` vs `""" \""" """`.
 
-    string_indices = []
+    offset, string_indices = 0, []
     while True:
         next_triplequote_indices = find_first_delimited_substring_indices(code, '"""', "'''")
-        next_singlequote_indices = find_first_delimited_substring_indices(code, '"', '"')
+        next_singlequote_indices = find_first_delimited_substring_indices(code, '"', "'")
         has_triplequote_match = next_triplequote_indices is not None
         has_singlequote_match = next_singlequote_indices is not None
         if has_triplequote_match or has_singlequote_match:
@@ -300,12 +314,11 @@ def find_string_indices(code):
                     '\n' != code[i]
                     for i in range(next_indices[0], next_indices[1])
                 )
-            string_indices.append(next_indices)
-            code = code[next_indices[1]:]
+            string_indices.append((offset + next_indices[0], offset + next_indices[1]))
+            offset, code = offset + next_indices[1], code[next_indices[1]:]
         else:
             break
     return string_indices
-    # TODO: CHECK / TEST THIS
 
 def find_first_delimited_substring_indices(text, *delimiters):
     """
@@ -331,4 +344,3 @@ def find_first_delimited_substring_indices(text, *delimiters):
             return min(matches) if matches else None
         else:
             return starting_match.span()
-    # TODO: CHECK / TEST THIS

@@ -1,5 +1,7 @@
 import ast
 
+import utils
+
 INNER_CALL_LINENO = -1
 OUTER_CALL_LINENO = -2
 
@@ -8,10 +10,11 @@ class CallWrapper(ast.NodeTransformer):
     <summary>
     """
 
-    def __init__(self, code_lines):
+    def __init__(self, code):
         super().__init__()
+        self.code_lines = code.split('\n')
+        self.string_indices = utils.find_string_indices(code)
         self.id_counter = 0
-        self.code_lines = code_lines
 
     def visit_Call(self, node):
         """
@@ -110,7 +113,7 @@ def wrap_calls(src_code):
     :return:
     """
     src_ast = ast.parse(src_code)
-    new_ast = CallWrapper(src_code.split('\n')).visit(src_ast)
+    new_ast = CallWrapper(src_code).visit(src_ast)
     ast.fix_missing_locations(new_ast)
     new_code = compile(new_ast, filename='<ast>', mode='exec')
     return new_code
