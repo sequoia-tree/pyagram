@@ -2,7 +2,6 @@ import collections.abc
 import gc
 import inspect
 import numbers
-import re
 import types
 
 # Primitive types: Compare with `==`.
@@ -252,95 +251,3 @@ def interpolate_flag_banners(snapshots, final_state):
     :return:
     """
     pass # TODO
-
-def split_function_call(code_lines, string_indices, line_no, col_offset):
-    """
-    <summary>
-
-    :param code:
-    :param line_no:
-    :param col_offset:
-    :return:
-    """
-    # TODO: For parentheses matching, regex won't work: you're dealing with nested structures and need to use recursion. Do you basically need to watch out for single quotes, double quotes, triple single quotes, and triple double quotes, and when you see any such (non-escaped) construct just skip until the next matching (non-escaped) construct?
-    # TODO: Fortunately I don't think we need additional logic for f-strings.
-    # TODO: You can use regex to eliminate strings, since it's impossible to nest strings unless the inner ones have escape characters delimiting them.
-    # TODO: Pass in the CallWrapper's self.code_lines for code_lines, and `lineno - 1` for line_no (because lineno is 1-indexed and I'm using 0-indexed here).
-    
-    pass # TODO: Before giving the code to the CallWrapper, use regex to get a list [(start, end), (start, end), ...] where each "start" or "end" respectively denotes the (line_no, col_offset) where a string starts or ends. Then in this function you can just jump over all the strings super easy and not worry about them! See `find_strings` above.
-
-    # Pass in `code`, `string_indices`, and a list where lst[i] = index of ith 
-    
-    # >>> code_lines = code.split('\n')
-    # >>> newline_indices = [len(line) for line in code_lines]
-    # >>> newline_indices.pop()
-    # 0
-    # >>> for i in range(1, len(newline_indices)):
-    # ...     newline_indices[i] += newline_indices[i-1] + 1
-    # ... 
-    # >>> newline_indices
-    # [0]
-
-    # TODO: Keep track of each index where there's a legit (ie non-string) open-paren and each index where there's a legit close-paren. Stop when you see a close-paren that is not immediately followed by an open paren.
-
-    # TODO: Text Rachel and email Alex / Allon.
-
-def find_string_indices(code):
-    """
-    <summary>
-    
-    :code:
-    :return:
-    """
-
-    # You can't just use re.findall to search for ', ", ''', and """ strings individually and then merge together your findings. Consider the input '\'''': it's really the strings ('\'', '') so after the last quote you're OUT of a string. However if you were to look for triple quotes individually you'd START reading on the 4th quote, and so you'd think your IN a string (a triple-quote delimited string) after the last quote. So it is necessary to do a loop, and repeatedly do re.search, rather than using re.findall.
-    
-    # You must account for `'''` and `"""` explicitly; you can't just rely on the `'` pattern to find `'''` patterns and the `"` pattern to find `"""` patterns; they're fundamentally different. For example try `" \""" "` vs `""" \""" """`.
-
-    offset, string_indices = 0, []
-    while True:
-        next_triplequote_indices = find_first_delimited_substring_indices(code, '"""', "'''")
-        next_singlequote_indices = find_first_delimited_substring_indices(code, '"', "'")
-        has_triplequote_match = next_triplequote_indices is not None
-        has_singlequote_match = next_singlequote_indices is not None
-        if has_triplequote_match or has_singlequote_match:
-            # Triple-quotes take precedence over single-quotes. If you see `'''` then make sure it's processed as the start of a '''-string, instead of `''` followed by the start of a '-string.
-            if has_triplequote_match and next_triplequote_indices[0] == next_singlequote_indices[0]:
-                next_indices = next_triplequote_indices
-            else:
-                next_indices = next_singlequote_indices
-                # As a sanity check, make sure ' and " -delimited strings aren't multi-line.
-                assert all(
-                    '\n' != code[i]
-                    for i in range(next_indices[0], next_indices[1])
-                )
-            string_indices.append((offset + next_indices[0], offset + next_indices[1]))
-            offset, code = offset + next_indices[1], code[next_indices[1]:]
-        else:
-            break
-    return string_indices
-
-def find_first_delimited_substring_indices(text, *delimiters):
-    """
-    <summary>
-
-    :text:
-    :delimiters:
-    :return:
-    """
-    if len(text) == 0:
-        return None
-    else:
-        start_pattern = lambda delimiter: fr'{delimiter}(?:{delimiter}|.*?[^\\]{delimiter})'
-        later_pattern = lambda delimiter: fr'[^\\]{delimiter}(?:{delimiter}|.*?[^\\]{delimiter})'
-        starting_match = re.match(start_pattern(text[0]), text) if text[0] in delimiters else None
-        if starting_match is None:
-            matches = {
-                re.search(later_pattern(delimiter), text)
-                for delimiter in delimiters
-            }
-            matches.discard(None)
-            matches = {(match.start() + 1, match.end()) for match in matches}
-            return min(matches) if matches else None
-        else:
-            return starting_match.span()

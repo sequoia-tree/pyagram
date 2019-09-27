@@ -1,6 +1,5 @@
 import ast
-
-import utils
+import astunparse
 
 INNER_CALL_LINENO = -1
 OUTER_CALL_LINENO = -2
@@ -12,8 +11,6 @@ class CallWrapper(ast.NodeTransformer):
 
     def __init__(self, code):
         super().__init__()
-        self.code_lines = code.split('\n')
-        self.string_indices = utils.find_string_indices(code)
         self.id_counter = 0
 
     def visit_Call(self, node):
@@ -36,18 +33,45 @@ class CallWrapper(ast.NodeTransformer):
 
         # ----------------------------------------------------------------------
 
-        # TODO: remember, `node` is an AST Call node.
-        function_code = ast.NameConstant(None) # TODO
-        argument_code = ast.Tuple(
-            elts=[], # TODO: Start reading at the line_no and col_offset. Beware of parentheses in strings, multiline function calls, etc.
+        func_code = astunparse.unparse(node.func)
+        func_call_bitmap = isinstance(node.func, ast.Call)
+        args_code = ast.Tuple(
+            elts=[
+                ? if isinstance(arg, ast.Starred) else ast.Str(astunparse.unparse(arg)) # TODO: If arg is an ast.Starred instance then pass along a PyagramError so that in the box where the value of the *arg would go, you can display a red error message with a link to the Issue on the Pyagram GitHub.
+                for arg in node.args
+            ],
             ctx=ast.Load(),
         )
-        call_bitmap = ast.Tuple(
-            elts=[], # TODO: The first elem can be whether the FUNCTION is the result of a call.
+        args_call_bitmap = ast.Tuple(
+            elts=[
+                ast.NameConstant(isinstance(arg, ast.Call))
+                for arg in node.args
+            ],
+            ctx=ast.Load(),
+        )
+        kwargs_code = ast.Tuple(
+            elts=[
+                ? if kwarg.arg is None else ast.Tuple(elts=[ast.Str(kwarg.arg), ast.Str(astunparse.unparse(kwarg.value))], ctx=ast.Load()) # TODO: If kwarg.arg is None then it's something like `**kwargs` rather than `a=1` or `b=2`. We can't handle that case, so pass along a PyagramError so that in the box where the value of `**kwargs` would go, you can display a red error message with a link to the Issue on the Pyagram GitHub.
+                for kwarg in node.keywords
+            ],
+            ctx=ast.Load(),
+        )
+        kwargs_call_bitmap = ast.Tuple(
+            elts=[
+                ast.NameConstant(isinstance(kwarg.value, ast.Call))
+                for kwarg in node.keywords
+            ],
             ctx=ast.Load(),
         )
         flag_info = ast.Tuple(
-            elts=[function_code, argument_code, call_bitmap],
+            elts=[
+                func_code,
+                func_call_bitmap,
+                args_code,
+                args_call_bitmap,
+                kwargs_code,
+                kwargs_call_bitmap,
+            ],
             ctx=ast.Load(),
         )
         inner_lambda = ast.Lambda(

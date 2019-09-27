@@ -11,6 +11,15 @@ f(g(2), h(3))
 f(h(g(2)))
 """
 
+starargs1 = """
+def g(a, b, c, d, *e):
+    return None
+
+l1 = [1, 2]
+l2 = [3, 4, 5, 6]
+x = g(*l1, *l2)
+"""
+
 return_none = """
 def f():
     return
