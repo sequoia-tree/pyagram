@@ -1,5 +1,5 @@
+import postprocess
 import trace
-import utils
 import wrap
 
 class Pyagram:
@@ -14,5 +14,5 @@ class Pyagram:
         tracer = trace.Tracer(debug)
         global_bindings = {}
         tracer.run(code, globals=global_bindings, locals=global_bindings)
-        self.snapshots = tracer.snapshots
-        utils.interpolate_flag_banners(self.snapshots, tracer.state)
+        self.snapshots = tracer.state.snapshots
+        postprocess.postprocess_snapshots(self.snapshots)

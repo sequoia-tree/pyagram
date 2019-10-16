@@ -25,18 +25,13 @@ class PyagramElement:
         for flag in self.flags:
             flag.step()
 
-    def add_flag(self):
+    def add_flag(self, banner):
         """
         <summary>
 
         :return:
         """
-
-        # TODO: If you managed to give a 'fake' frame to those flags which otherwise wouldn't have one (see close_pyagram_flag) then uncomment the sanity check below.
-        # if self.flags:
-        #     assert self.flags[-1].has_returned
-
-        flag = PyagramFlag(self)
+        flag = PyagramFlag(self, banner)
         self.flags.append(flag)
         return flag
 
@@ -59,9 +54,46 @@ class PyagramFlag(PyagramElement):
 
     COUNT = 0
 
-    def __init__(self, opened_by, *, state=None):
+    def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
+        self.is_new_flag = True
+        banner_elements, banner_bindings = banner
+        self.banner_elements = banner_elements
+        self.banner_bindings = banner_bindings
+        self.banner_binding_index = 0
+        self.positional_arg_index = 0
         self.frame = None
+
+    @property
+    def banner(self):
+        """
+        <summary>
+
+        :return:
+        """
+        banner = []
+        for banner_element in self.banner_elements:
+            if isinstance(banner_element, str):
+                banner.append(banner_element)
+            else:
+                assert isinstance(banner_element, tuple)
+                code, binding_indices = banner_element
+                bindings = []
+                for binding_index in binding_indices:
+                    binding = self.banner_bindings[binding_index]
+                    is_evaluated = isinstance(binding, (str, int))
+                    bindings.append(binding if is_evaluated else None)
+                banner.append([code, bindings])
+        return banner
+
+    @property
+    def banner_is_complete(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.banner_binding_index == len(self.banner_bindings)
 
     @property
     def has_returned(self):
@@ -114,9 +146,29 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
-        super().step()
+        # Fill in all banner bindings up until the next one that's a call.
+
+        # TODO: What if there is no next call, ie the last arg is all that's left and it's not a call
+        # TODO: What if there are no calls at all
+        # TODO: Remember the first binding should be the function, so it's not in frame.bindings
+        #       next_binding_is_func = self.banner_binding_index == 0
+
+        if self is self.state.curr_element and not self.banner_is_complete:
+            if not self.is_new_flag:
+                # TODO: Next binding should be a call. (Check with an assert.) Evaluate it.
+                self.evaluate_next_banner_binding(expect_call=True)
+            keep_going = True
+            while not self.banner_is_complete and keep_going:
+                keep_going = self.evaluate_next_banner_binding()
+
+
+        # TODO: Is this remotely correct?
+
+
         if self.frame:
             self.frame.step()
+        self.is_new_flag = False
+        super().step()
 
     def snapshot(self):
         """
@@ -126,7 +178,8 @@ class PyagramFlag(PyagramElement):
         """
         return {
             'is-curr-element': self is self.state.program_state.curr_element,
-            'internal-object': self,
+            'pyagram-flag': self,
+            'banner': self.banner,
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
         }
@@ -138,6 +191,41 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return self.opened_by
+    
+    def evaluate_next_banner_binding(self, *, expect_call=False):
+        """
+        <summary>
+        
+        :return:
+        """
+        binding = self.banner_bindings[self.banner_binding_index]
+        if binding is None:
+            pass # TODO: If you see None instead of (is call, param if known) then there's a problem. Edit banner_template and banner_bindings s.t. the remainder of the function call should be "bound" to an error message. Make sure self.banner_is_complete still works.
+        else:
+            assert isinstance(binding, tuple)
+            is_call, param_if_known = binding
+            if is_call and not expect_call:
+                return False
+            else:
+                self.state.snapshot()
+                if param_if_known is None:
+                    self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
+                    self.positional_arg_index += 1
+                else:
+                    self.banner_bindings[self.banner_binding_index] = param_if_known
+        self.banner_binding_index += 1
+        return True
+
+        # banner_elements: Like banner, but each
+        # BINDING = (code, [index in banner_bindings, index in banner_bindings, ...]),
+
+        # banner_bindings: [(is call, param if known), (is call, param if known), ...]
+        #
+        # * As you go, replace (is call, param if known) with:
+        #   * Index of positional argument
+        #   * OR name of parameter
+
+        # TODO: Is this remotely correct?
 
     def add_frame(self, frame, is_implicit):
         """
@@ -146,11 +234,7 @@ class PyagramFlag(PyagramElement):
         :param frame:
         :return:
         """
-
-        # TODO: You need something like this ...
-        # assert self.banner.is_complete
-        # TODO: Or do it in ProgramState.open_pyagram_frame since that's where the other asserts are
-
+        assert self.banner_is_complete
         frame = PyagramFrame(self, frame, is_implicit=is_implicit)
         self.frame = frame
         return frame

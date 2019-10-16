@@ -14,7 +14,6 @@ class Tracer(bdb.Bdb):
         super().__init__()
         self.debug = debug
         self.state = None
-        self.snapshots = []
 
     def user_call(self, frame, args):
         """
@@ -94,8 +93,7 @@ class Tracer(bdb.Bdb):
         if take_snapshot:
             if self.debug:
                 self.display()
-            snapshot = self.state.snapshot()
-            self.snapshots.append(snapshot)
+            self.state.snapshot()
 
     def display(self):
         """

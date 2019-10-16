@@ -243,12 +243,3 @@ def object_snapshot(object, memory_state):
         'label': object_type.__name__,
         'object': snapshot,
     }
-
-def interpolate_flag_banners(snapshots, final_state):
-    """
-    <summary>
-
-    :param snapshots:
-    :return:
-    """
-    pass # TODO

@@ -14,6 +14,7 @@ class State:
         self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState()
         self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
+        self.snapshots = []
     
     def __str__(self):
         """
@@ -55,11 +56,12 @@ class State:
 
         :return:
         """
-        return {
+        snapshot = {
             'program-state': self.program_state.snapshot(),
             'memory-state': self.memory_state.snapshot(),
             'print-output': self.print_output, # This is a string, or **None** if nothing has been printed yet!
         }
+        self.snapshots.append(snapshot)
 
 class ProgramState:
     """
@@ -158,7 +160,7 @@ class ProgramState:
 
             is_implicit = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
             if is_implicit:
-                self.open_pyagram_flag(flag_info=None) # TODO: what is the appropriate flag_info for an implicit call?
+                self.open_pyagram_flag(banner=None) # TODO: what is the appropriate banner for an implicit call?
             self.open_pyagram_frame(frame, is_implicit)
 
         elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
@@ -186,16 +188,15 @@ class ProgramState:
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
-    def open_pyagram_flag(self, flag_info):
+    def open_pyagram_flag(self, banner):
         """
         <summary>
 
-        :param flag_info:
+        :param banner:
         :return:
         """
-        # TODO: wrap.py's flag_info is accessible through `flag_info`.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-        self.curr_element = self.curr_element.add_flag()
+        self.curr_element = self.curr_element.add_flag(banner)
 
     def open_pyagram_frame(self, frame, is_implicit):
         """
