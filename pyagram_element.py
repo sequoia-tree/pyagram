@@ -133,7 +133,7 @@ class PyagramFlag(PyagramElement):
 
 
 
-        if self is self.state.curr_element and not self.banner_is_complete:
+        if self is self.state.program_state.curr_element and not self.banner_is_complete:
             if not self.is_new_flag:
                 self.evaluate_next_banner_binding(expect_call=True)
             keep_going = True

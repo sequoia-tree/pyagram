@@ -114,7 +114,7 @@ class Banner:
             values = (node,)
             params = (None,)
         assert len(values) == len(params)
-        code = ast.Str(astunparse.unparse(node))
+        code = ast.Str(astunparse.unparse(node).strip('\n'))
         bindings = []
         if is_unsupported_binding:
             binding = ast.NameConstant(None) # TODO: When binding_info is None, the binding is unsupported -- ie it's a `*args` or `**kwargs` expression where `args` is not a list, tuple, or string / `kwargs` is not a dict. In such cases render the binding as a question mark. If you click on the question mark, you should be brought to the Pyagram GitHub Issues page, where there should be an issue describing the fact that this behaviour is not currently supported.

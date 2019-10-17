@@ -82,7 +82,7 @@ def interpolate_flag_banner(flag_snapshot):
     pyagram_flag = flag_snapshot.pop('pyagram-flag')
     banner_elements, banner_bindings = flag_snapshot['banner']
     pyagram_frame = pyagram_flag.frame
-    frame_bindings = pyagram_frame.bindings
+    frame_bindings = pyagram_frame.initial_bindings
     frame_variables = list(frame_bindings)
 
     banner = []

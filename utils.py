@@ -177,7 +177,7 @@ def reference_snapshot(object, memory_state):
     :return:
     """
     if object is None and memory_state is None:
-        return ['?', GITHUB_ISSUES_URL]
+        return ['?', GITHUB_ISSUES_URL] # hyperlink: [text, URL]
     elif is_primitive_type(object):
         return repr(object) if isinstance(object, str) else str(object)
     else:

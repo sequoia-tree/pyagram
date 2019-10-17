@@ -101,10 +101,10 @@ class Tracer(bdb.Bdb):
 
         :return:
         """
-        result = str(self.state)
-        result_height = result.count('\n') + 1
-        padding = display.TERMINAL_HEIGHT - (result_height + 1)
-        print(result)
+        state_str = str(state)
+        state_str_height = state_str.count('\n') + 1
+        padding = TERMINAL_HEIGHT - (state_str_height + 1)
+        print(state_str)
         if padding > 0:
             print('\n' * (padding - 1))
         input()
