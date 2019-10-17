@@ -84,6 +84,8 @@ def interpolate_flag_banner(flag_snapshot):
 
     # flag_snapshot['banner'] = None # TODO
 
+    # # Input bindings are a: STR (name of param), or INT (index of positional arg, pyagram_element.BANNER_FUNCTION_CODE, or pyagram_element.BANNER_UNSUPPORTED_CODE (which should be rendered in a special way))
+
     # # TODO: At the end of this function, flag_snapshot['flag-info'] should be a mix of strings and BINDINGS, eg
     # # [BINDING, '(', BINDING, ', ', BINDING, ')'] where
     # # BINDING = [code string, [X, X, X, ...]] where
@@ -91,3 +93,12 @@ def interpolate_flag_banner(flag_snapshot):
     # #        = integer (a memory id), if this binding is a pointer
     # #        = string (of whatever the binding is for), if this binding is a primitive
     # # TODO: Use reference_snapshot(...) to produce each X.
+
+        # banner_elements: Like banner, but each
+        # BINDING = (code, [index in banner_bindings, index in banner_bindings, ...]),
+
+        # banner_bindings: [(is call, param if known), (is call, param if known), ...]
+        #
+        # * As you go, replace (is call, param if known) with:
+        #   * Index of positional argument
+        #   * OR name of parameter

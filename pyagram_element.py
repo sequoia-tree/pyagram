@@ -3,6 +3,9 @@ import gc
 import display
 import utils
 
+BANNER_FUNCTION_CODE = -1
+BANNER_UNSUPPORTED_CODE = -2
+
 class PyagramElement:
     """
     <summary>
@@ -61,6 +64,7 @@ class PyagramFlag(PyagramElement):
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
+        self.next_binding_is_func = True
         self.positional_arg_index = 0
         self.frame = None
 
@@ -148,21 +152,17 @@ class PyagramFlag(PyagramElement):
         """
         # Fill in all banner bindings up until the next one that's a call.
 
-        # TODO: What if there is no next call, ie the last arg is all that's left and it's not a call
-        # TODO: What if there are no calls at all
-        # TODO: Remember the first binding should be the function, so it's not in frame.bindings
-        #       next_binding_is_func = self.banner_binding_index == 0
+
 
         if self is self.state.curr_element and not self.banner_is_complete:
             if not self.is_new_flag:
-                # TODO: Next binding should be a call. (Check with an assert.) Evaluate it.
                 self.evaluate_next_banner_binding(expect_call=True)
             keep_going = True
-            while not self.banner_is_complete and keep_going:
+            while keep_going and not self.banner_is_complete:
                 keep_going = self.evaluate_next_banner_binding()
 
-
         # TODO: Is this remotely correct?
+
 
 
         if self.frame:
@@ -196,36 +196,33 @@ class PyagramFlag(PyagramElement):
         """
         <summary>
         
-        :return:
+        :return: # basically (this might not be the last binding) AND (this binding is not the result of a function call)
         """
         binding = self.banner_bindings[self.banner_binding_index]
-        if binding is None:
-            pass # TODO: If you see None instead of (is call, param if known) then there's a problem. Edit banner_template and banner_bindings s.t. the remainder of the function call should be "bound" to an error message. Make sure self.banner_is_complete still works.
+        is_unsupported_binding = binding is None
+        if is_unsupported_binding:
+            self.state.snapshot()
+            while not self.banner_is_complete:
+                self.banner_bindings[self.banner_binding_index] = BANNER_UNSUPPORTED_CODE
+                self.banner_binding_index += 1
+            return False
         else:
-            assert isinstance(binding, tuple)
             is_call, param_if_known = binding
             if is_call and not expect_call:
                 return False
             else:
                 self.state.snapshot()
                 if param_if_known is None:
-                    self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
-                    self.positional_arg_index += 1
+                    if self.next_binding_is_func:
+                        self.banner_bindings[self.banner_binding_index] = BANNER_FUNCTION_CODE
+                        self.next_binding_is_func = False
+                    else:
+                        self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
+                        self.positional_arg_index += 1
                 else:
                     self.banner_bindings[self.banner_binding_index] = param_if_known
-        self.banner_binding_index += 1
-        return True
-
-        # banner_elements: Like banner, but each
-        # BINDING = (code, [index in banner_bindings, index in banner_bindings, ...]),
-
-        # banner_bindings: [(is call, param if known), (is call, param if known), ...]
-        #
-        # * As you go, replace (is call, param if known) with:
-        #   * Index of positional argument
-        #   * OR name of parameter
-
-        # TODO: Is this remotely correct?
+                self.banner_binding_index += 1
+                return True
 
     def add_frame(self, frame, is_implicit):
         """
