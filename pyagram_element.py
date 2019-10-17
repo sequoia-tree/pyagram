@@ -60,35 +60,14 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_flag = True
-        banner_elements, banner_bindings = banner
+        self.banner = banner
+        banner_elements, banner_bindings = self.banner
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
         self.next_binding_is_func = True
         self.positional_arg_index = 0
         self.frame = None
-
-    @property
-    def banner(self):
-        """
-        <summary>
-
-        :return:
-        """
-        banner = []
-        for banner_element in self.banner_elements:
-            if isinstance(banner_element, str):
-                banner.append(banner_element)
-            else:
-                assert isinstance(banner_element, tuple)
-                code, binding_indices = banner_element
-                bindings = []
-                for binding_index in binding_indices:
-                    binding = self.banner_bindings[binding_index]
-                    is_evaluated = isinstance(binding, (str, int))
-                    bindings.append(binding if is_evaluated else None)
-                banner.append([code, bindings])
-        return banner
 
     @property
     def banner_is_complete(self):

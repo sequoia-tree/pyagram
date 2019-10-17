@@ -31,6 +31,8 @@ GENERATOR_TYPES = (types.GeneratorType,)
 # TODO:     map [the output of a call to `map`; a kind of iterator]
 # TODO:     Various built-in Exceptions
 
+GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
+
 def is_primitive_type(object):
     """
     <summary>
@@ -174,7 +176,9 @@ def reference_snapshot(object, memory_state):
     :param memory_state:
     :return:
     """
-    if is_primitive_type(object):
+    if object is None and memory_state is None:
+        return ['?', GITHUB_ISSUES_URL]
+    elif is_primitive_type(object):
         return repr(object) if isinstance(object, str) else str(object)
     else:
         return memory_state.object_ids[id(object)]        
