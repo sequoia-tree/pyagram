@@ -1,8 +1,8 @@
 import json
 
 import postprocess
+import preprocess
 import trace
-import wrap
 
 class Pyagram:
     """
@@ -12,7 +12,7 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
-        code = wrap.wrap_calls(code)
+        code = preprocess.preprocess_code(code)
         tracer = trace.Tracer(debug)
         global_bindings = {}
         tracer.run(code, globals=global_bindings, locals=global_bindings)

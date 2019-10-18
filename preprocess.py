@@ -3,6 +3,22 @@ import ast
 import banner
 import utils
 
+def preprocess_code(src_code):
+    """
+    <summary>
+
+    :param src_code:
+    :return:
+    """
+    src_ast = ast.parse(src_code)
+    new_ast = src_ast
+    new_ast = CallWrapper().visit(new_ast)
+    # new_ast = Placeholder().visit(new_ast)
+    # new_ast = Placeholder().visit(new_ast)
+    ast.fix_missing_locations(new_ast)
+    new_code = compile(new_ast, filename='<ast>', mode='exec')
+    return new_code
+
 class CallWrapper(ast.NodeTransformer):
     """
     <summary>
@@ -75,16 +91,3 @@ class CallWrapper(ast.NodeTransformer):
         self.id_counter += 1 # An outer_call and inner_call correspond to one another iff they have the same ID. (But at the moment we don't actually use that information; we just have it there bc it's nice.)
         self.generic_visit(node)
         return outer_call
-
-def wrap_calls(src_code): # TODO: Make this a staticmethod of CallWrapper, or move to utils.py.
-    """
-    <summary>
-
-    :param src_code:
-    :return:
-    """
-    src_ast = ast.parse(src_code)
-    new_ast = CallWrapper().visit(src_ast)
-    ast.fix_missing_locations(new_ast)
-    new_code = compile(new_ast, filename='<ast>', mode='exec')
-    return new_code
