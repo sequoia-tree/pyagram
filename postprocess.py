@@ -1,3 +1,4 @@
+import encode
 import utils
 
 def postprocess_snapshots(snapshots):
@@ -96,7 +97,7 @@ def interpolate_flag_banner(flag_snapshot):
                 binding_id = banner_bindings[binding_index]
                 is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                 if is_unsupported_binding:
-                    binding_reference_snapshot = utils.reference_snapshot(None, None)
+                    binding_reference_snapshot = encode.reference_snapshot(None, None)
                 else:
                     if isinstance(binding_id, str):
                         binding = frame_bindings[binding_id]
@@ -107,7 +108,7 @@ def interpolate_flag_banner(flag_snapshot):
                             binding = frame_bindings[frame_variables[binding_id]]
                     else:
                         binding = None
-                    binding_reference_snapshot = utils.reference_snapshot(binding, pyagram_flag.state.memory_state)
+                    binding_reference_snapshot = encode.reference_snapshot(binding, pyagram_flag.state.memory_state)
                 bindings.append(binding_reference_snapshot)
             banner.append([code, bindings])
     flag_snapshot['banner'] = banner

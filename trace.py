@@ -101,7 +101,7 @@ class Tracer(bdb.Bdb):
 
         :return:
         """
-        state_str = str(state)
+        state_str = str(self.state)
         state_str_height = state_str.count('\n') + 1
         padding = display.TERMINAL_HEIGHT - (state_str_height + 1)
         print(state_str)

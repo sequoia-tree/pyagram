@@ -1,7 +1,7 @@
 import display
+import encode
 import enums
 import pyagram_element
-import utils
 
 class State:
     """
@@ -253,7 +253,7 @@ class MemoryState:
         :return:
         """
         return '\n'.join(
-            f'{id(object)}: {utils.object_str(object, self)}'
+            f'{id(object)}: {encode.object_str(object, self)}'
             for object in self.objects
         )
 
@@ -271,7 +271,7 @@ class MemoryState:
 
         :return:
         """
-        return [utils.object_snapshot(object, self) for object in self.objects]
+        return [encode.object_snapshot(object, self) for object in self.objects]
 
     def track(self, object):
         """

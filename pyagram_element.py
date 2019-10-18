@@ -1,6 +1,8 @@
 import gc
 
 import display
+import encode
+import pyagram_types
 import utils
 
 class PyagramElement:
@@ -260,20 +262,20 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return_key = 'return'
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({utils.reference_str(self.function)})')
+        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({encode.reference_str(self.function)})')
         if self.bindings or self.has_returned:
-            key_str_len = utils.mapped_len(str)
-            val_str_len = utils.mapped_len(utils.reference_str)
+            key_str_len = display.mapped_len(str)
+            val_str_len = display.mapped_len(encode.reference_str)
             max_var_key_len, ret_key_len, max_var_value_len, ret_value_len = 0, 0, 0, 0
             if self.bindings:
                 max_var_key_len = key_str_len(max(self.bindings.keys(), key=key_str_len))
                 max_var_value_len = val_str_len(max(self.bindings.values(), key=val_str_len))
             if self.has_returned:
                 ret_key_len = len(str(return_key))
-                ret_value_len = len(utils.reference_str(self.return_value))
+                ret_value_len = len(encode.reference_str(self.return_value))
             max_key_len = max(max_var_key_len, ret_key_len)
             max_value_len = max(max_var_value_len, ret_value_len)
-            binding = utils.get_binding(max_key_len, max_value_len)
+            binding = display.get_binding(max_key_len, max_value_len)
             bindings = []
             if self.bindings:
                 var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
@@ -312,9 +314,9 @@ class PyagramFrame(PyagramElement):
             objects.append(self.return_value)
         while objects:
             object = objects.pop()
-            if not utils.is_primitive_type(object):
+            if not pyagram_types.is_primitive_type(object):
                 self.state.memory_state.track(object)
-                if isinstance(object, utils.FUNCTION_TYPES):
+                if pyagram_types.is_function_type(object):
                     utils.assign_unique_code_object(object)
                     self.state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)
@@ -336,7 +338,7 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         bindings = {
-            key: utils.reference_snapshot(value, self.state.memory_state)
+            key: encode.reference_snapshot(value, self.state.memory_state)
             for key, value in self.bindings.items()
         }
         if self.initial_bindings is None:

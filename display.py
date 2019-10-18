@@ -1,3 +1,5 @@
+import encode
+
 TERMINAL_HEIGHT = 58
 TERMINAL_WIDTH = 80
 
@@ -20,3 +22,22 @@ def prepend(prefix, text):
     :return:
     """
     return prefix + text.replace('\n', f'\n{prefix}')
+
+def mapped_len(function):
+    """
+    <summary>
+
+    :param function:
+    :return:
+    """
+    return lambda object: len(function(object))
+
+def get_binding(max_key_len, max_value_len):
+    """
+    <summary>
+
+    :param max_key_len:
+    :param max_value_len:
+    :return:
+    """
+    return lambda key, value: f'|{key:>{max_key_len}}: {encode.reference_str(value):<{max_value_len}}|'
