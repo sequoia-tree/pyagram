@@ -1,5 +1,3 @@
-import ast
-import collections.abc
 import gc
 import inspect
 import numbers
@@ -33,6 +31,12 @@ GENERATOR_TYPES = (types.GeneratorType,)
 
 GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
 
+INNER_CALL_LINENO = -1
+OUTER_CALL_LINENO = -2
+
+BANNER_FUNCTION_CODE = -1
+BANNER_UNSUPPORTED_CODE = -2
+
 def is_primitive_type(object):
     """
     <summary>
@@ -50,33 +54,6 @@ def is_function_type(object):
     :return:
     """
     return isinstance(object, FUNCTION_TYPES)
-
-def enforce_one_function_per_code_object(function):
-    """
-    <summary>
-
-    :param function:
-    :return:
-    """
-    old_code = function.__code__
-    new_code = types.CodeType(
-        old_code.co_argcount,
-        old_code.co_kwonlyargcount,
-        old_code.co_nlocals,
-        old_code.co_stacksize,
-        old_code.co_flags,
-        old_code.co_code,
-        old_code.co_consts,
-        old_code.co_names,
-        old_code.co_varnames,
-        old_code.co_filename,
-        old_code.co_name,
-        old_code.co_firstlineno,
-        old_code.co_lnotab,
-        old_code.co_freevars,
-        old_code.co_cellvars,
-    )
-    function.__code__ = new_code
 
 def get_function(frame):
     """
@@ -123,6 +100,33 @@ def sort_parameter_bindings(bindings, function):
     }
     bindings.clear()
     bindings.update(sorted_parameter_bindings)
+
+def assign_unique_code_object(function):
+    """
+    <summary>
+
+    :param function:
+    :return:
+    """
+    old_code = function.__code__
+    new_code = types.CodeType(
+        old_code.co_argcount,
+        old_code.co_kwonlyargcount,
+        old_code.co_nlocals,
+        old_code.co_stacksize,
+        old_code.co_flags,
+        old_code.co_code,
+        old_code.co_consts,
+        old_code.co_names,
+        old_code.co_varnames,
+        old_code.co_filename,
+        old_code.co_name,
+        old_code.co_firstlineno,
+        old_code.co_lnotab,
+        old_code.co_freevars,
+        old_code.co_cellvars,
+    )
+    function.__code__ = new_code
 
 def mapped_len(function):
     """

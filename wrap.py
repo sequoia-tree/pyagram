@@ -1,9 +1,7 @@
 import ast
 
 import banner
-
-INNER_CALL_LINENO = -1
-OUTER_CALL_LINENO = -2
+import utils
 
 class CallWrapper(ast.NodeTransformer):
     """
@@ -61,7 +59,7 @@ class CallWrapper(ast.NodeTransformer):
             func=inner_lambda,
             args=[],
             keywords=[],
-            lineno=INNER_CALL_LINENO,
+            lineno=utils.INNER_CALL_LINENO,
             col_offset=self.id_counter,
         )
         outer_call = ast.Call(
@@ -71,14 +69,14 @@ class CallWrapper(ast.NodeTransformer):
                 node,
             ],
             keywords=[],
-            lineno=OUTER_CALL_LINENO,
+            lineno=utils.OUTER_CALL_LINENO,
             col_offset=self.id_counter,
         )
         self.id_counter += 1 # An outer_call and inner_call correspond to one another iff they have the same ID. (But at the moment we don't actually use that information; we just have it there bc it's nice.)
         self.generic_visit(node)
         return outer_call
 
-def wrap_calls(src_code):
+def wrap_calls(src_code): # TODO: Make this a staticmethod of CallWrapper, or move to utils.py.
     """
     <summary>
 

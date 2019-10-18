@@ -1,5 +1,3 @@
-import inspect
-
 TERMINAL_HEIGHT = 58
 TERMINAL_WIDTH = 80
 

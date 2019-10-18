@@ -3,9 +3,6 @@ import gc
 import display
 import utils
 
-BANNER_FUNCTION_CODE = -1
-BANNER_UNSUPPORTED_CODE = -2
-
 class PyagramElement:
     """
     <summary>
@@ -162,14 +159,6 @@ class PyagramFlag(PyagramElement):
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
         }
-
-    def close(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return self.opened_by
     
     def evaluate_next_banner_binding(self, *, expect_call=False):
         """
@@ -182,7 +171,7 @@ class PyagramFlag(PyagramElement):
         if is_unsupported_binding:
             self.state.snapshot()
             while not self.banner_is_complete:
-                self.banner_bindings[self.banner_binding_index] = BANNER_UNSUPPORTED_CODE
+                self.banner_bindings[self.banner_binding_index] = utils.BANNER_UNSUPPORTED_CODE
                 self.banner_binding_index += 1
             return False
         else:
@@ -193,7 +182,7 @@ class PyagramFlag(PyagramElement):
                 self.state.snapshot()
                 if param_if_known is None:
                     if self.next_binding_is_func:
-                        self.banner_bindings[self.banner_binding_index] = BANNER_FUNCTION_CODE
+                        self.banner_bindings[self.banner_binding_index] = utils.BANNER_FUNCTION_CODE
                         self.next_binding_is_func = False
                     else:
                         self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
@@ -214,6 +203,14 @@ class PyagramFlag(PyagramElement):
         frame = PyagramFrame(self, frame, is_implicit=is_implicit)
         self.frame = frame
         return frame
+
+    def close(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return self.opened_by
 
 class PyagramFrame(PyagramElement):
     """
@@ -318,7 +315,7 @@ class PyagramFrame(PyagramElement):
             if not utils.is_primitive_type(object):
                 self.state.memory_state.track(object)
                 if isinstance(object, utils.FUNCTION_TYPES):
-                    utils.enforce_one_function_per_code_object(object)
+                    utils.assign_unique_code_object(object)
                     self.state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)
                 else:

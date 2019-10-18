@@ -3,7 +3,7 @@ import bdb
 import display
 import enums
 import state
-import wrap
+import utils
 
 class Tracer(bdb.Bdb):
     """
@@ -82,12 +82,12 @@ class Tracer(bdb.Bdb):
         if trace_type is enums.TraceTypes.USER_CALL:
             take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_LINE:
-            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO \
-                        and self.state.program_state.curr_line_no != wrap.INNER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO \
+                        and self.state.program_state.curr_line_no != utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
-            take_snapshot = self.state.program_state.curr_line_no != wrap.OUTER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
         if take_snapshot:
@@ -103,7 +103,7 @@ class Tracer(bdb.Bdb):
         """
         state_str = str(state)
         state_str_height = state_str.count('\n') + 1
-        padding = TERMINAL_HEIGHT - (state_str_height + 1)
+        padding = display.TERMINAL_HEIGHT - (state_str_height + 1)
         print(state_str)
         if padding > 0:
             print('\n' * (padding - 1))

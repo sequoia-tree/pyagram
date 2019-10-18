@@ -1,4 +1,3 @@
-import pyagram_element
 import utils
 
 def postprocess_snapshots(snapshots):
@@ -95,14 +94,14 @@ def interpolate_flag_banner(flag_snapshot):
             bindings = []
             for binding_index in binding_indices:
                 binding_id = banner_bindings[binding_index]
-                is_unsupported_binding = binding_id == pyagram_element.BANNER_UNSUPPORTED_CODE
+                is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                 if is_unsupported_binding:
                     binding_reference_snapshot = utils.reference_snapshot(None, None)
                 else:
                     if isinstance(binding_id, str):
                         binding = frame_bindings[binding_id]
                     elif isinstance(binding_id, int):
-                        if binding_id == pyagram_element.BANNER_FUNCTION_CODE:
+                        if binding_id == utils.BANNER_FUNCTION_CODE:
                             binding = pyagram_frame.function
                         else:
                             binding = frame_bindings[frame_variables[binding_id]]

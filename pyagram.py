@@ -25,4 +25,4 @@ class Pyagram:
 
         :return:
         """
-        return json.dumps(self.snapshots, indent=2)
+        return json.dumps(self.snapshots)
