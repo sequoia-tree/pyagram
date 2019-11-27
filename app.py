@@ -1,6 +1,6 @@
 import flask
 
-import src.modules.pyagram.pyagram as pg # TODO: Imports are broken :(
+import src.modules.pyagram.pyagram as pg
 
 app = flask.Flask(__name__)
 

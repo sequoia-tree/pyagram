@@ -1,3 +1,6 @@
+# Meta
+.vscode/
+
 # Front-end
 node_modules/
 static/styles/*
