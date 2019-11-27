@@ -1,0 +1,102 @@
+$dark-green: #1e8511;
+$light-green: #3cc216;
+$bark-brown: #966d1c;
+$stark-white: #ffffff;
+$cloud-white: #ebf0f0;
+$storm-grey: #d7e1e1;
+
+$flex-ratio: 4;
+
+@mixin fade($seconds) {
+  transition: $seconds;
+  -o-transition: $seconds;
+  -ms-transition: $seconds;
+  -moz-transition: $seconds;
+  -webkit-transition: $seconds;
+}
+
+body {
+  font-family: 'PT Sans', sans-serif;
+  font-size: 12.5pt;
+  p.title {
+    font-size: 150%;
+    margin: 0;
+  }
+  .center {
+    position: relative;
+    float: left;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .button { // TODO: Let .button, .dropdown, etc. all `@include` a more general `@mixin clickable`.
+    @include fade(0.5s);
+    padding: 0.5em;
+    background: $cloud-white;
+    cursor: pointer;
+  }
+  .button:hover {
+    border-style: solid;
+    border-width: medium;
+    border-color: $dark-green;
+  }
+  .overlay {
+    position: fixed;
+    display: none;
+    height: inherit;
+    width: inherit;
+    z-index: 1;
+    background: $cloud-white;
+    .button {
+      background: $storm-grey;
+    }
+  }
+  .split {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    width: 50%;
+  }
+  .split.left {
+    left: 0;
+  }
+  .split.right {
+    right: 0;
+  }
+  .flex-column {
+    display: flex;
+    height: inherit;
+    flex-flow: column;
+    .flex-content-fixed {
+      flex-grow: 0;
+      flex-shrink: 0;
+      flex-basis: auto;
+    }
+    .flex-content-small {
+      flex-grow: 1;
+      flex-shrink: 1;
+      flex-basis: auto;
+    }
+    .flex-content-large {
+      flex-grow: $flex-ratio;
+      flex-shrink: $flex-ratio;
+      flex-basis: auto;
+    }
+  }
+  .scroll-box {
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+}
+
+// TODO: Maybe .inactive-on-hover and .active-on-hover can be useful to mouse over a flag w error.
+// .active-on-hover {
+//   display: none;
+// }
+// .inactive-on-hover:hover + .active-on-hover, .active-on-hover:hover {
+//   display: inline-block;
+// }
+
+// TODO: Set up a min-height and a min-width for everything.
+
+// TODO: The editor height should shrink if the window gets too small.

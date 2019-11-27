@@ -7,7 +7,8 @@ import utils
 
 class PyagramElement:
     """
-    <summary>
+    An element of a pyagram, during the completion of which, it is possible to encounter multiple
+    function calls -- and which may thus cause the instantiation of multiple flags.
     """
 
     def __init__(self, opened_by, state):
@@ -49,9 +50,24 @@ class PyagramElement:
 
 class PyagramFlag(PyagramElement):
     """
-    <summary>
+    An element of a pyagram which represents the application of a not-yet-evaluated function to a
+    set of not-yet-evaluated arguments.
+    
+    Upon opening a flag, the following occurs:
+    1. The flag's banner is made to bear the code corresponding to the function call in question.
+    2. The function is evaluated, and its value written on the banner beneath the code
+       corresponding to the function of the function call.
+    3. The arguments are evaluated, one at a time, and their values written on the banner beneath
+       the code corresponding to the arguments of the function call.
+    4. A frame is opened, for the application of the now-evaluated function to the now-evaluated
+       arguments. The completion of the frame marks the completion of the flag as well.
+    If a new function call is encountered before the banner is complete, a new flag is opened
+    within the flag in question. The new flag corresponds to the new function call, and until it is
+    completed, progress on the flag in question comes to a stand-still.
 
-    :param opened_by:
+    :param opened_by: The PyagramElement which opened the flag, i.e. the
+      :state.program_state.curr_element: in the step immediately preceding that in which the flag
+      is instantiated.
     """
 
     COUNT = 0
@@ -112,7 +128,14 @@ class PyagramFlag(PyagramElement):
         """
         flagpole = '| '
         header = f'{repr(self)}'
-        banner = '+--------+\n| BANNER |\n+--------+' # TODO
+
+        function_call = ''.join((
+            banner_element if isinstance(banner_element, str) else banner_element[0]
+            for banner_element in self.banner_elements
+        ))
+        separator = f'+{"-" * (len(function_call) + 2)}+'
+        banner = f'{separator}\n| {function_call} |\n{separator}'
+
         flags = display.prepend(flagpole, self.flags_to_text())
         frame = display.prepend(flagpole, str(self.frame) if self.frame else '')
         return '\n'.join((
@@ -216,10 +239,24 @@ class PyagramFlag(PyagramElement):
 
 class PyagramFrame(PyagramElement):
     """
-    <summary>
+    An element of a pyagram which represents the application of an already-evaluated function to a
+    set of already-evaluated arguments.
+    
+    Upon opening a frame, the following occurs:
+    1. The function's parameters are bound to their respective arguments inside the frame.
+    2. The function's code is executed one step at a time, and the frame's bindings are
+       correspondingly updated.
+    3. The function's execution terminates, and the return value is written in the frame, thereby
+       completing the frame.
+    If a new function call is encountered before the frame is complete, a new flag is opened
+    beneath the frame in question. The new flag corresponds to the new function call, and until it
+    is completed, progress on the frame in question comes to a stand-still.
 
-    :param opened_by:
-    :param frame: the corresponding built-in frame object
+    :param opened_by: The PyagramElement which opened the frame, i.e. the
+      :state.program_state.curr_element: in the step immediately preceding that in which the frame
+      is instantiated.
+    :param frame: The built-in :frame: object wherein live the variable bindings for the function
+      call in question.
     """
 
     COUNT = 0
@@ -351,8 +388,10 @@ class PyagramFrame(PyagramElement):
                 if self.is_global_frame
                 else self.state.memory_state.function_parents[self.function].id,
             'bindings': bindings,
-            'has-returned': self.has_returned,
-            'return-value': self.return_value,
+            'return-value':
+                encode.reference_snapshot(self.return_value, self.state.memory_state)
+                if self.has_returned
+                else None,
             'flags': [flag.snapshot() for flag in self.flags],
         }
 

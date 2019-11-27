@@ -5,7 +5,13 @@ import pyagram_element
 
 class State:
     """
-    <summary>
+    The instantaneous state of the pyagram at a particular step during the execution of the input
+    code.
+
+    The state consists of the following:
+    * The state of the program.
+    * The state of the memory.
+    * The sequence of strings printed by the input code in the current step and all previous.
 
     :param global_frame:
     """
@@ -65,7 +71,8 @@ class State:
 
 class ProgramState:
     """
-    <summary> # a mutable object representing the state of the program at the current timestep. as we go thru the program in trace.py, we will modify the ProgramState.
+    The instantaneous state of the program at a particular step during the execution of the input
+    code. It includes all flags, frames, and bindings in the pyagram.
 
     :param state:
     :param global_frame:
@@ -238,7 +245,8 @@ class ProgramState:
 
 class MemoryState:
     """
-    <summary>
+    The instantaneous state of the memory at a particular step during the execution of the input
+    code. It includes all referent objects in the pyagram.
     """
 
     def __init__(self):

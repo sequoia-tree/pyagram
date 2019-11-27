@@ -12,10 +12,10 @@ BANNER_UNSUPPORTED_CODE = -2
 
 def get_function(frame):
     """
-    <summary>
+    Get the function which was called  todo todo
 
-    :param frame:
-    :return:
+    :param frame: The built-in :frame: object corresponding to some function call.
+    :return: The function 
     """
     function = None
     for referrer in gc.get_referrers(frame.f_code):

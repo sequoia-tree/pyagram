@@ -31,8 +31,8 @@ def is_primitive_type(object):
     """
     <summary>
 
-    :param object:
-    :return:
+    :param object: An arbitrary object.
+    :return: Whether or not :object: is a primitive.
     """
     return isinstance(object, PRIMITIVE_TYPES)
 
@@ -40,7 +40,7 @@ def is_function_type(object):
     """
     <summary>
 
-    :param object:
-    :return:
+    :param object: An arbitrary object.
+    :return: Whether or not :object: is a function.
     """
     return isinstance(object, FUNCTION_TYPES)

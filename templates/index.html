@@ -1,0 +1,43 @@
+{% import 'utils.html' as utils %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pyagram</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap">
+    {{ utils.include_css('main') }}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="split left">
+      <div class="flex-column">
+        <div id="editor" class="flex-content-fixed"></div>
+        <div class="flex-content-small scroll-box">
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Haec et tu ita posuisti, et verba vestra sunt. Non enim iam stirpis bonum quaeret, sed animalis.</p>
+        </div>
+      </div>
+    </div>
+    <div class="split right">
+      <div id="editor-overlay" class="overlay">
+        <div id="editor-button" class="button center">
+          <p class="title">Draw Pyagram</p>
+        </div>
+      </div>
+      <div class="flex-column">
+        <div class="flex-content-fixed">
+          <p class="title">Pyagram</p>
+        </div>
+        <div class="flex-content-large scroll-box"></div>
+        <div class="flex-content-fixed">
+          <p class="title">Print Output</p>
+        </div>
+        <div class="flex-content-small scroll-box"></div>
+      </div>
+    </div>
+    {{ utils.include_js('main') }}
+  </body>
+</html>

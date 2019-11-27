@@ -1,3 +1,18 @@
+rebind_params = """
+def f(x, y):
+    x = x + 10
+    y = 100
+    return x + y + z
+
+z = 100
+a = f(90, 5)
+"""
+
+rebind_fn = """
+def f(): return
+def f(): return
+"""
+
 testnested = """
 def f(x, h = None):
     a = 1
@@ -10,6 +25,23 @@ def h(q):
 f(g(2), h(3))
 f(h(g(2)))
 """
+
+hof = """
+def f():
+    def f_prime(a, b):
+        return a + b
+    return f_prime
+
+def g():
+    return 3.14
+
+def h():
+    return 2.718
+
+x = f()(g(), h())
+"""
+
+################################################################################
 
 starargs1 = """
 def g(a, b, c, d, *e):
@@ -94,16 +126,6 @@ def y():
 
 f(x(), y()) # Should see x y 3
 f(y=y(), x=x()) # Should see y x 3
-"""
-
-rebind_params = """
-def f(x, y):
-    x = x + 10
-    y = 100
-    return x + y + z
-
-z = 100
-a = f(90, 5)
 """
 
 rebind_param_pointers = """

@@ -1,0 +1,7 @@
+{% macro include_css(file) %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/{}.css'.format(file)) }}">
+{% endmacro %}
+
+{% macro include_js(file) %}
+  <script type="text/javascript" src="{{ url_for('static', filename='scripts/{}.js'.format(file)) }}"></script>
+{% endmacro %}

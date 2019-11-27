@@ -1,2 +1,8 @@
-__pycache__/
+# Front-end
+node_modules/
+static/styles/*
+static/scripts/*
 
+# Back-end
+env/
+__pycache__/
