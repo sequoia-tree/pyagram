@@ -1,7 +1,7 @@
-import display
-import encode
-import enums
-import pyagram_element
+from . import display
+from . import encode
+from . import enums
+from . import pyagram_element
 
 class State:
     """

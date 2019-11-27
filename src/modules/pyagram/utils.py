@@ -2,7 +2,7 @@ import gc
 import inspect
 import types
 
-import pyagram_types
+from . import pyagram_types
 
 INNER_CALL_LINENO = -1
 OUTER_CALL_LINENO = -2

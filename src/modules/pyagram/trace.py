@@ -1,9 +1,9 @@
 import bdb
 
-import display
-import enums
-import state
-import utils
+from . import display
+from . import enums
+from . import state
+from . import utils
 
 class Tracer(bdb.Bdb):
     """

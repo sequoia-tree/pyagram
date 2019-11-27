@@ -1,6 +1,6 @@
 import inspect
 
-import pyagram_types
+from . import pyagram_types
 
 GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
 

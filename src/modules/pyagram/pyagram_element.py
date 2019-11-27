@@ -1,9 +1,9 @@
 import gc
 
-import display
-import encode
-import pyagram_types
-import utils
+from . import display
+from . import encode
+from . import pyagram_types
+from . import utils
 
 class PyagramElement:
     """

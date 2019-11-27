@@ -1,7 +1,7 @@
 import ast
 
-import banner
-import utils
+from . import banner
+from . import utils
 
 def preprocess_code(src_code):
     """

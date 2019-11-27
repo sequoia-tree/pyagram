@@ -1,5 +1,5 @@
-import encode
-import utils
+from . import encode
+from . import utils
 
 def postprocess_snapshots(snapshots):
     """

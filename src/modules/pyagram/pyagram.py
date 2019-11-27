@@ -1,8 +1,8 @@
 import json
 
-import postprocess
-import preprocess
-import trace
+from . import postprocess
+from . import preprocess
+from . import trace
 
 class Pyagram:
     """

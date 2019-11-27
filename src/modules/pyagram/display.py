@@ -1,4 +1,4 @@
-import encode
+from . import encode
 
 TERMINAL_HEIGHT = 58
 TERMINAL_WIDTH = 80
