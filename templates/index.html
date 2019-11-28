@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pyagram</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Mono&display=swap">
     {{ utils.include_css('main') }}
@@ -23,9 +24,7 @@
     </div>
     <div class="split right">
       <div id="editor-overlay" class="overlay">
-        <div id="editor-button" class="button center">
-          <p class="title">Draw Pyagram</p>
-        </div>
+        {{ utils.button('editor-button', 'Draw Pyagram', True) }}
       </div>
       <div class="flex-column">
         <div class="flex-content-fixed">

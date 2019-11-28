@@ -1,3 +1,8 @@
+// Page layout
+$max-width: 1280px;
+$flex-ratio: 4;
+
+// Color scheme
 $dark-green: #1e8511;
 $light-green: #3cc216;
 $bark-brown: #966d1c;
@@ -5,25 +10,30 @@ $stark-white: #ffffff;
 $cloud-white: #ebf0f0;
 $storm-grey: #d7e1e1;
 
-$flex-ratio: 4;
-$max-width: 1200px;
-
-@mixin fade($seconds) {
-  transition: $seconds;
-  -o-transition: $seconds;
-  -ms-transition: $seconds;
-  -moz-transition: $seconds;
-  -webkit-transition: $seconds;
+// Button styling // TODO: Perhaps move button styling to button.scss? And colors into theme.scss?
+$line-width: 2px;
+$trans-time: 0.25s;
+$line-color: $light-green;
+@mixin button-border() {
+  position: absolute;
+  content: '';
+  background: $line-color;
+  transition: all $trans-time linear;
 }
 
 html {
+  // TODO: Don't forget to make textbook chapters look nice on mobile.
   @media only screen and (min-width : $max-width) {
     max-width: $max-width;
     margin: 0 auto;
   }
+  position: relative;
+  height: 100%;
+  width: 100%;
   font-family: 'PT Sans', sans-serif;
   font-size: 12.5pt;
   p.title {
+    font-family: 'Raleway', sans-serif;
     font-size: 150%;
     margin: 0;
   }
@@ -34,32 +44,63 @@ html {
     left: 50%;
     transform: translate(-50%, -50%);
   }
-  .button { // TODO: Let .button, .dropdown, etc. all `@include` a more general `@mixin clickable`.
-    @include fade(0.5s);
+  // TODO: Dropdowns should be very similar to buttons, but upon click they become much taller (revealing contents inside) and the border is fixed to $line-width even when the mouse is no longer hovering above it.
+  // TODO: Let .button, .dropdown, etc. all `@include` a general `@mixin clickable`?
+  .button-outer {
     padding: 0.5em;
-    background: $cloud-white;
     border-style: solid;
     border-width: 0.1em;
-    border-color: $light-green;
+    border-color: $line-color;
     cursor: pointer;
   }
-  .button:hover {
-    border-width: 0.2em; // TODO: Look into fancier buttons (and other clickables) when you redo the SCSS for your website. (Speaking of which, you should probably use the same SCSS code for pyagram as for your website.)
-    border-color: $dark-green;
+  .button-outer::before, .button-outer::after{
+    @include button-border();
+    height: $line-width;
+    width: 0;
+  }
+  .button-inner::before, .button-inner::after{
+    @include button-border();
+    height: 0;
+    width: $line-width;
+  }
+  .button-outer:hover::before, .button-outer:hover::after{
+    width: 100%;
+  }
+  .button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
+    height: 100%;
+  }
+  .button-outer:hover::before, .button-outer:hover::after, .button-outer .button-inner::before, .button-outer .button-inner::after{
+    transition-delay: 0s;
+  }
+  .button-outer::before, .button-outer::after, .button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
+    transition-delay: $trans-time;
+  }
+  .button-outer::before{
+    top: 0;
+    right: 0;
+  }
+  .button-outer::after{
+    bottom: 0;
+    left: 0;
+  }
+  .button-outer .button-inner::before{
+    top: 0;
+    left: 0;
+  }
+  .button-outer .button-inner::after{
+    bottom: 0;
+    right: 0;
   }
   .overlay {
-    position: fixed;
+    position: absolute;
     display: none;
-    height: inherit;
-    width: inherit;
+    height: 100%;
+    width: 100%;
     z-index: 1;
     background: $cloud-white;
-    .button {
-      background: $storm-grey;
-    }
   }
   .split {
-    position: fixed;
+    position: absolute;
     top: 0;
     height: 100%;
     width: 50%;
@@ -107,7 +148,6 @@ html {
 //   display: inline-block;
 // }
 
-// TODO: Set up a min-height and a min-width for everything.
-// TODO: Set up a max-width. I think ~1024 pixels sounds good.
+// TODO: When you enter invalid Python code, it breaks. Use a try / except clause.
 
-// TODO: The editor height should shrink if the window gets too small.
+// TODO: The editor height should start to shrink if the window gets too small.

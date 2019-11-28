@@ -5,3 +5,11 @@
 {% macro include_js(file) %}
   <script type="text/javascript" src="{{ url_for('static', filename='scripts/{}.js'.format(file)) }}"></script>
 {% endmacro %}
+
+{% macro button(id, text, center) %}
+  <div id="{{ id }}" class="button-outer {% if center %} center {% endif %}">
+    <div class="button-inner">
+      <p class="title">{{ text }}</p>
+    </div>
+  </div>
+{% endmacro %}
