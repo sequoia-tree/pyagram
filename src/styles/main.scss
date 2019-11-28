@@ -6,6 +6,7 @@ $cloud-white: #ebf0f0;
 $storm-grey: #d7e1e1;
 
 $flex-ratio: 4;
+$max-width: 1200px;
 
 @mixin fade($seconds) {
   transition: $seconds;
@@ -15,7 +16,11 @@ $flex-ratio: 4;
   -webkit-transition: $seconds;
 }
 
-body {
+html {
+  @media only screen and (min-width : $max-width) {
+    max-width: $max-width;
+    margin: 0 auto;
+  }
   font-family: 'PT Sans', sans-serif;
   font-size: 12.5pt;
   p.title {
@@ -33,11 +38,13 @@ body {
     @include fade(0.5s);
     padding: 0.5em;
     background: $cloud-white;
+    border-style: solid;
+    border-width: 0.1em;
+    border-color: $light-green;
     cursor: pointer;
   }
   .button:hover {
-    border-style: solid;
-    border-width: medium;
+    border-width: 0.2em; // TODO: Look into fancier buttons (and other clickables) when you redo the SCSS for your website. (Speaking of which, you should probably use the same SCSS code for pyagram as for your website.)
     border-color: $dark-green;
   }
   .overlay {
@@ -87,6 +94,9 @@ body {
     overflow-x: scroll;
     overflow-y: scroll;
   }
+  .ace_mobile-menu {
+    display: none !important;
+  }
 }
 
 // TODO: Maybe .inactive-on-hover and .active-on-hover can be useful to mouse over a flag w error.
@@ -98,5 +108,6 @@ body {
 // }
 
 // TODO: Set up a min-height and a min-width for everything.
+// TODO: Set up a max-width. I think ~1024 pixels sounds good.
 
 // TODO: The editor height should shrink if the window gets too small.
