@@ -5,7 +5,6 @@ module.exports = {
   entry: {
     main: [
       './src/scripts/editor.js',
-      './src/scripts/decode.js',
     ],
   },
   output: {

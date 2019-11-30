@@ -1,6 +1,11 @@
 // Page layout
 $max-width: 1280px;
 $flex-ratio: 4;
+@mixin flex($flexibility) {
+  flex-grow: $flexibility;
+  flex-shrink: $flexibility;
+  flex-basis: auto;
+}
 
 // Color scheme
 $dark-green: #1e8511;
@@ -116,19 +121,13 @@ html {
     height: inherit;
     flex-flow: column;
     .flex-content-fixed {
-      flex-grow: 0;
-      flex-shrink: 0;
-      flex-basis: auto;
+      @include flex(0);
     }
     .flex-content-small {
-      flex-grow: 1;
-      flex-shrink: 1;
-      flex-basis: auto;
+      @include flex(1);
     }
     .flex-content-large {
-      flex-grow: $flex-ratio;
-      flex-shrink: $flex-ratio;
-      flex-basis: auto;
+      @include flex($flex-ratio);
     }
   }
   .scroll-box {
@@ -148,6 +147,6 @@ html {
 //   display: inline-block;
 // }
 
-// TODO: When you enter invalid Python code, it breaks. Use a try / except clause.
+// TODO: The editor height should start to shrink if the window gets too small. Maybe just give the whole document a min-height?
 
-// TODO: The editor height should start to shrink if the window gets too small.
+// TODO: Split this file into several SCSS files.

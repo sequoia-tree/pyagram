@@ -1,6 +1,8 @@
 import ace from 'ace-builds';
 import 'ace-builds/webpack-resolver';
 
+import { drawPyagram } from './draw.js';
+
 const NUM_LINES = 30;
 
 var editor = ace.edit(null, {
@@ -10,7 +12,7 @@ var editor = ace.edit(null, {
     fontSize: '100%',
     minLines: NUM_LINES,
     maxLines: NUM_LINES,
-})
+});
 var overlay = document.getElementById('editor-overlay');
 var button = document.getElementById('editor-button');
 
@@ -26,11 +28,9 @@ button.onclick = function() {
         data: {'code': code},
         contentType: 'application/json',
         dataType: 'json',
-        success: function(response) {
-            alert(JSON.stringify(response)); // TODO
-        }
+        success: drawPyagram,
     });
-}
+};
 
 document.getElementById('editor').appendChild(editor.container);
 editor.focus();
