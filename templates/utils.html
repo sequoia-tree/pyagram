@@ -8,8 +8,8 @@
 
 {% macro button(id, text, center) %}
   <div id="{{ id }}" class="button-outer {% if center %} center {% endif %}">
-    <div class="button-inner">
-      <p class="title">{{ text }}</p>
+    <div class="button-inner title">
+      {{ text }}
     </div>
   </div>
 {% endmacro %}

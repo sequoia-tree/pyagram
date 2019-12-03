@@ -18,9 +18,11 @@
       <div class="flex-column">
         <div id="editor" class="flex-content-fixed"></div>
         <div class="flex-content-dynamic scroll-box">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          Haec et tu ita posuisti, et verba vestra sunt.
-          Non enim iam stirpis bonum quaeret, sed animalis.
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            Haec et tu ita posuisti, et verba vestra sunt.
+            Non enim iam stirpis bonum quaeret, sed animalis.    
+          </p>
         </div>
       </div>
     </div>
@@ -36,7 +38,9 @@
         <div class="flex-content-fixed title">
           Print Output
         </div>
-        <div id="print-output" class="flex-content-dynamic scroll-box show-white-space"></div>
+        <div class="flex-content-dynamic scroll-box">
+          <p id="print-output" class="mono show-white-space"></p>
+        </div>
       </div>
     </div>
     {{ utils.include_js('main') }}

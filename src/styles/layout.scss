@@ -1,0 +1,72 @@
+@import 'colors';
+
+$max-width: 1280px;
+
+@mixin flex($flexibility) {
+  flex-basis: auto;
+  flex-grow: $flexibility;
+  flex-shrink: $flexibility;
+}
+
+// TODO: Don't forget to make textbook chapters look nice on mobile.
+
+// TODO: The editor height should start to shrink if the window gets too small. Maybe just give the whole document a min-height?
+
+html {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  @media only screen and (min-width: $max-width) {
+    max-width: $max-width;
+    margin: 0 auto;
+  }
+}
+
+.split {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+}
+
+.split.left {
+  left: 0;
+}
+
+.split.right {
+  right: 0;
+}
+
+.flex-column {
+  display: flex;
+  height: inherit;
+  flex-flow: column;
+  .flex-content-fixed {
+    @include flex(0);
+  }
+  .flex-content-dynamic {
+    @include flex(1);
+  }
+}
+
+.scroll-box {
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.overlay {
+  position: absolute;
+  display: none;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  background: $cloud-white;
+}
+
+.center {
+  position: relative;
+  float: left;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
