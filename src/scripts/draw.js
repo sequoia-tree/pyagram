@@ -1,6 +1,7 @@
-export function drawPyagram(serializedPyagram) { // TODO: Rename.
-    alert(JSON.stringify(serializedPyagram));
+export function drawPyagram(renderedComponents) {
+    var pyagramPane = document.getElementById('pyagram');
+    var printOutputPane = document.getElementById('print-output');
+    // TODO: Draw pyagram.
+    // TODO: Draw print output.
+    printOutputPane.innerHTML = 'test: line one\ntest: line two';
 };
-
-// TODO: Get it to draw things YA YEET!
-// TODO: Just draw rectangles (white background, black outline) with HTML (generated from JavaScript). No need for crazy drawing libraries. The only tricky part will be the arrows.

@@ -7,7 +7,7 @@ const NUM_LINES = 30;
 
 var editor = ace.edit(null, {
     mode: 'ace/mode/python',
-    theme: 'ace/theme/merbivore_soft', // TODO: Support One Dark (from Atom), Monokai (from Sublime), and Merbivore Soft (from IDEA).
+    theme: 'ace/theme/merbivore_soft', // TODO: Support One Dark (Atom), Monokai (Sublime), and Merbivore Soft (IDEA).
     fontFamily: 'PT Mono',
     fontSize: '100%',
     minLines: NUM_LINES,
@@ -30,6 +30,7 @@ button.onclick = function() {
         dataType: 'json',
         success: drawPyagram,
     });
+    overlay.style.display = 'none';
 };
 
 document.getElementById('editor').appendChild(editor.container);

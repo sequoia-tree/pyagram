@@ -1,34 +1,17 @@
+@import 'button';
+@import 'colors';
+
 // Page layout
 $max-width: 1280px;
-$flex-ratio: 4;
 @mixin flex($flexibility) {
+  flex-basis: auto;
   flex-grow: $flexibility;
   flex-shrink: $flexibility;
-  flex-basis: auto;
-}
-
-// Color scheme
-$dark-green: #1e8511;
-$light-green: #3cc216;
-$bark-brown: #966d1c;
-$stark-white: #ffffff;
-$cloud-white: #ebf0f0;
-$storm-grey: #d7e1e1;
-
-// Button styling // TODO: Perhaps move button styling to button.scss? And colors into theme.scss?
-$line-width: 2px;
-$trans-time: 0.25s;
-$line-color: $light-green;
-@mixin button-border() {
-  position: absolute;
-  content: '';
-  background: $line-color;
-  transition: all $trans-time linear;
 }
 
 html {
   // TODO: Don't forget to make textbook chapters look nice on mobile.
-  @media only screen and (min-width : $max-width) {
+  @media only screen and (min-width: $max-width) {
     max-width: $max-width;
     margin: 0 auto;
   }
@@ -37,10 +20,15 @@ html {
   width: 100%;
   font-family: 'PT Sans', sans-serif;
   font-size: 12.5pt;
-  p.title {
+  .title {
     font-family: 'Raleway', sans-serif;
     font-size: 150%;
-    margin: 0;
+  }
+  .mono {
+    font-family: 'PT Mono', monospace;
+  }
+  .show-white-space {
+    white-space: pre-wrap;
   }
   .center {
     position: relative;
@@ -48,53 +36,6 @@ html {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-  // TODO: Dropdowns should be very similar to buttons, but upon click they become much taller (revealing contents inside) and the border is fixed to $line-width even when the mouse is no longer hovering above it.
-  // TODO: Let .button, .dropdown, etc. all `@include` a general `@mixin clickable`?
-  .button-outer {
-    padding: 0.5em;
-    border-style: solid;
-    border-width: 0.1em;
-    border-color: $line-color;
-    cursor: pointer;
-  }
-  .button-outer::before, .button-outer::after{
-    @include button-border();
-    height: $line-width;
-    width: 0;
-  }
-  .button-inner::before, .button-inner::after{
-    @include button-border();
-    height: 0;
-    width: $line-width;
-  }
-  .button-outer:hover::before, .button-outer:hover::after{
-    width: 100%;
-  }
-  .button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
-    height: 100%;
-  }
-  .button-outer:hover::before, .button-outer:hover::after, .button-outer .button-inner::before, .button-outer .button-inner::after{
-    transition-delay: 0s;
-  }
-  .button-outer::before, .button-outer::after, .button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
-    transition-delay: $trans-time;
-  }
-  .button-outer::before{
-    top: 0;
-    right: 0;
-  }
-  .button-outer::after{
-    bottom: 0;
-    left: 0;
-  }
-  .button-outer .button-inner::before{
-    top: 0;
-    left: 0;
-  }
-  .button-outer .button-inner::after{
-    bottom: 0;
-    right: 0;
   }
   .overlay {
     position: absolute;
@@ -123,11 +64,8 @@ html {
     .flex-content-fixed {
       @include flex(0);
     }
-    .flex-content-small {
+    .flex-content-dynamic {
       @include flex(1);
-    }
-    .flex-content-large {
-      @include flex($flex-ratio);
     }
   }
   .scroll-box {

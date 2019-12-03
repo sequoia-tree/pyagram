@@ -9,9 +9,9 @@ def postprocess_snapshots(snapshots):
     :return:
     """
     for snapshot in snapshots:
-        postprocess_program_state_snapshot(snapshot['program-state'])
-        postprocess_memory_state_snapshot(snapshot['memory-state'])
-        postprocess_print_output_snapshot(snapshot['print-output'])
+        postprocess_program_state_snapshot(snapshot['program_state'])
+        postprocess_memory_state_snapshot(snapshot['memory_state'])
+        postprocess_print_output_snapshot(snapshot['print_output'])
 
 def postprocess_program_state_snapshot(program_state_snapshot):
     """
@@ -20,7 +20,7 @@ def postprocess_program_state_snapshot(program_state_snapshot):
     :param program_state_snapshot:
     :return:
     """
-    postprocess_frame_snapshot(program_state_snapshot['global-frame'])
+    postprocess_frame_snapshot(program_state_snapshot['global_frame'])
 
 def postprocess_memory_state_snapshot(memory_state_snapshot):
     """
@@ -79,7 +79,7 @@ def interpolate_flag_banner(flag_snapshot):
     :flag_snapshot:
     :return:
     """
-    pyagram_flag = flag_snapshot.pop('pyagram-flag')
+    pyagram_flag = flag_snapshot.pop('pyagram_flag')
     banner_elements, banner_bindings = flag_snapshot['banner']
     pyagram_frame = pyagram_flag.frame
     frame_bindings = pyagram_frame.initial_bindings # TODO: This throws an error if pyagram_frame is None, which is the case when a flag has no frame (eg for built-in calls like "a.append")

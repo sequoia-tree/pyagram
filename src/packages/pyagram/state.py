@@ -63,9 +63,9 @@ class State:
         :return:
         """
         snapshot = {
-            'program-state': self.program_state.snapshot(),
-            'memory-state': self.memory_state.snapshot(),
-            'print-output': self.print_output, # This is a string, or **None** if nothing has been printed yet!
+            'program_state': self.program_state.snapshot(),
+            'memory_state': self.memory_state.snapshot(),
+            'print_output': self.print_output, # TODO: This is a string, or **None** if nothing has been printed yet!
         }
         self.snapshots.append(snapshot)
 
@@ -151,8 +151,8 @@ class ProgramState:
         :return:
         """
         return {
-            'curr-line-no': self.curr_line_no,
-            'global-frame': self.global_frame.snapshot(),
+            'curr_line_no': self.curr_line_no,
+            'global_frame': self.global_frame.snapshot(),
         }
 
     def process_frame_open(self, frame):

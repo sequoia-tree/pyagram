@@ -1,5 +1,3 @@
-import json
-
 from . import postprocess
 from . import preprocess
 from . import trace
@@ -23,11 +21,3 @@ class Pyagram:
         tracer.run(code, globals=global_bindings, locals=global_bindings)
         self.snapshots = tracer.state.snapshots
         postprocess.postprocess_snapshots(self.snapshots)
-
-    def serialize(self):
-        """
-        Produce a serialization  ???  JSON string
-
-        :return:
-        """
-        return json.dumps(self.snapshots)

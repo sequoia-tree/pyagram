@@ -17,8 +17,10 @@
     <div class="split left">
       <div class="flex-column">
         <div id="editor" class="flex-content-fixed"></div>
-        <div class="flex-content-small scroll-box">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Haec et tu ita posuisti, et verba vestra sunt. Non enim iam stirpis bonum quaeret, sed animalis.</p>
+        <div class="flex-content-dynamic scroll-box">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          Haec et tu ita posuisti, et verba vestra sunt.
+          Non enim iam stirpis bonum quaeret, sed animalis.
         </div>
       </div>
     </div>
@@ -27,14 +29,14 @@
         {{ utils.button('editor-button', 'Draw Pyagram', True) }}
       </div>
       <div class="flex-column">
-        <div class="flex-content-fixed">
-          <p class="title">Pyagram</p>
+        <div class="flex-content-fixed title">
+          Pyagram
         </div>
-        <div class="flex-content-large scroll-box"></div>
-        <div class="flex-content-fixed">
-          <p class="title">Print Output</p>
+        <div id="pyagram" class="flex-content-dynamic scroll-box"></div>
+        <div class="flex-content-fixed title">
+          Print Output
         </div>
-        <div class="flex-content-small scroll-box"></div>
+        <div id="print-output" class="flex-content-dynamic scroll-box show-white-space"></div>
       </div>
     </div>
     {{ utils.include_js('main') }}

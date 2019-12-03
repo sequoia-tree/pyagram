@@ -67,13 +67,13 @@ def object_snapshot(object, memory_state):
             'parent': f'[p={repr(memory_state.function_parents[object])}]',
         }
     elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
-        encoding = 'ordered-collection'
+        encoding = 'ordered_collection'
         snapshot = [
             reference_snapshot(item, memory_state)
             for item in object
         ]
     elif object_type in pyagram_types.UNORDERED_COLLECTION_TYPES:
-        encoding = 'unordered-collection'
+        encoding = 'unordered_collection'
         snapshot = [
             reference_snapshot(item, memory_state)
             for item in object
@@ -92,7 +92,7 @@ def object_snapshot(object, memory_state):
         snapshot = NotImplemented # TODO
     else:
         if hasattr(object, '__dict__'):
-            encoding = 'object-frame'
+            encoding = 'object_frame'
             snapshot = NotImplemented # TODO
             # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
             # TODO: If `object_type is Type` then write "class X [p=Y]", else "instance X [p=Y]".
@@ -101,7 +101,7 @@ def object_snapshot(object, memory_state):
               # (*) Limit the size of each object frame, but make the contents scrollable on the site.
               # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
         else:
-            encoding = 'object-repr'
+            encoding = 'object_repr'
             snapshot = repr(object)
     return {
         'encoding': encoding, # So the decoder knows the structure of `snapshot`.

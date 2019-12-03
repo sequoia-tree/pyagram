@@ -178,8 +178,8 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return {
-            'is-curr-element': self is self.state.program_state.curr_element,
-            'pyagram-flag': self,
+            'is_curr_element': self is self.state.program_state.curr_element,
+            'pyagram_flag': self,
             'banner': self.banner,
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
@@ -381,14 +381,14 @@ class PyagramFrame(PyagramElement):
         if self.initial_bindings is None:
             self.initial_bindings = bindings
         return {
-            'is-curr-element': self is self.state.program_state.curr_element,
+            'is_curr_element': self is self.state.program_state.curr_element,
             'id': self.id,
-            'parent-id': 
+            'parent_id': 
                 None
                 if self.is_global_frame
                 else self.state.memory_state.function_parents[self.function].id,
             'bindings': bindings,
-            'return-value':
+            'return_value':
                 encode.reference_snapshot(self.return_value, self.state.memory_state)
                 if self.has_returned
                 else None,
