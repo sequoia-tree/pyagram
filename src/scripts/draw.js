@@ -1,10 +1,13 @@
-export function drawPyagram(renderedComponents) {
+export function drawPyagram(snapshots) {
     var pyagramPane = document.getElementById('pyagram');
     var printOutputPane = document.getElementById('print-output');
+
+    // TODO: Make a slider with left / right arrows to navigate through snapshots.
+
     // TODO: Draw pyagram.
     // TODO: Draw print output.
-    // var programState = renderedComponents.program_state;
-    // var memoryState = renderedComponents.memory_state;
-    // var printOutput = renderedComponents.print_output;
+
+    // This stuff is placeholder ... :
+    pyagramPane.innerHTML = snapshots[snapshots.length - 1].program_state.global_frame;
     printOutputPane.innerHTML = 'test: line one\ntest: line two';
 };

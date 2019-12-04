@@ -31,17 +31,17 @@ FRAME_TEMPLATE = """
       Frame {{ id }} (parent: Frame {{ parent_id }})
     {% endif %}
   </p>
-  <table>
+  <table class="frame-bindings-table mono">
     {% for key, value in bindings.items() %} <!-- TODO: Verify these show up in the right order! -->
       <tr>
-        <td>{{ key }}</td>
-        <td>{{ get_reference_html(value) }}</td>
+        <td class="binding-var">{{ key }}</td>
+        <td class="binding-val">{{ get_reference_html(value) }}</td>
       </tr>
     {% endfor %}
     {% if return_value is not none %}
       <tr>
-        <td>Return value</td>
-        <td>{{ get_reference_html(return_value) }}</td>
+        <td class="binding-ret">Return value</td>
+        <td class="binding-val">{{ get_reference_html(return_value) }}</td>
       </tr>
     {% endif %}
   </table>

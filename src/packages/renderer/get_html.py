@@ -8,7 +8,7 @@ def get_html(template, component_snapshot):
         this=component_snapshot,
         **component_snapshot,
         **globals(),
-    )
+    ) # TODO: I'd love to `.strip` the whitespace here. Would that break things, like `x = 'a\nb' or `print(x)`?)
 
 def get_element_html(element_snapshot):
     return get_html(templates.ELEMENT_TEMPLATE, element_snapshot)
