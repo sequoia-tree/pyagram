@@ -1,0 +1,20 @@
+@import 'clickable';
+@import 'colors';
+
+.slider-wrapper {
+  width: 90%;
+}
+
+.slider {
+  width: 100%;
+}
+
+.todo-todo-todo-todo-todo {
+  @include clickable();
+  background: $accent-color;
+}
+
+.slider-button {
+  display: inline-block;
+  width: 25%;
+}

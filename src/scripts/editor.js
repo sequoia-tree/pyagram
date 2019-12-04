@@ -22,16 +22,20 @@ editor.session.on('change', function(delta) {
 
 button.onclick = function() {
     var code = editor.session.getValue();
-    $.ajax({
-        type: 'GET',
-        url: '/draw',
-        data: {'code': code},
-        contentType: 'application/json',
-        dataType: 'json',
-        success: drawPyagram,
-    });
-    overlay.style.display = 'none';
-};
+    if (code === '') {
+        alert('First write some code that you want to visualize.');
+    } else {
+        $.ajax({
+            type: 'GET',
+            url: '/draw',
+            data: {'code': code},
+            contentType: 'application/json',
+            dataType: 'json',
+            success: drawPyagram,
+        });
+        overlay.style.display = 'none';
+    }
+}
 
 document.getElementById('editor').appendChild(editor.container);
 editor.focus();

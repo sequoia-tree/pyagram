@@ -10,4 +10,4 @@ export function drawPyagram(snapshots) {
     // This stuff is placeholder ... :
     pyagramPane.innerHTML = snapshots[snapshots.length - 1].program_state.global_frame;
     printOutputPane.innerHTML = 'test: line one\ntest: line two';
-};
+}

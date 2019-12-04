@@ -1,38 +1,31 @@
+@import 'clickable';
 @import 'colors';
-
-$line-width: 2px;
-$trans-time: 0.25s;
-$line-color: $light-green;
-
-// TODO: Let .button, .dropdown, etc. all `@include` a general `@mixin clickable`?
-
-// TODO: Dropdowns should be very similar to buttons, but upon click they become much taller (revealing contents inside) and the border is fixed to $line-width even when the mouse is no longer hovering above it.
 
 @mixin button-border() {
   position: absolute;
   content: '';
-  background: $line-color;
+  background: $accent-color;
   transition: all $trans-time linear;
 }
 
 .button-outer {
+  @include clickable();
   padding: 0.5em;
   border-style: solid;
   border-width: 0.1em;
-  border-color: $line-color;
-  cursor: pointer;
+  border-color: $accent-color;
 }
 
 .button-outer::before, .button-outer::after{
   @include button-border();
-  height: $line-width;
+  height: $accent-width;
   width: 0;
 }
 
 .button-inner::before, .button-inner::after{
   @include button-border();
   height: 0;
-  width: $line-width;
+  width: $accent-width;
 }
 
 .button-outer:hover::before, .button-outer:hover::after{

@@ -1,0 +1,6 @@
+$accent-width: 2px;
+$trans-time: 0.25s;
+
+@mixin clickable() {
+  cursor: pointer;
+}

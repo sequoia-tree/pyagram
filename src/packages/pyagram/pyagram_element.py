@@ -14,9 +14,14 @@ class PyagramElement:
     def __init__(self, opened_by, state):
         self.opened_by = opened_by
         self.state = self.opened_by.state if state is None else state
-        cls = type(self)
-        self.id = cls.COUNT
-        cls.COUNT += 1
+        if isinstance(self, PyagramFlag):
+            self.id = self.state.num_pyagram_flags
+            self.state.num_pyagram_flags += 1
+        elif isinstance(self, PyagramFrame):
+            self.id = self.state.num_pyagram_frames
+            self.state.num_pyagram_frames += 1
+        else:
+            raise TypeError()
         self.flags = []
 
     def step(self):
@@ -69,8 +74,6 @@ class PyagramFlag(PyagramElement):
       :state.program_state.curr_element: in the step immediately preceding that in which the flag
       is instantiated.
     """
-
-    COUNT = 0
 
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
@@ -258,8 +261,6 @@ class PyagramFrame(PyagramElement):
     :param frame: The built-in :frame: object wherein live the variable bindings for the function
       call in question.
     """
-
-    COUNT = 0
 
     def __init__(self, opened_by, frame, *, state=None, is_implicit=False):
         super().__init__(opened_by, state)

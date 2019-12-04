@@ -5,6 +5,7 @@ module.exports = {
   entry: {
     main: [
       './src/scripts/editor.js',
+      './src/scripts/slider.js',
     ],
   },
   output: {

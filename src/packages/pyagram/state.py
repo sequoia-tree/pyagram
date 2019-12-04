@@ -17,6 +17,7 @@ class State:
     """
 
     def __init__(self, global_frame):
+        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
         self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState()
         self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).

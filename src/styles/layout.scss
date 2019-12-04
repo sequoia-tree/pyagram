@@ -56,11 +56,11 @@ html {
 
 .overlay {
   position: absolute;
-  display: none;
+  display: block;
   height: 100%;
   width: 100%;
   z-index: 1;
-  background: $cloud-white;
+  background: $stark-white;
 }
 
 .center {

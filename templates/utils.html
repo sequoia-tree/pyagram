@@ -13,3 +13,10 @@
     </div>
   </div>
 {% endmacro %}
+
+{% macro slider(id, min, max) %}
+  <div class="slider-wrapper center">
+    <input id="{{ id }}" class="slider" type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}">
+    <!-- TODO: Back / forward buttons underneath. -->
+  </div>
+{% endmacro %}
