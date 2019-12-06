@@ -1,0 +1,17 @@
+@import 'colors';
+
+.overlay {
+  position: absolute;
+  display: block;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  background: $stark-white;
+}
+
+.scroll-overlay {
+  margin-top: 0.5em;
+  border-top-style: solid;
+  border-top-width: 0.05em;
+  border-top-color: $pitch-black;
+}

@@ -11,7 +11,7 @@
 @mixin basic-button() {
   @include clickable();
   border-style: solid;
-  border-width: 0.1em;
+  border-width: $accent-width;
   border-color: $accent-color;
 }
 
