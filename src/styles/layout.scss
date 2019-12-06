@@ -39,8 +39,20 @@ html {
 
 .flex-column {
   display: flex;
-  height: inherit;
+  height: 100%;
   flex-flow: column;
+  .flex-content-fixed {
+    @include flex(0);
+  }
+  .flex-content-dynamic {
+    @include flex(1);
+  }
+}
+
+.flex-row {
+  display: flex;
+  width: 100%;
+  flex-flow: row;
   .flex-content-fixed {
     @include flex(0);
   }

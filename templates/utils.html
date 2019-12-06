@@ -17,6 +17,12 @@
 {% macro slider(id, min, max) %}
   <div class="slider-wrapper center">
     <input id="{{ id }}" class="slider" type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}">
-    <!-- TODO: Back / forward buttons underneath. -->
+    <div class="flex-row">
+      <div class="flex-content-fixed slider-button">&#11164;</div>
+      <div class="flex-content-dynamic"></div>
+      <div class="flex-content-fixed">Step no. #</div>
+      <div class="flex-content-dynamic"></div>
+      <div class="flex-content-fixed slider-button">&#11166;</div>
+    </div>
   </div>
 {% endmacro %}

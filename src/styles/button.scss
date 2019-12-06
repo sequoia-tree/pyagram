@@ -8,12 +8,16 @@
   transition: all $trans-time linear;
 }
 
-.button-outer {
+@mixin basic-button() {
   @include clickable();
-  padding: 0.5em;
   border-style: solid;
   border-width: 0.1em;
   border-color: $accent-color;
+}
+
+.button-outer {
+  @include basic-button();
+  padding: 0.5em;
 }
 
 .button-outer::before, .button-outer::after{

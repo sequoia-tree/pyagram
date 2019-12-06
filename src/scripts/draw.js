@@ -2,7 +2,7 @@ export function drawPyagram(snapshots) {
     var pyagramPane = document.getElementById('pyagram');
     var printOutputPane = document.getElementById('print-output');
 
-    // TODO: Make a slider with left / right arrows to navigate through snapshots.
+    // TODO: Make a slider with back / forward arrows to navigate through snapshots.
 
     // TODO: Draw pyagram.
     // TODO: Draw print output.

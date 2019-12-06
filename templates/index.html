@@ -17,6 +17,10 @@
     <div class="split left">
       <div class="flex-column">
         <div id="editor" class="flex-content-fixed"></div>
+        <div class="flex-content-fixed">
+          {{ utils.slider('step-slider', 0, 0) }}
+          <!-- TODO: It'd be better to put the slider between the "Pyagram" and "Print Output" panes, since the "step number" is undefined until the diagram gets drawn. -->
+        </div>
         <div class="flex-content-dynamic scroll-box">
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.

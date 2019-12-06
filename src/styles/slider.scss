@@ -1,3 +1,4 @@
+@import 'button';
 @import 'clickable';
 @import 'colors';
 
@@ -15,6 +16,7 @@
 }
 
 .slider-button {
-  display: inline-block;
+  @include basic-button();
   width: 25%;
+  text-align: center;
 }
