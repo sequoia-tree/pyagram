@@ -30,9 +30,8 @@ function loadSnapshot(i) {
     // TODO
 
     // This stuff is placeholder for now ...
-    console.log('Loading snapshot '.concat(i));
-    pyagramPane.innerHTML = pgSnapshots[i].program_state.global_frame;
-    printOutputPane.innerHTML = 'test: line one\ntest: line two';
+    pyagramPane.innerHTML = pgSnapshots[i].state;
+    printOutputPane.innerHTML = '[TODO] curr line no.: '.concat(pgSnapshots[i].curr_line_no);
 }
 
 pgEditor.session.on('change', function(delta) {

@@ -1,5 +1,9 @@
+$head-font: 'Raleway', sans-serif;
+$sans-font: 'PT Sans', sans-serif;
+$mono-font: 'PT Mono', monospace;
+
 html {
-  font-family: 'PT Sans', sans-serif;
+  font-family: $sans-font;
   font-size: 12.5pt;
 }
 
@@ -8,12 +12,12 @@ p {
 }
 
 .title {
-  font-family: 'Raleway', sans-serif;
+  font-family: $head-font;
   font-size: 150%;
 }
 
 .mono {
-  font-family: 'PT Mono', monospace;
+  font-family: $mono-font;
 }
 
 .show-white-space {

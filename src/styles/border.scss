@@ -1,0 +1,34 @@
+@import 'colors';
+
+$line-width: 0.1em;
+$line-color: $pitch-black;
+
+@mixin top-border($width: $line-width, $color: $line-color) {
+  border-top-style: solid;
+  border-top-width: $width;
+  border-top-color: $color;
+}
+
+@mixin bottom-border($width: $line-width, $color: $line-color) {
+  border-bottom-style: solid;
+  border-bottom-width: $width;
+  border-bottom-color: $color;
+}
+
+@mixin left-border($width: $line-width, $color: $line-color) {
+  border-left-style: solid;
+  border-left-width: $width;
+  border-left-color: $color;
+}
+
+@mixin right-border($width: $line-width, $color: $line-color) {
+  border-right-style: solid;
+  border-right-width: $width;
+  border-right-color: $color;
+}
+
+@mixin box($width: $line-width, $color: $line-color) {
+  border-style: solid;
+  border-width: $width;
+  border-color: $color;
+}

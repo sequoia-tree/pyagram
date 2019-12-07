@@ -1,24 +1,31 @@
+@import 'border';
 @import 'colors';
-
-@mixin box() {
-  border-style: solid;
-  border-width: 0.05em;
-  border-color: $pitch-black;
-}
+@import 'text';
 
 @mixin binding-name() {
   text-align: right;
 }
 
+@mixin pyagram-element() {
+  width: min-content;
+  margin: 0.25em;
+  white-space: nowrap;
+}
+
 .pyagram-flag {
-  @include box();
+  @include left-border();
+  @include pyagram-element();
+}
+
+.pyagram-banner {
+  @include top-border();
+  @include bottom-border();
+  @include right-border();
 }
 
 .pyagram-frame {
   @include box();
-  width: min-content;
-  margin: 0.25em;
-  white-space: nowrap;
+  @include pyagram-element();
   .frame-bindings-table {
     margin-left: auto;
     margin-right: 0;
@@ -35,7 +42,7 @@
 
 .binding-ret {
   @include binding-name();
-  // TODO: Maybe make this non-monospaced?
+  font-family: $sans-font;
 }
 
 .binding-val {

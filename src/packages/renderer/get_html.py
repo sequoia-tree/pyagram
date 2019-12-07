@@ -3,11 +3,11 @@ import flask
 from . import templates
 
 def get_html(template, **kwargs):
-    return flask.render_template_string(
+    return flask.Markup(flask.render_template_string(
         template,
         **kwargs,
         **globals(),
-    ) # TODO: I'd love to `.strip` the whitespace here. Would that break things, like `x = 'a\nb' or `print(x)`?)
+    )) # TODO: I'd love to `.strip` the whitespace here. Would that break things, like `x = 'a\nb'?)
 
 def get_component_html(template, component_snapshot):
     return get_html(

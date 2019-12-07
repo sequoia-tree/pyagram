@@ -1,6 +1,6 @@
 STATE_TEMPLATE = """
 {{ get_frame_html(global_frame) }}
-<!-- TODO: Draw the memory_state too. Perhaps use a <table></table> tag? -->
+<!-- TODO: Draw the memory_state too. -->
 """
 
 ELEMENT_TEMPLATE = """
@@ -17,7 +17,9 @@ FLAG_TEMPLATE = """
     <!-- TODO -->
   </div>
   {{ get_element_html(this) }}
-  {% if frame is not none %}
+  {% if frame is none %}
+    <p>...</p>
+  {% else %}
     {{ get_frame_html(frame) }}
   {% endif %}
 </div>

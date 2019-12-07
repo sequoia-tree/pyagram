@@ -1,3 +1,4 @@
+@import 'border';
 @import 'colors';
 
 .overlay {
@@ -10,8 +11,6 @@
 }
 
 .scroll-overlay {
+  @include top-border($width: $line-width / 2);
   margin-top: 0.5em;
-  border-top-style: solid;
-  border-top-width: 0.05em;
-  border-top-color: $pitch-black;
 }
