@@ -4,8 +4,8 @@ module.exports = {
   mode: 'production',
   entry: {
     main: [
-      './src/scripts/editor.js',
-      './src/scripts/slider.js',
+      './src/scripts/init.js',
+      './src/scripts/index.js',
     ],
   },
   output: {

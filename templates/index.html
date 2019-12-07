@@ -16,9 +16,11 @@
   <body>
     <div class="split left">
       <div class="flex-column">
-        <div id="editor" class="flex-content-fixed"></div>
         <div class="flex-content-fixed">
-          {{ utils.slider('step-slider', 0, 0) }}
+          {{ utils.editor('editor') }}
+        </div>
+        <div class="flex-content-fixed">
+          {{ utils.slider('step-slider', 'Step no.', 0, 0) }}
         </div>
         <div class="flex-content-dynamic scroll-box scroll-overlay">
           <p>
@@ -30,7 +32,7 @@
       </div>
     </div>
     <div class="split right">
-      <div id="editor-overlay" class="overlay">
+      <div id="overlay" class="overlay">
         {{ utils.button('editor-button', 'Draw Pyagram', True) }}
       </div>
       <div class="flex-column" style="height: 80%;">

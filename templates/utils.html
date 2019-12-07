@@ -6,6 +6,10 @@
   <script type="text/javascript" src="{{ url_for('static', filename='scripts/{}.js'.format(file)) }}"></script>
 {% endmacro %}
 
+{% macro editor(id) %}
+  <div id="{{ id }}"></div>
+{% endmacro %}
+
 {% macro button(id, text, center) %}
   <div id="{{ id }}" class="button-outer {% if center %} center {% endif %}">
     <div class="button-inner title">
@@ -14,15 +18,15 @@
   </div>
 {% endmacro %}
 
-{% macro slider(id, min, max) %}
+{% macro slider(id, label, min, max) %}
   <div class="slider-wrapper center">
     <input id="{{ id }}" class="slider" type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}">
     <div class="flex-row">
-      <div class="flex-content-fixed slider-button">&#11164;</div>
+      <div id="{{ id }}-l-button" class="flex-content-fixed slider-button">&#11164;</div>
       <div class="flex-content-dynamic"></div>
-      <div class="flex-content-fixed">Step no. #</div>
+      <div class="flex-content-fixed">{{ label }} <span id="{{ id }}-label"></span></div>
       <div class="flex-content-dynamic"></div>
-      <div class="flex-content-fixed slider-button">&#11166;</div>
+      <div id="{{ id }}-r-button" class="flex-content-fixed slider-button">&#11166;</div>
     </div>
   </div>
 {% endmacro %}
