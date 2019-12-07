@@ -1,5 +1,6 @@
-LINK_TEMPLATE = """
-<a href="{{ link }}">{{ text }}</a>
+STATE_TEMPLATE = """
+{{ get_frame_html(global_frame) }}
+<!-- TODO: Draw the memory_state too. Perhaps use a <table></table> tag? -->
 """
 
 ELEMENT_TEMPLATE = """
@@ -47,4 +48,8 @@ FRAME_TEMPLATE = """
   </table>
 </div>
 {{ get_element_html(this) }}
+"""
+
+LINK_TEMPLATE = """
+<a href="{{ link }}">{{ text }}</a>
 """

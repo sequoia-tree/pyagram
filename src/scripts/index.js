@@ -21,7 +21,8 @@ var pgSnapshots;
 
 function loadPyagram(snapshots) {
     pgSnapshots = snapshots;
-    resizeSlider();
+    pgSlider.min = 0;
+    pgSlider.max = pgSnapshots.length - 1;
     slider.resetSlider(pgSlider);
 }
 
@@ -32,11 +33,6 @@ function loadSnapshot(i) {
     console.log('Loading snapshot '.concat(i));
     pyagramPane.innerHTML = pgSnapshots[i].program_state.global_frame;
     printOutputPane.innerHTML = 'test: line one\ntest: line two';
-}
-
-function resizeSlider() {
-    pgSlider.min = 0;
-    pgSlider.max = pgSnapshots.length - 1;
 }
 
 pgEditor.session.on('change', function(delta) {
@@ -72,7 +68,5 @@ pgSliderLButton.onclick = function() {
 pgSliderRButton.onclick = function() {
     slider.incrementSlider(pgSlider, 1);
 }
-
-// TODO: Make the left / right arrow keys equivalent to using the buttons beneath the slider.
 
 pgEditor.focus();
