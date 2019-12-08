@@ -24,6 +24,7 @@ function loadPyagram(snapshots) {
     pgSlider.min = 0;
     pgSlider.max = pgSnapshots.length - 1;
     slider.resetSlider(pgSlider);
+    pgOverlay.style.display = 'none';
 }
 
 function loadSnapshot(i) {
@@ -51,7 +52,6 @@ pgEditorButton.onclick = function() {
             dataType: 'json',
             success: loadPyagram,
         });
-        pgOverlay.style.display = 'none';
     }
 }
 
