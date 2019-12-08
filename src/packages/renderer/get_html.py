@@ -50,7 +50,7 @@ def get_reference_html(reference_snapshot):
 
 
 # TODO: (1) Get the flag banners working.
-# TODO: (2) Get the curr-element working.
+# TODO: (2) Get the curr-element working. See take_snapshot in trace.py.
 # TODO: (3) Get the memory state working.
 
 

@@ -155,15 +155,20 @@ class PyagramFlag(PyagramElement):
         """
         # Fill in all banner bindings up until the next one that's a call.
 
+        if not self.banner_is_complete:
 
-
-        if self is self.state.program_state.curr_element and not self.banner_is_complete:
-            if not self.is_new_flag:
-                self.evaluate_next_banner_binding(True)
-            next_binding_might_not_be_call = True
-            while next_binding_might_not_be_call and not self.banner_is_complete:
-                next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
-
+            if self is self.state.program_state.curr_element:
+                if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
+                    
+                    if not self.is_new_flag:
+                        self.evaluate_next_banner_binding(True)
+                    next_binding_might_not_be_call = True
+                    while next_binding_might_not_be_call and not self.banner_is_complete:
+                        next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
+                
+                self.has_processed_subflag_since_prev_eval = False
+            else:
+                self.has_processed_subflag_since_prev_eval = True
 
 
         if self.frame:

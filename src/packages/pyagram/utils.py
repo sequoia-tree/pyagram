@@ -89,5 +89,13 @@ def concatenate_adjacent_strings(elements):
 
     :param elements:
     """
-    # TODO: Any two adjacent elements, which are both type() == str, turn into just one str element.
-    # TODO: Mutative.
+    # TODO: A decent practice problem to include in your texbtook, with a little modification.
+    i = 0
+    while i < len(elements) - 1:
+        curr_elem = elements[i]
+        next_elem = elements[i + 1]
+        if isinstance(curr_elem, str) and isinstance(next_elem, str):
+            elements[i] = ''.join((curr_elem, next_elem))
+            del elements[i + 1]
+        else:
+            i += 1

@@ -90,6 +90,9 @@ class Tracer(bdb.Bdb):
             take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
+
+        # TODO: This isn't quite right ...
+
         if take_snapshot:
             if self.debug:
                 self.display()
