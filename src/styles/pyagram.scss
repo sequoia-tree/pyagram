@@ -21,6 +21,9 @@
   @include top-border();
   @include bottom-border();
   @include right-border();
+  .banner-bindings-table {
+    text-align: center;
+  }
 }
 
 .pyagram-frame {

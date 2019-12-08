@@ -78,12 +78,11 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_flag = True
-        self.banner = banner
-        banner_elements, banner_bindings = self.banner
+        banner_elements, banner_bindings = banner
+        utils.concatenate_adjacent_strings(banner_elements)
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
-        self.next_binding_is_func = True
         self.positional_arg_index = 0
         self.frame = None
 
@@ -160,12 +159,10 @@ class PyagramFlag(PyagramElement):
 
         if self is self.state.program_state.curr_element and not self.banner_is_complete:
             if not self.is_new_flag:
-                self.evaluate_next_banner_binding(expect_call=True)
-            keep_going = True
-            while keep_going and not self.banner_is_complete:
-                keep_going = self.evaluate_next_banner_binding()
-
-        # TODO: Is this remotely correct?
+                self.evaluate_next_banner_binding(True)
+            next_binding_might_not_be_call = True
+            while next_binding_might_not_be_call and not self.banner_is_complete:
+                next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
 
 
 
@@ -183,17 +180,22 @@ class PyagramFlag(PyagramElement):
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'pyagram_flag': self,
-            'banner': self.banner,
+            'banner_binding_index': self.banner_binding_index,
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
         }
     
-    def evaluate_next_banner_binding(self, *, expect_call=False):
+    def evaluate_next_banner_binding(self, expect_call):
         """
         <summary>
         
-        :return: # basically (this might not be the last binding) AND (this binding is not the result of a function call)
+        :return:
         """
+        # Examine the next binding.
+        # If it turns out to be a call: (1) DON'T evaluate it. (2) Return False.
+        # Else: (1) Evaluate the binding. (2) Return True.
+        # Also return False if the banner gets completed.
+
         binding = self.banner_bindings[self.banner_binding_index]
         is_unsupported_binding = binding is None
         if is_unsupported_binding:
@@ -205,13 +207,13 @@ class PyagramFlag(PyagramElement):
         else:
             is_call, param_if_known = binding
             if is_call and not expect_call:
-                return False
+                return False # TODO: Something fishy going on here.
             else:
                 self.state.snapshot()
                 if param_if_known is None:
-                    if self.next_binding_is_func:
+                    next_binding_is_func = self.banner_binding_index == 0
+                    if next_binding_is_func:
                         self.banner_bindings[self.banner_binding_index] = utils.BANNER_FUNCTION_CODE
-                        self.next_binding_is_func = False
                     else:
                         self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
                         self.positional_arg_index += 1

@@ -82,3 +82,12 @@ def assign_unique_code_object(function):
         old_code.co_cellvars,
     )
     function.__code__ = new_code
+
+def concatenate_adjacent_strings(elements):
+    """
+    <summary>
+
+    :param elements:
+    """
+    # TODO: Any two adjacent elements, which are both type() == str, turn into just one str element.
+    # TODO: Mutative.

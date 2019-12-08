@@ -79,36 +79,42 @@ def interpolate_flag_banner(flag_snapshot):
     :flag_snapshot:
     :return:
     """
+    # TODO: Clean up this function a bit.
+
     pyagram_flag = flag_snapshot.pop('pyagram_flag')
-    banner_elements, banner_bindings = flag_snapshot['banner']
     pyagram_frame = pyagram_flag.frame
     frame_bindings = pyagram_frame.initial_bindings # TODO: This throws an error if pyagram_frame is None, which is the case when a flag has no frame (eg for built-in calls like "a.append")
     frame_variables = list(frame_bindings)
+    banner_elements = pyagram_flag.banner_elements
+    banner_bindings = pyagram_flag.banner_bindings
+
+    banner_binding_index = flag_snapshot.pop('banner_binding_index')
 
     banner = []
     for banner_element in banner_elements:
         if isinstance(banner_element, str):
-            banner.append(banner_element)
+            banner.append([banner_element, []])
         else:
             assert isinstance(banner_element, tuple)
             code, binding_indices = banner_element
             bindings = []
             for binding_index in binding_indices:
-                binding_id = banner_bindings[binding_index]
-                is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
-                if is_unsupported_binding:
-                    binding_reference_snapshot = encode.reference_snapshot(None, None)
-                else:
-                    if isinstance(binding_id, str):
-                        binding = frame_bindings[binding_id]
-                    elif isinstance(binding_id, int):
-                        if binding_id == utils.BANNER_FUNCTION_CODE:
-                            binding = pyagram_frame.function
-                        else:
-                            binding = frame_bindings[frame_variables[binding_id]]
+                if binding_index < banner_binding_index:
+                    binding_id = banner_bindings[binding_index]
+                    is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
+                    if is_unsupported_binding:
+                        binding = encode.reference_snapshot(None, None)
                     else:
-                        binding = None
-                    binding_reference_snapshot = encode.reference_snapshot(binding, pyagram_flag.state.memory_state)
-                bindings.append(binding_reference_snapshot)
+                        if isinstance(binding_id, str):
+                            binding = frame_bindings[binding_id]
+                        else:
+                            assert isinstance(binding_id, int)
+                            if binding_id == utils.BANNER_FUNCTION_CODE:
+                                binding = encode.reference_snapshot(pyagram_frame.function, pyagram_flag.state.memory_state)
+                            else:
+                                binding = frame_bindings[frame_variables[binding_id]]
+                else:
+                    binding = None
+                bindings.append(binding)
             banner.append([code, bindings])
     flag_snapshot['banner'] = banner

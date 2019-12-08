@@ -13,7 +13,30 @@ FLAG_TEMPLATE = """
 <div class="pyagram-flag">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
     <!-- TODO -->
-    <p>TODO</p>
+    <table class="banner-bindings-table mono">
+      <tr>
+        {% for label, bindings in banner %}
+          <td {% if bindings|length > 0 %} colspan="{{ bindings|length }}" {% endif %}>
+            {{ label }}
+          </td> <!-- TODO: What if a parameter is bound to valid HTML? -->
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for label, bindings in banner %}
+          {% if bindings|length == 0 %}
+            <td></td>
+          {% else %}
+            {% for binding in bindings %}
+              <td class="binding-val">
+                {% if binding is not none %} <!-- TODO: Instead of not displaying it, just display it but make it have opacity 0, to achieve the same end as LaTeX's \phantom{}. Also make the `...` invisible for flags with no frame yet. -->
+                  {{ get_reference_html(binding) }}
+                {% endif %}
+              </td> <!-- TODO: Draw a box around it. -->
+            {% endfor %} <!-- TODO: P.S. Make UNSUPPORTED links show up in red. -->
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </table>
     <!-- TODO -->
   </div>
   {{ get_element_html(this) }}
