@@ -52,7 +52,7 @@ def get_object_html(object_snapshot):
 
 
 
-# TODO: Get the memory state working.
+# TODO: Draw the memory_state.
 
 # TODO: After clicking 'Draw Pyagram':
 # TODO: (1) The button should stop working. Otherwise people will spam-click it and it'll just keep sending more requests to the server, which will just make things slower.
