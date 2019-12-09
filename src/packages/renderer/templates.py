@@ -41,7 +41,7 @@ FLAG_TEMPLATE = """
   </div>
   {{ get_element_html(this) }}
   {% if frame is none %}
-    <p>...</p>
+    <p class="invisble mono">...</p>
   {% else %}
     {{ get_frame_html(frame) }}
   {% endif %}
