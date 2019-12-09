@@ -28,11 +28,8 @@ function loadPyagram(snapshots) {
 }
 
 function loadSnapshot(i) {
-    // TODO
-
-    // This stuff is placeholder for now ...
     pyagramPane.innerHTML = pgSnapshots[i].state;
-    printOutputPane.innerHTML = '[TODO] curr line no.: '.concat(pgSnapshots[i].curr_line_no);
+    printOutputPane.innerHTML = '[TODO] curr line no.: '.concat(pgSnapshots[i].curr_line_no); // TODO: Add support for the print output.
 }
 
 pgEditor.session.on('change', function(delta) {
@@ -53,19 +50,19 @@ pgEditorButton.onclick = function() {
             success: loadPyagram,
         });
     }
-}
+};
 
 pgSlider.oninput = function() {
     slider.updateLabel(pgSlider);
     loadSnapshot(parseInt(pgSlider.value));
-}
+};
 
 pgSliderLButton.onclick = function() {
     slider.incrementSlider(pgSlider, -1);
-}
+};
 
 pgSliderRButton.onclick = function() {
     slider.incrementSlider(pgSlider, 1);
-}
+};
 
 pgEditor.focus();

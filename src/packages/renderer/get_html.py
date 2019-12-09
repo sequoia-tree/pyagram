@@ -47,9 +47,11 @@ def get_reference_html(reference_snapshot):
     else:
         raise TypeError()
 
+def get_object_html(object_snapshot):
+    return # TODO
 
 
-# TODO: When the pyagram gets taller, your view should automatically scroll down.
+
 # TODO: Get the memory state working.
 
 # TODO: After clicking 'Draw Pyagram':
@@ -57,10 +59,4 @@ def get_reference_html(reference_snapshot):
 # TODO: (2) The button should change to say 'Drawing ...' or something like that.
 # TODO: (3) The button's hover effect should go away.
 
-
-
-def get_memory_state_html(memory_state_snapshot):
-    return # TODO
-
-def get_object_html(object_snapshot):
-    return # TODO
+# TODO: When the pyagram gets taller, your view should scroll to keep the curr_element in view.

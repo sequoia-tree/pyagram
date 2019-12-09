@@ -1,6 +1,16 @@
 STATE_TEMPLATE = """
-{{ get_frame_html(global_frame) }}
-<!-- TODO: Draw the memory_state too. -->
+<table>
+  <tr>
+    <td valign="top">
+      {{ get_frame_html(global_frame) }}
+    </td>
+    <td valign="top">
+      {% for object in memory_state %}
+        {{ get_object_html(object) }}
+      {% endfor %}
+    </td>
+  </tr>
+</table>
 """
 
 ELEMENT_TEMPLATE = """
@@ -16,8 +26,8 @@ FLAG_TEMPLATE = """
       <tr>
         {% for label, bindings in banner %}
           <td class="binding-var" {% if bindings|length > 0 %} colspan="{{ bindings|length }}" {% endif %}>
-            {{ label }}
-          </td> <!-- TODO: What if a parameter is bound to valid HTML? -->
+            {{ label }} <!-- TODO: What if a parameter is bound to valid HTML? -->
+          </td>
         {% endfor %}
       </tr>
       <tr>

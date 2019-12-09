@@ -2,7 +2,7 @@ import numbers
 import types
 
 # Primitive types: Compare with `==`.
-PRIMITIVE_TYPES = (numbers.Number, str) # TODO: Finish.
+PRIMITIVE_TYPES = (numbers.Number, str)
 # Referent types: Compare with `is`.
 FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Finish -- once you get around to implementing class / instance functionality. (E.g. What about method-wrapper types like None.__str__? And check out type([].append) too!) BUT hold your rahi -- we might only want to track user-defined functions ... I mean, we don't step inside built-ins or even know what their parent frames are. Wrapper_descriptor and slot_wrapper? Maybe we should make method-wrappers and co. get drawn not in the style of functions, but in the style of objects? Oh and one more thing: how do you plan to visualize class functions vs. bound methods (e.g. A.f vs. A().f)?
 ORDERED_COLLECTION_TYPES = (list, tuple, str)
@@ -26,6 +26,7 @@ GENERATOR_TYPES = (types.GeneratorType,)
 # TODO:     range_iterator
 # TODO:     map [the output of a call to `map`; a kind of iterator]
 # TODO:     Various built-in Exceptions
+# TODO: I think https://docs.python.org/3.8/library/types.html is a full list of types.
 
 def is_primitive_type(object):
     """
