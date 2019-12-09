@@ -1,3 +1,5 @@
+import inspect # TODO: Check if this file still needs this import.
+
 from . import encode
 from . import utils
 
@@ -90,6 +92,8 @@ def interpolate_flag_banner(flag_snapshot):
 
     banner_binding_index = flag_snapshot.pop('banner_binding_index')
 
+    # TODO: See if there's a *args param. If so, let it be param #i. Then if you encounter a numerical binding_id >= i, look not in the frame bindings but at args[binding_id - i].
+
     banner = []
     for banner_element in banner_elements:
         if isinstance(banner_element, str):
@@ -106,13 +110,25 @@ def interpolate_flag_banner(flag_snapshot):
                         binding = encode.reference_snapshot(None, None)
                     else:
                         if isinstance(binding_id, str):
+
+                            # TODO: Check the function's signature to see if it's actually a **kwargs.
+
                             binding = frame_bindings[binding_id]
                         else:
                             assert isinstance(binding_id, int)
                             if binding_id == utils.BANNER_FUNCTION_CODE:
                                 binding = encode.reference_snapshot(pyagram_frame.function, pyagram_flag.state.memory_state)
                             else:
-                                binding = frame_bindings[frame_variables[binding_id]]
+
+                                # TODO: Check the function's signature to see if it's actually a *args.
+                                if pyagram_frame.var_positional_index is not None and pyagram_frame.var_positional_index <= binding_id:
+                                    binding = pyagram_frame.initial_var_pos_args[binding_id - pyagram_frame.var_positional_index]
+
+                                    pass # TODO: Shoot. The pyagram_frame has to take a snapshot of the initial state of its *args, if it has an *args. Then you can look at that snapshot to see what the values of the *args parameter's arguments are. (What do I mean by "take a snapshot of *args"? Basically this: args is a tuple or list or whatever. I want [reference_snapshot(elem) for elem in args].)
+
+                                else:
+
+                                    binding = frame_bindings[frame_variables[binding_id]]
                 else:
                     binding = None
                 bindings.append(binding)

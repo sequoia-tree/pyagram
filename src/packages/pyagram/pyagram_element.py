@@ -212,7 +212,7 @@ class PyagramFlag(PyagramElement):
         else:
             is_call, param_if_known = binding
             if is_call and not expect_call:
-                return False # TODO: Something fishy going on here.
+                return False
             else:
                 self.state.snapshot()
                 if param_if_known is None:
@@ -280,6 +280,12 @@ class PyagramFrame(PyagramElement):
         else:
             self.function = utils.get_function(frame)
             utils.sort_parameter_bindings(self.bindings, self.function)
+            var_positional_index, var_positional_name = utils.get_var_positional(self.function)
+            self.var_positional_index = var_positional_index
+            self.initial_var_pos_args = None if var_positional_name is None else [
+                encode.reference_snapshot(positional_argument, self.state.memory_state)
+                for positional_argument in self.bindings[var_positional_name]
+            ]
         self.has_returned = False
         self.return_value = None
 

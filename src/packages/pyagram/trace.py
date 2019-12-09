@@ -56,6 +56,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         # TODO: Figure out how you want to address exceptions.
+        # TODO: If there is an error, then don't do any of the flag banner nonsense.
         self.step(frame)
         self.snapshot(enums.TraceTypes.USER_EXCEPTION)
 

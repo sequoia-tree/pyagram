@@ -83,6 +83,22 @@ def assign_unique_code_object(function):
     )
     function.__code__ = new_code
 
+def get_var_positional(function):
+    """
+    <summary>
+
+    :param function:
+    """
+    i, var_positional_index, var_positional_name = 0, None, None
+    for name, parameter in inspect.signature(function).parameters.items():
+        if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+            assert var_positional_index is None
+            assert var_positional_name is None
+            var_positional_index = i
+            var_positional_name = name
+        i += 1
+    return var_positional_index, var_positional_name
+
 def concatenate_adjacent_strings(elements):
     """
     <summary>

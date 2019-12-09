@@ -53,6 +53,11 @@ def get_reference_html(reference_snapshot):
 # TODO: (2) Get the curr-element working. See take_snapshot in trace.py.
 # TODO: (3) Get the memory state working.
 
+# TODO: After clicking 'Draw Pyagram':
+# TODO: (1) The button should stop working. Otherwise people will spam-click it and it'll just keep sending more requests to the server, which will just make things slower.
+# TODO: (2) The button should change to say 'Drawing ...' or something like that.
+# TODO: (3) The button's hover effect should go away.
+
 
 
 def get_memory_state_html(memory_state_snapshot):
