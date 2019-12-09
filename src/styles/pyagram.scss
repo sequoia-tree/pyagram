@@ -27,6 +27,11 @@
   @include right-border();
   .banner-bindings-table {
     text-align: center;
+    .binding-var {
+    }
+    .binding-val {
+      @include box();
+    }
   }
 }
 
@@ -36,23 +41,20 @@
   .frame-bindings-table {
     margin-left: auto;
     margin-right: 0;
+    .binding-var {
+      @include binding-name();
+    }
+    .binding-ret {
+      @include binding-name();
+      font-family: $sans-font;
+    }
+    .binding-val {
+      @include box();
+      text-align: left;
+    }
   }
 }
 
 .curr-element {
   background: rgba($light-green, 0.5);
-}
-
-.binding-var {
-  @include binding-name();
-}
-
-.binding-ret {
-  @include binding-name();
-  font-family: $sans-font;
-}
-
-.binding-val {
-  @include box();
-  text-align: left;
 }

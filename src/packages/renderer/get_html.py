@@ -51,6 +51,7 @@ def get_reference_html(reference_snapshot):
 
 # TODO: (1) Get the curr-element working. See take_snapshot in trace.py.
 # TODO: (2) Get the memory state working.
+# TODO: (3) When the pyagram gets taller, your view should automatically scroll down.
 
 # TODO: After clicking 'Draw Pyagram':
 # TODO: (1) The button should stop working. Otherwise people will spam-click it and it'll just keep sending more requests to the server, which will just make things slower.

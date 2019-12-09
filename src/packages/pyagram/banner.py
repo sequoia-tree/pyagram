@@ -61,10 +61,12 @@ class Banner:
             if isinstance(arg, ast.Starred):
                 if isinstance(arg.value, ast.List):
                     self.elements.append(OPEN_STARRED_LIST)
+                    self.has_prev_input = False
                     self.add_args_info(arg.value.elts)
                     self.elements.append(CLOSE_STARRED_LIST)
                 elif isinstance(arg.value, ast.Tuple):
                     self.elements.append(OPEN_STARRED_TUPLE)
+                    self.has_prev_input = False
                     self.add_args_info(arg.value.elts)
                     self.elements.append(CLOSE_STARRED_TUPLE)
                 elif isinstance(arg.value, ast.Str):
@@ -91,12 +93,13 @@ class Banner:
             if param is None:
                 if isinstance(arg, ast.Dict):
                     self.elements.append(OPEN_KEYWORD_DICT)
+                    self.has_prev_input = False
                     self.add_kwds_info(arg)
                     self.elements.append(CLOSE_KEYWORD_DICT)
                 else:
                     self.add_bindings(arg, (), ())
             else:
-                self.elements.append(ast.Str(f'{param}='))
+                self.elements.append(ast.Str(f'{param.s}='))
                 self.add_bindings(arg, (arg,), (param,))
             self.has_prev_input = True
     
@@ -122,7 +125,7 @@ class Banner:
         else:
             for value, param in zip(values, params):
                 is_call = ast.NameConstant(isinstance(value, ast.Call))
-                param_if_known = ast.NameConstant(None) if param is None else ast.Str(param)
+                param_if_known = ast.NameConstant(None) if param is None else param
                 binding = ast.Tuple(elts=[is_call, param_if_known], ctx=ast.Load())
                 bindings.append(binding)
         binding_indices = []
