@@ -12,7 +12,6 @@ ELEMENT_TEMPLATE = """
 FLAG_TEMPLATE = """
 <div class="pyagram-flag">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
-    <!-- TODO -->
     <table class="banner-bindings-table mono">
       <tr>
         {% for label, bindings in banner %}
@@ -27,8 +26,10 @@ FLAG_TEMPLATE = """
             <td></td>
           {% else %}
             {% for binding in bindings %}
-              <td class="binding-val">
-                {% if binding is not none %} <!-- TODO: Instead of not displaying it, just display it but make it have opacity 0, to achieve the same end as LaTeX's \phantom{}. Also make the `...` invisible for flags with no frame yet. -->
+              <td class="binding-val {% if binding is none %} invisble {% endif %}">
+                {% if binding is none %}
+                  -
+                {% else %}
                   {{ get_reference_html(binding) }}
                 {% endif %}
               </td>
@@ -37,7 +38,6 @@ FLAG_TEMPLATE = """
         {% endfor %}
       </tr>
     </table>
-    <!-- TODO -->
   </div>
   {{ get_element_html(this) }}
   {% if frame is none %}
