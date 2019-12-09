@@ -35,7 +35,7 @@ def get_frame_html(frame_snapshot):
 def get_reference_html(reference_snapshot):
     if isinstance(reference_snapshot, list):
         assert len(reference_snapshot) == 2
-        return flask.render_template_string(
+        return get_html(
             templates.LINK_TEMPLATE,
             text=reference_snapshot[0],
             link=reference_snapshot[1],
@@ -49,9 +49,8 @@ def get_reference_html(reference_snapshot):
 
 
 
-# TODO: (1) Get the flag banners working.
-# TODO: (2) Get the curr-element working. See take_snapshot in trace.py.
-# TODO: (3) Get the memory state working.
+# TODO: (1) Get the curr-element working. See take_snapshot in trace.py.
+# TODO: (2) Get the memory state working.
 
 # TODO: After clicking 'Draw Pyagram':
 # TODO: (1) The button should stop working. Otherwise people will spam-click it and it'll just keep sending more requests to the server, which will just make things slower.

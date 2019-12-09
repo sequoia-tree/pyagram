@@ -10,6 +10,10 @@
   width: min-content;
   margin: 0.25em;
   white-space: nowrap;
+  a {
+    text-decoration: none;
+    color: red;
+  }
 }
 
 .pyagram-flag {

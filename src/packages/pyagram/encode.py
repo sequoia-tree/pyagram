@@ -2,6 +2,7 @@ import inspect
 
 from . import pyagram_types
 
+UNKNOWN_REFERENCE_TEXT = '<?>'
 GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
 
 def reference_str(object):
@@ -38,7 +39,7 @@ def reference_snapshot(object, memory_state):
     :return:
     """
     if object is None and memory_state is None:
-        return ['?', GITHUB_ISSUES_URL] # hyperlink: [text, URL]
+        return [UNKNOWN_REFERENCE_TEXT, GITHUB_ISSUES_URL] # hyperlink: [text, URL]
     elif pyagram_types.is_primitive_type(object):
         return repr(object) if isinstance(object, str) else str(object)
     else:
