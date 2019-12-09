@@ -57,6 +57,7 @@ class Tracer(bdb.Bdb):
         """
         # TODO: Figure out how you want to address exceptions.
         # TODO: If there is an error, then don't do any of the flag banner nonsense.
+        # TODO: Your code relies on a program that works; therefore if the code doesn't work, your code will throw some error that is different from the one thrown by the input code. If there's an error, perhaps run the student's code plain-out and scrape its error message?
         self.step(frame)
         self.snapshot(enums.TraceTypes.USER_EXCEPTION)
 

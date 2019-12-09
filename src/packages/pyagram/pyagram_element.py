@@ -280,12 +280,16 @@ class PyagramFrame(PyagramElement):
         else:
             self.function = utils.get_function(frame)
             utils.sort_parameter_bindings(self.bindings, self.function)
-            var_positional_index, var_positional_name = utils.get_var_positional(self.function)
+            var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
                 encode.reference_snapshot(positional_argument, self.state.memory_state)
                 for positional_argument in self.bindings[var_positional_name]
             ]
+            self.initial_var_keyword_args = None if var_keyword_name is None else {
+                key: encode.reference_snapshot(value, self.state.memory_state)
+                for key, value in self.bindings[var_keyword_name].items()
+            }
         self.has_returned = False
         self.return_value = None
 
