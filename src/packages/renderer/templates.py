@@ -31,9 +31,17 @@ FLAG_TEMPLATE = """
         {% endfor %}
       </tr>
       <tr>
-        {% for label, bindings in banner %}
+        {% for i in range(banner|length) %}
+          {% set label = banner[i][0] %}
+          {% set bindings = banner[i][1] %}
           {% if bindings|length == 0 %}
-            <td></td>
+            {% if i == 1 %}
+              <td class="text-left">(</td>
+            {% elif i == banner|length - 1 %}
+              <td class="text-right">)</td>
+            {% else %}
+              <td class="text-left">,</td>
+            {% endif %}
           {% else %}
             {% for binding in bindings %}
               <td class="binding-val {% if binding is none %} invisble {% endif %}">
