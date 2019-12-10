@@ -4,10 +4,13 @@ from . import templates
 
 def get_html(template, **kwargs):
     return flask.Markup(flask.render_template_string(
-        template,
+        ''.join((
+            template_line.strip()
+            for template_line in template.split('\n')
+        )),
         **kwargs,
         **globals(),
-    )) # TODO: I'd love to `.strip` the whitespace here. Would that break things, like `x = 'a\nb'?)
+    ))
 
 def get_component_html(template, component_snapshot):
     return get_html(
@@ -43,7 +46,9 @@ def get_reference_html(reference_snapshot):
     elif isinstance(reference_snapshot, str):
         return reference_snapshot
     elif isinstance(reference_snapshot, int):
-        return 'TODO' # TODO: Encode an arrow with a <path></path> tag.
+        # TODO: Encode an arrow with a <path></path> tag.
+        # TODO: Point to the element with id `object-i`.
+        return 'TODO'
     else:
         raise TypeError()
 
@@ -82,7 +87,7 @@ def get_parent_frame_html(parent_frame_name):
         parent_frame_name=parent_frame_name,
     )
 
-
+# TODO: Next up, get the arrows to show up!
 
 # TODO: Draw the memory state.
 # TODO: The arrows can be a color other than black, to make them easy to see.

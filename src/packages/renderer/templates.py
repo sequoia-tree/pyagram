@@ -5,8 +5,11 @@ STATE_TEMPLATE = """
       {{ get_frame_html(global_frame) }}
     </td>
     <td valign="top">
-      {% for object in memory_state %}
-        {{ get_object_html(object) }}
+      {% for i in range(memory_state|length) %}
+        {% set object = memory_state[i] %}
+        <div id="object-{{ i }}" class="pyagram-element">
+          {{ get_object_html(object) }}
+        </div>
       {% endfor %}
     </td>
   </tr>
@@ -36,7 +39,11 @@ FLAG_TEMPLATE = """
           {% set bindings = banner[i][1] %}
           {% if bindings|length == 0 %}
             {% if i == 1 %}
-              <td class="text-left">(</td>
+              {% if i == banner|length - 1 %}
+                <td class="text-left">()</td>
+              {% else %}
+                <td class="text-left">(</td>
+              {% endif %}
             {% elif i == banner|length - 1 %}
               <td class="text-right">)</td>
             {% else %}
@@ -69,10 +76,7 @@ FLAG_TEMPLATE = """
 FRAME_TEMPLATE = """
 <div class="pyagram-frame {% if is_curr_element %} curr-element {% endif %}">
   <p>
-    {{ name }}
-    {% if parent is not none %}
-      {{ get_parent_frame_html(parent) }}
-    {% endif %}
+    {{ name }} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
   </p>
   <table class="frame-bindings-table mono">
     {% for key, value in bindings.items() %}
@@ -97,17 +101,19 @@ LINK_TEMPLATE = """
 """
 
 FUNCTION_TEMPLATE = """
-  <div>
-    function
-    <span class="mono">
-      {{ name }}(
-        {% for parameter in parameters %}
-          {{ get_parameter_html(parameter) }}
-        {% endfor %}
-      )
-    </span>
-    {{ get_parent_frame_html(parent) }}
-  </div>
+function
+<span class="pyagram-object">
+  {{ name }}(
+  {% for i in range(parameters|length) %}
+    {% set parameter = parameters[i] %}
+    {{ get_parameter_html(parameter) }}
+    {% if i < parameters|length - 1 %}, {% endif %}
+  {% endfor %}
+  )
+</span>
+<div>
+  {{ get_parent_frame_html(parent) }}
+</div>
 """
 
 ORDERED_COLLECTION_TEMPLATE = """
@@ -143,6 +149,8 @@ PARENT_FRAME_TEMPLATE = """
 """
 
 PARAMETER_TEMPLATE = """
-  {{ name }} {% if default is not none %}={{ get_reference_html(default) }}{% endif %}
-  <!-- TODO: The default value should appear in a black box, like a frame binding. -->
+  {{ name }}
+  {% if default is not none %}
+    =<span class="box">{{ get_reference_html(default) }}</span>
+  {% endif %}
 """

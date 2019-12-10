@@ -20,14 +20,14 @@ p {
   font-family: $mono-font;
 }
 
-.show-white-space {
-  white-space: pre-wrap;
-}
-
 .text-left {
   text-align: left;
 }
 
 .text-right {
   text-align: right;
+}
+
+.show-white-space {
+  white-space: pre-wrap;
 }

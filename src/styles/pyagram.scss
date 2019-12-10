@@ -16,6 +16,10 @@
   }
 }
 
+.pyagram-element {
+  @include pyagram-element();
+}
+
 .pyagram-flag {
   @include left-border();
   @include pyagram-element();
@@ -61,4 +65,9 @@
 
 .invisble {
   color: rgba($stark-white, 0);
+}
+
+span.pyagram-object {
+  margin-left: 0.5em;
+  font-family: $mono-font;
 }
