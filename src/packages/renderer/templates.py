@@ -61,10 +61,9 @@ FLAG_TEMPLATE = """
 FRAME_TEMPLATE = """
 <div class="pyagram-frame {% if is_curr_element %} curr-element {% endif %}">
   <p>
-    {% if id == 0 %}
-      Global Frame
-    {% else %}
-      Frame {{ id }} (parent: Frame {{ parent_id }})
+    {{ name }}
+    {% if parent is not none %}
+      {{ get_parent_frame_html(parent) }}
     {% endif %}
   </p>
   <table class="frame-bindings-table mono">
@@ -87,4 +86,55 @@ FRAME_TEMPLATE = """
 
 LINK_TEMPLATE = """
 <a href="{{ link }}">{{ text }}</a>
+"""
+
+FUNCTION_TEMPLATE = """
+  <div>
+    function
+    <span class="mono">
+      {{ name }}(
+        {% for parameter in parameters %}
+          {{ get_parameter_html(parameter) }}
+        {% endfor %}
+      )
+    </span>
+    {{ get_parent_frame_html(parent) }}
+  </div>
+"""
+
+ORDERED_COLLECTION_TEMPLATE = """
+  TODO
+"""
+
+UNORDERED_COLLECTION_TEMPLATE = """
+  TODO
+"""
+
+MAPPING_TEMPLATE = """
+  TODO
+"""
+
+ITERATOR_TEMPLATE = """
+  TODO
+"""
+
+GENERATOR_TEMPLATE = """
+  TODO
+"""
+
+OBJECT_FRAME_TEMPLATE = """
+  TODO
+"""
+
+OBJECT_REPR_TEMPLATE = """
+  TODO
+"""
+
+PARENT_FRAME_TEMPLATE = """
+  [parent: {{ parent_frame_name }}]
+"""
+
+PARAMETER_TEMPLATE = """
+  {{ name }} {% if default is not none %}={{ get_reference_html(default) }}{% endif %}
+  <!-- TODO: The default value should appear in a black box, like a frame binding. -->
 """

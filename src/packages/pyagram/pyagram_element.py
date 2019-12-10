@@ -308,7 +308,7 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
-        return 'Global' if self.is_global_frame else f'Frame {self.id}'
+        return 'Global Frame' if self.is_global_frame else f'Frame {self.id}'
 
     def __str__(self):
         """
@@ -400,11 +400,16 @@ class PyagramFrame(PyagramElement):
             self.initial_bindings = bindings
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
-            'id': self.id,
-            'parent_id': 
+            'name': repr(self),
+            'parent':
                 None
                 if self.is_global_frame
-                else self.state.memory_state.function_parents[self.function].id,
+                else repr(self.state.memory_state.function_parents[self.function]),
+            # 'id': self.id,
+            # 'parent_id': 
+            #     None
+            #     if self.is_global_frame
+            #     else self.state.memory_state.function_parents[self.function].id,
             'bindings': bindings,
             'return_value':
                 encode.reference_snapshot(self.return_value, self.state.memory_state)

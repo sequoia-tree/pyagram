@@ -47,12 +47,48 @@ def get_reference_html(reference_snapshot):
     else:
         raise TypeError()
 
-def get_object_html(object_snapshot):
-    return # TODO
+def get_object_html(object_encoding):
+    encoding = object_encoding['encoding']
+    object_snapshot = object_encoding['object']
+    if encoding == 'function':
+        # TODO: Get rid of the weird spaces after the '(' and before the ')'.
+        # TODO: Make the parameters comma-separated.
+        # TODO: Check that it works well with default values.
+        # TODO: A function with a really long name should make the window scroll horizontally. It should not wrap to a new line.
+        return get_component_html(templates.FUNCTION_TEMPLATE, object_snapshot)
+    elif encoding == 'ordered_collection':
+        return get_component_html(templates.ORDERED_COLLECTION_TEMPLATE, object_snapshot)
+    elif encoding == 'unordered_collection':
+        return get_component_html(templates.UNORDERED_COLLECTION_TEMPLATE, object_snapshot)
+    elif encoding == 'mapping':
+        return get_component_html(templates.MAPPING_TEMPLATE, object_snapshot)
+    elif encoding == 'iterator':
+        return get_component_html(templates.ITERATOR_TEMPLATE, object_snapshot)
+    elif encoding == 'generator':
+        return get_component_html(templates.GENERATOR_TEMPLATE, object_snapshot)
+    elif encoding == 'object_frame':
+        return get_component_html(templates.OBJECT_FRAME_TEMPLATE, object_snapshot)
+    elif encoding == 'object_repr':
+        return get_component_html(templates.OBJECT_REPR_TEMPLATE, object_snapshot)
+    else:
+        assert False
+
+def get_parameter_html(parameter_snapshot):
+    return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
+
+def get_parent_frame_html(parent_frame_name):
+    return get_html(
+        templates.PARENT_FRAME_TEMPLATE,
+        parent_frame_name=parent_frame_name,
+    )
+
 
 
 
 # TODO: Draw the memory state.
+# TODO: The arrows can be a color other than black, to make them easy to see.
+# TODO: The arrows can also become red on hover, to make them easy to see.
+# TODO: Right now you have two columns in the STATE_TEMPLATE. Perhaps you should have three: one for the flags and frames, one for object frames, and one for other objects (functions, lists, etc.)?
 
 # TODO: After clicking 'Draw Pyagram':
 # TODO: (1) The button should stop working. Otherwise people will spam-click it and it'll just keep sending more requests to the server, which will just make things slower.

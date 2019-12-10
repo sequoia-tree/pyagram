@@ -65,7 +65,7 @@ def object_snapshot(object, memory_state):
                 }
                 for parameter in inspect.signature(object).parameters.values()
             ],
-            'parent': f'[p={repr(memory_state.function_parents[object])}]',
+            'parent': repr(memory_state.function_parents[object]),
         }
     elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
         encoding = 'ordered_collection'
@@ -106,6 +106,5 @@ def object_snapshot(object, memory_state):
             snapshot = repr(object)
     return {
         'encoding': encoding, # So the decoder knows the structure of `snapshot`.
-        'label': object_type.__name__,
         'object': snapshot,
     }
