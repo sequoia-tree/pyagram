@@ -69,22 +69,28 @@ def object_snapshot(object, memory_state):
         }
     elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
         encoding = 'ordered_collection'
-        snapshot = [
-            reference_snapshot(item, memory_state)
-            for item in object
-        ]
+        snapshot = {
+            'elements': [
+                reference_snapshot(item, memory_state)
+                for item in object
+            ],
+        }
     elif object_type in pyagram_types.UNORDERED_COLLECTION_TYPES:
         encoding = 'unordered_collection'
-        snapshot = [
-            reference_snapshot(item, memory_state)
-            for item in object
-        ]
+        snapshot = {
+            'elements': [
+                reference_snapshot(item, memory_state)
+                for item in object
+            ],
+        }
     elif object_type in pyagram_types.MAPPING_TYPES:
         encoding = 'mapping'
-        snapshot =  [
-            [reference_snapshot(key, memory_state), reference_snapshot(value, memory_state)]
-            for key, value in object.items()
-        ]
+        snapshot =  {
+            'items': [
+                [reference_snapshot(key, memory_state), reference_snapshot(value, memory_state)]
+                for key, value in object.items()
+            ],
+        }
     elif object_type in pyagram_types.ITERATOR_TYPES:
         encoding = 'iterator'
         snapshot = NotImplemented # TODO

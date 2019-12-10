@@ -86,7 +86,7 @@ class Banner:
         :param kwds:
         :return:
         """
-        kwds = list(zip(kwds.keys, kwds.values)) if isinstance(kwds, ast.Dict) else [(kwd.arg, kwd.value) for kwd in kwds]
+        kwds = list(zip(kwds.keys, kwds.values)) if isinstance(kwds, ast.Dict) else [(None if kwd.arg is None else ast.Str(kwd.arg), kwd.value) for kwd in kwds]
         for param, arg in kwds:
             if self.has_prev_input:
                 self.elements.append(COMMA)

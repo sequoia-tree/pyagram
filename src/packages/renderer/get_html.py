@@ -84,7 +84,6 @@ def get_parent_frame_html(parent_frame_name):
 
 
 
-
 # TODO: Draw the memory state.
 # TODO: The arrows can be a color other than black, to make them easy to see.
 # TODO: The arrows can also become red on hover, to make them easy to see.
