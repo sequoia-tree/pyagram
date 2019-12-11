@@ -100,6 +100,10 @@ LINK_TEMPLATE = """
 <a href="{{ link }}">{{ text }}</a>
 """
 
+POINTER_TEMPLATE = """
+  TODO
+"""
+
 FUNCTION_TEMPLATE = """
 function
 <span class="pyagram-object">
