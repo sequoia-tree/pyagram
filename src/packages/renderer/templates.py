@@ -1,19 +1,32 @@
 STATE_TEMPLATE = """
-<table>
-  <tr>
-    <td valign="top">
-      {{ get_frame_html(global_frame) }}
-    </td>
-    <td valign="top">
-      {% for i in range(memory_state|length) %}
-        {% set object = memory_state[i] %}
-        <div id="object-{{ i }}" class="pyagram-element">
-          {{ get_object_html(object) }}
-        </div>
-      {% endfor %}
-    </td>
-  </tr>
-</table>
+<div class="overlap-container">
+  <table id="state-table" class="overlap">
+    <tr>
+      <td valign="top">
+        {{ get_frame_html(global_frame) }}
+      </td>
+      <td valign="top">
+        {% for i in range(memory_state|length) %}
+          {% set object = memory_state[i] %}
+          <div id="object-{{ i }}" class="pyagram-element">
+            {{ get_object_html(object) }}
+          </div>
+        {% endfor %}
+      </td>
+    </tr>
+  </table>
+  <svg id="svg-canvas" class="overlap" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
+        <circle cx="5" cy="5" r="1.5" fill="black"/>
+      </marker>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
+        <path d="M0,0 L10,5 0,10 Z" />
+      </marker>
+    </defs>
+    <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"></g>
+  </svg>
+</div>
 """
 
 ELEMENT_TEMPLATE = """
@@ -51,7 +64,7 @@ FLAG_TEMPLATE = """
             {% endif %}
           {% else %}
             {% for binding in bindings %}
-              <td class="binding-val {% if binding is none %} invisble {% endif %}">
+              <td class="binding-val {% if binding is none %} invisible {% endif %}">
                 {% if binding is none %}
                   -
                 {% else %}
@@ -66,7 +79,7 @@ FLAG_TEMPLATE = """
   </div>
   {{ get_element_html(this) }}
   {% if frame is none %}
-    <p class="invisble mono">...</p>
+    <p class="invisible mono">...</p>
   {% else %}
     {{ get_frame_html(frame) }}
   {% endif %}
@@ -101,7 +114,9 @@ LINK_TEMPLATE = """
 """
 
 POINTER_TEMPLATE = """
-  TODO
+<div class="invisible reference-{{ id }}">
+  -
+</div>
 """
 
 FUNCTION_TEMPLATE = """
@@ -145,7 +160,9 @@ OBJECT_FRAME_TEMPLATE = """
 """
 
 OBJECT_REPR_TEMPLATE = """
-  TODO
+<div class="pyagram-object">
+  {{ repr }}
+</div>
 """
 
 PARENT_FRAME_TEMPLATE = """

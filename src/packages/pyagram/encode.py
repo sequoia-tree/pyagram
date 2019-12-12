@@ -43,7 +43,7 @@ def reference_snapshot(object, memory_state):
     elif pyagram_types.is_primitive_type(object):
         return repr(object) if isinstance(object, str) else str(object)
     else:
-        return memory_state.object_ids[id(object)]        
+        return memory_state.object_ids[id(object)]
 
 def object_snapshot(object, memory_state):
     """
@@ -109,7 +109,9 @@ def object_snapshot(object, memory_state):
               # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
         else:
             encoding = 'object_repr'
-            snapshot = repr(object)
+            snapshot = {
+                'repr': repr(object),
+            }
     return {
         'encoding': encoding, # So the decoder knows the structure of `snapshot`.
         'object': snapshot,

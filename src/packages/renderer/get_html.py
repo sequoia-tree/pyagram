@@ -46,8 +46,6 @@ def get_reference_html(reference_snapshot):
     elif isinstance(reference_snapshot, str):
         return reference_snapshot
     elif isinstance(reference_snapshot, int):
-        # TODO: Encode an arrow with a <path></path> tag.
-        # TODO: Point to the element with id `object-i`.
         return get_html(
             templates.POINTER_TEMPLATE,
             id=reference_snapshot,

@@ -1,9 +1,21 @@
 @import 'border';
 @import 'colors';
 
-.overlay {
+@mixin overlap() {
   position: absolute;
   display: block;
+}
+
+.overlap-container {
+  position: relative;
+}
+
+.overlap {
+  @include overlap();
+}
+
+.overlay {
+  @include overlap();
   height: 100%;
   width: 100%;
   z-index: 1;

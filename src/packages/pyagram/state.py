@@ -44,9 +44,9 @@ class State:
             display.separator(),
         ))
     
-    def step(self, frame, is_frame_open, is_frame_close, return_value):
+    def step(self, frame, is_frame_open=None, is_frame_close=None, return_value=None):
         """
-        <summary>
+        <summary> # may also pass in frame=None, eg in PyagramFrame.close
 
         :param frame: As in trace.Tracer.step.
         :param is_frame_open: As in trace.Tracer.step.
@@ -138,11 +138,12 @@ class ProgramState:
         :param return_value: As in state.State.step.
         :return: None.
         """
-        self.curr_line_no = frame.f_lineno
-        if is_frame_open:
-            self.process_frame_open(frame)
-        if is_frame_close:
-            self.process_frame_close(frame, return_value)
+        if frame is not None:
+            self.curr_line_no = frame.f_lineno
+            if is_frame_open:
+                self.process_frame_open(frame)
+            if is_frame_close:
+                self.process_frame_close(frame, return_value)
         self.global_frame.step()
 
     def snapshot(self):

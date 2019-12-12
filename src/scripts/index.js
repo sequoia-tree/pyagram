@@ -6,6 +6,11 @@ const SLIDER_ID = 'step-slider';
 const OVERLAY_ID = 'overlay';
 const PYAGRAM_ID = 'pyagram';
 const PRINT_OUTPUT_ID = 'print-output';
+const STATE_TABLE_ID = 'state-table'; // TODO: Don't hard-code this constant below.
+const SVG_CANVAS_ID = 'svg-canvas'; // TODO: Don't hard-code this constant below.
+const ARROWHEAD_WIDTH = 10;
+const ARROWHEAD_PADDING = 2;
+const POINTER_BUFFER = 80;
 const NUM_LINES = 30;
 
 var pgEditor = editor.newEditor(EDITOR_ID, NUM_LINES);
@@ -30,6 +35,58 @@ function loadPyagram(snapshots) {
 function loadSnapshot(i) {
     pyagramPane.innerHTML = pgSnapshots[i].state;
     printOutputPane.innerHTML = '[TODO] curr line no.: '.concat(pgSnapshots[i].curr_line_no); // TODO: Add support for the print output.
+    $('#svg-canvas').css('height', $('#state-table').height());
+    $('#svg-canvas').css('width', $('#state-table').width());
+    drawPointers();
+}
+
+function drawPointers() {
+    var reference;
+    var object;
+    var i = 0;
+    while (true) {
+        object = document.getElementById('object-'.concat(i));
+        if (object === null) {
+            break;
+        } else {
+            for (reference of document.getElementsByClassName('reference-'.concat(i))) {
+                drawPointer(reference, object);
+            }
+        }
+        i += 1;
+    }
+}
+
+function drawPointer(reference, object) {
+    var canvas = $('#svg-canvas');
+    var reference = $(reference);
+    var object = $(object);
+    var nullCoordinate = {
+        x: canvas.offset().left,
+        y: canvas.offset().top,
+    }
+    var startCoordinate = {
+        x: reference.offset().left + reference.width() / 2,
+        y: reference.offset().top + reference.height() / 2,
+    };
+    var endCoordinate = {
+        x: object.offset().left,
+        y: object.offset().top + object.height() / 2,
+    };
+    startCoordinate.x -= nullCoordinate.x;
+    startCoordinate.y -= nullCoordinate.y;
+    endCoordinate.x -= nullCoordinate.x;
+    endCoordinate.y -= nullCoordinate.y;
+    var pathStr = 
+        'M' +
+        startCoordinate.x + ',' + startCoordinate.y + ' ' +
+        'Q' +
+        (endCoordinate.x - POINTER_BUFFER) + ',' + endCoordinate.y + ' ' +
+        (endCoordinate.x - (ARROWHEAD_WIDTH - ARROWHEAD_PADDING)) + ',' + endCoordinate.y;
+    var pointer = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+    // TODO pointer.setAttribute('class', idk)
+    pointer.setAttribute('d', pathStr);
+    document.getElementById('pointers').appendChild(pointer);
 }
 
 pgEditor.session.on('change', function(delta) {
