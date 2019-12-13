@@ -39,25 +39,6 @@ def get_defaults(function):
         if parameter.default is not inspect.Parameter.empty
     ]
 
-def sort_parameter_bindings(bindings, function):
-    """
-    <summary>
-
-    :param bindings:
-    :param function:
-    :return:
-    """
-    parameter_names = inspect.signature(function).parameters.keys()
-    sorted_bindings = {
-        parameter_name: bindings[parameter_name]
-        for parameter_name in parameter_names
-    }
-    for key, value in bindings.items():
-        if key not in sorted_bindings:
-            sorted_bindings[key] = value
-    bindings.clear()
-    bindings.update(sorted_bindings)
-
 def assign_unique_code_object(function):
     """
     <summary>

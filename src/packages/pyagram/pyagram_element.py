@@ -1,4 +1,5 @@
 import gc
+import inspect
 
 from . import display
 from . import encode
@@ -273,23 +274,21 @@ class PyagramFrame(PyagramElement):
         super().__init__(opened_by, state)
         self.is_new_frame = True
         self.is_implicit = is_implicit
+        self.frame = frame
         self.initial_bindings = None
-        self.cumulative_bindings = frame.f_locals
-        self.local_binding_names = frame.f_code.co_varnames
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
             self.function = utils.get_function(frame)
-            utils.sort_parameter_bindings(self.cumulative_bindings, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
                 encode.reference_snapshot(positional_argument, self.state.memory_state)
-                for positional_argument in self.cumulative_bindings[var_positional_name]
+                for positional_argument in self.frame.f_locals[var_positional_name]
             ]
             self.initial_var_keyword_args = None if var_keyword_name is None else {
                 key: encode.reference_snapshot(value, self.state.memory_state)
-                for key, value in self.cumulative_bindings[var_keyword_name].items()
+                for key, value in self.frame.f_locals[var_keyword_name].items()
             }
         self.has_returned = False
         self.return_value = None
@@ -311,19 +310,6 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
-    
-    @property
-    def bindings(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return {
-            key: value
-            for key, value in self.cumulative_bindings.items()
-            if self.is_global_frame or key in self.local_binding_names
-        }
 
     def __repr__(self):
         """
@@ -385,6 +371,7 @@ class PyagramFrame(PyagramElement):
         # Two goals:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
         # (2) Obtain a reference to all objects floating around in memory; store said references in the MemoryState.
+        self.bindings = self.get_bindings()
         objects = list(self.bindings.values())
         if not self.is_global_frame:
             objects.append(self.function)
@@ -433,6 +420,28 @@ class PyagramFrame(PyagramElement):
                 else None,
             'flags': [flag.snapshot() for flag in self.flags],
         }
+    
+    def get_bindings(self):
+        """
+        <summary>
+
+        :return:
+        """
+        sorted_binding_names = [] if self.is_global_frame else list(inspect.signature(self.function).parameters.keys())
+        for key, value in self.frame.f_locals.items():
+            is_in_parent_frame = False
+            next_frame_to_scan = self.parent
+            while next_frame_to_scan is not None:
+                if key in next_frame_to_scan.frame.f_locals and next_frame_to_scan.frame.f_locals[key] == value:
+                    is_in_parent_frame = True
+                    break
+                next_frame_to_scan = next_frame_to_scan.parent
+            if key in self.frame.f_code.co_varnames or not is_in_parent_frame:
+                sorted_binding_names.append(key)
+        return {
+            key: self.frame.f_locals[key]
+            for key in sorted_binding_names
+        }
 
     def close(self, return_value):
         """
@@ -447,3 +456,28 @@ class PyagramFrame(PyagramElement):
         self.state.step(None)
         self.state.snapshot()
         return self.opened_by
+
+# def f():
+#     print(inspect.currentframe().f_locals)
+#     print(inspect.currentframe().f_code.co_varnames)
+#     print(inspect.currentframe().f_code.co_freevars)
+#     x = 1
+#     y = 2
+#     print(inspect.currentframe().f_locals)
+#     print(inspect.currentframe().f_code.co_varnames)
+#     print(inspect.currentframe().f_code.co_freevars)
+#     def g():
+#         print(inspect.currentframe().f_locals)
+#         print(inspect.currentframe().f_code.co_varnames)
+#         print(inspect.currentframe().f_code.co_freevars)
+#         nonlocal x
+#         x = 3
+#         y = 4
+#         z = 5
+#         print(inspect.currentframe().f_locals)
+#         print(inspect.currentframe().f_code.co_varnames)
+#         print(inspect.currentframe().f_code.co_freevars)
+#     print(inspect.currentframe().f_locals)
+#     print(inspect.currentframe().f_code.co_varnames)
+#     print(inspect.currentframe().f_code.co_freevars)
+#     return g, inspect.currentframe()
