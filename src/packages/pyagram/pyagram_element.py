@@ -274,21 +274,22 @@ class PyagramFrame(PyagramElement):
         self.is_new_frame = True
         self.is_implicit = is_implicit
         self.initial_bindings = None
-        self.bindings = frame.f_locals
+        self.cumulative_bindings = frame.f_locals
+        self.local_binding_names = frame.f_code.co_varnames
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
             self.function = utils.get_function(frame)
-            utils.sort_parameter_bindings(self.bindings, self.function)
+            utils.sort_parameter_bindings(self.cumulative_bindings, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
                 encode.reference_snapshot(positional_argument, self.state.memory_state)
-                for positional_argument in self.bindings[var_positional_name]
+                for positional_argument in self.cumulative_bindings[var_positional_name]
             ]
             self.initial_var_keyword_args = None if var_keyword_name is None else {
                 key: encode.reference_snapshot(value, self.state.memory_state)
-                for key, value in self.bindings[var_keyword_name].items()
+                for key, value in self.cumulative_bindings[var_keyword_name].items()
             }
         self.has_returned = False
         self.return_value = None
@@ -301,6 +302,28 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return self.opened_by is None
+    
+    @property
+    def parent(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
+    
+    @property
+    def bindings(self):
+        """
+        <summary>
+
+        :return:
+        """
+        return {
+            key: value
+            for key, value in self.cumulative_bindings.items()
+            if self.is_global_frame or key in self.local_binding_names
+        }
 
     def __repr__(self):
         """
@@ -369,6 +392,7 @@ class PyagramFrame(PyagramElement):
             objects.append(self.return_value)
         while objects:
             object = objects.pop()
+            # TODO: Are you possibly visiting objects that you've already added to the MemoryState in a previous call to this function?
             if not pyagram_types.is_primitive_type(object):
                 self.state.memory_state.track(object)
                 if pyagram_types.is_function_type(object):
@@ -401,15 +425,7 @@ class PyagramFrame(PyagramElement):
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'name': repr(self),
-            'parent':
-                None
-                if self.is_global_frame
-                else repr(self.state.memory_state.function_parents[self.function]),
-            # 'id': self.id,
-            # 'parent_id': 
-            #     None
-            #     if self.is_global_frame
-            #     else self.state.memory_state.function_parents[self.function].id,
+            'parent': None if self.parent is None else repr(self.parent),
             'bindings': bindings,
             'return_value':
                 encode.reference_snapshot(self.return_value, self.state.memory_state)

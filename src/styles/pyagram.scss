@@ -12,12 +12,8 @@
   white-space: nowrap;
   a {
     text-decoration: none;
-    color: red;
+    color: $highlight-color;
   }
-}
-
-.pyagram-element {
-  @include pyagram-element();
 }
 
 .pyagram-flag {
@@ -59,12 +55,18 @@
   }
 }
 
-.pyagram-object {
-  font-family: $mono-font;
+.pyagram-pointer {
 }
 
-span.pyagram-object {
-  margin-left: 0.5em;
+.pyagram-object {
+  @include pyagram-element();
+  margin-left: 5em;
+  .pyagram-object-body {
+    font-family: $mono-font;
+  }
+  span.pyagram-object-body {
+    margin-left: 0.5em;
+  }
 }
 
 .curr-element {

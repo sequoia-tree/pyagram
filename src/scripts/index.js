@@ -10,7 +10,7 @@ const STATE_TABLE_ID = 'state-table'; // TODO: Don't hard-code this constant bel
 const SVG_CANVAS_ID = 'svg-canvas'; // TODO: Don't hard-code this constant below.
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
-const POINTER_BUFFER = 80;
+const POINTER_BUFFER = 100;
 const NUM_LINES = 30;
 
 var pgEditor = editor.newEditor(EDITOR_ID, NUM_LINES);
@@ -84,7 +84,7 @@ function drawPointer(reference, object) {
         (endCoordinate.x - POINTER_BUFFER) + ',' + endCoordinate.y + ' ' +
         (endCoordinate.x - (ARROWHEAD_WIDTH - ARROWHEAD_PADDING)) + ',' + endCoordinate.y;
     var pointer = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-    // TODO pointer.setAttribute('class', idk)
+    pointer.setAttribute('class', 'pyagram-pointer');
     pointer.setAttribute('d', pathStr);
     document.getElementById('pointers').appendChild(pointer);
 }

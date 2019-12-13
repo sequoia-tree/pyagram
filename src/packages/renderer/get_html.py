@@ -57,10 +57,6 @@ def get_object_html(object_encoding):
     encoding = object_encoding['encoding']
     object_snapshot = object_encoding['object']
     if encoding == 'function':
-        # TODO: Get rid of the weird spaces after the '(' and before the ')'.
-        # TODO: Make the parameters comma-separated.
-        # TODO: Check that it works well with default values.
-        # TODO: A function with a really long name should make the window scroll horizontally. It should not wrap to a new line.
         return get_component_html(templates.FUNCTION_TEMPLATE, object_snapshot)
     elif encoding == 'ordered_collection':
         return get_component_html(templates.ORDERED_COLLECTION_TEMPLATE, object_snapshot)
@@ -88,11 +84,6 @@ def get_parent_frame_html(parent_frame_name):
         parent_frame_name=parent_frame_name,
     )
 
-# TODO: Next up, get the arrows to show up!
-
-# TODO: Draw the memory state.
-# TODO: The arrows can be a color other than black, to make them easy to see.
-# TODO: The arrows can also become red on hover, to make them easy to see.
 # TODO: Right now you have two columns in the STATE_TEMPLATE. Perhaps you should have three: one for the flags and frames, one for object frames, and one for other objects (functions, lists, etc.)?
 
 # TODO: After clicking 'Draw Pyagram':

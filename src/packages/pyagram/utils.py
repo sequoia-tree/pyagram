@@ -48,13 +48,15 @@ def sort_parameter_bindings(bindings, function):
     :return:
     """
     parameter_names = inspect.signature(function).parameters.keys()
-    assert bindings.keys() == parameter_names
-    sorted_parameter_bindings = {
+    sorted_bindings = {
         parameter_name: bindings[parameter_name]
         for parameter_name in parameter_names
     }
+    for key, value in bindings.items():
+        if key not in sorted_bindings:
+            sorted_bindings[key] = value
     bindings.clear()
-    bindings.update(sorted_parameter_bindings)
+    bindings.update(sorted_bindings)
 
 def assign_unique_code_object(function):
     """

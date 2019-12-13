@@ -8,7 +8,7 @@ STATE_TEMPLATE = """
       <td valign="top">
         {% for i in range(memory_state|length) %}
           {% set object = memory_state[i] %}
-          <div id="object-{{ i }}" class="pyagram-element">
+          <div id="object-{{ i }}" class="pyagram-object">
             {{ get_object_html(object) }}
           </div>
         {% endfor %}
@@ -21,7 +21,7 @@ STATE_TEMPLATE = """
         <circle cx="5" cy="5" r="1.5" fill="black"/>
       </marker>
       <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-        <path d="M0,0 L10,5 0,10 Z" />
+        <path d="M0,0 L10,5 0,10 Z"/>
       </marker>
     </defs>
     <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"></g>
@@ -114,14 +114,14 @@ LINK_TEMPLATE = """
 """
 
 POINTER_TEMPLATE = """
-<div class="invisible reference-{{ id }}">
+<span class="invisible reference-{{ id }}">
   -
-</div>
+</span>
 """
 
 FUNCTION_TEMPLATE = """
 function
-<span class="pyagram-object">
+<span class="pyagram-object-body">
   {{ name }}(
   {% for i in range(parameters|length) %}
     {% set parameter = parameters[i] %}
@@ -160,7 +160,7 @@ OBJECT_FRAME_TEMPLATE = """
 """
 
 OBJECT_REPR_TEMPLATE = """
-<div class="pyagram-object">
+<div class="pyagram-object-body">
   {{ repr }}
 </div>
 """
