@@ -1,8 +1,6 @@
 import gc
 import inspect
 
-from . import display
-from . import encode
 from . import pyagram_types
 from . import utils
 
@@ -122,31 +120,6 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return f'Flag {self.id}'
-
-    def __str__(self, prefix=''):
-        """
-        <summary>
-
-        :return:
-        """
-        flagpole = '| '
-        header = f'{repr(self)}'
-
-        function_call = ''.join((
-            banner_element if isinstance(banner_element, str) else banner_element[0]
-            for banner_element in self.banner_elements
-        ))
-        separator = f'+{"-" * (len(function_call) + 2)}+'
-        banner = f'{separator}\n| {function_call} |\n{separator}'
-
-        flags = display.prepend(flagpole, self.flags_to_text())
-        frame = display.prepend(flagpole, str(self.frame) if self.frame else '')
-        return '\n'.join((
-            header,
-            banner,
-            flags,
-            frame,
-        ))
     
     def step(self):
         """
@@ -284,11 +257,11 @@ class PyagramFrame(PyagramElement):
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
-                encode.reference_snapshot(positional_argument, self.state.memory_state)
+                self.state.encoder.reference_snapshot(positional_argument, self.state.memory_state)
                 for positional_argument in self.frame.f_locals[var_positional_name]
             ]
             self.initial_var_keyword_args = None if var_keyword_name is None else {
-                key: encode.reference_snapshot(value, self.state.memory_state)
+                key: self.state.encoder.reference_snapshot(value, self.state.memory_state)
                 for key, value in self.frame.f_locals[var_keyword_name].items()
             }
         self.has_returned = False
@@ -319,49 +292,6 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return 'Global Frame' if self.is_global_frame else f'Frame {self.id}'
-
-    def __str__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return_key = 'return'
-        header = f'{repr(self)}' + ('' if self.is_global_frame else f' ({encode.reference_str(self.function)})')
-        if self.bindings or self.has_returned:
-            key_str_len = display.mapped_len(str)
-            val_str_len = display.mapped_len(encode.reference_str)
-            max_var_key_len, ret_key_len, max_var_value_len, ret_value_len = 0, 0, 0, 0
-            if self.bindings:
-                max_var_key_len = key_str_len(max(self.bindings.keys(), key=key_str_len))
-                max_var_value_len = val_str_len(max(self.bindings.values(), key=val_str_len))
-            if self.has_returned:
-                ret_key_len = len(str(return_key))
-                ret_value_len = len(encode.reference_str(self.return_value))
-            max_key_len = max(max_var_key_len, ret_key_len)
-            max_value_len = max(max_var_value_len, ret_value_len)
-            binding = display.get_binding(max_key_len, max_value_len)
-            bindings = []
-            if self.bindings:
-                var_bindings = '\n'.join(binding(key, value) for key, value in self.bindings.items())
-                bindings.append(var_bindings)
-            if self.has_returned:
-                ret_binding = binding(return_key, self.return_value)
-                bindings.append(ret_binding)
-            max_binding_len = max_key_len + max_value_len + 2
-            bindings = '\n'.join(bindings)
-        else:
-            max_binding_len = max(0, len(header) - 2)
-            bindings = f'|{" " * max_binding_len}|'
-        separator = f'+{"-" * max_binding_len}+'
-        flags = self.flags_to_text()
-        return f'\n'.join((
-            header,
-            separator,
-            bindings,
-            separator,
-            flags,
-        ))
 
     def step(self):
         """
@@ -405,7 +335,7 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         bindings = {
-            key: encode.reference_snapshot(value, self.state.memory_state)
+            key: self.state.encoder.reference_snapshot(value, self.state.memory_state)
             for key, value in self.bindings.items()
         }
         if self.initial_bindings is None:
@@ -416,7 +346,7 @@ class PyagramFrame(PyagramElement):
             'parent': None if self.parent is None else repr(self.parent),
             'bindings': bindings,
             'return_value':
-                encode.reference_snapshot(self.return_value, self.state.memory_state)
+                self.state.encoder.reference_snapshot(self.return_value, self.state.memory_state)
                 if self.has_returned
                 else None,
             'flags': [flag.snapshot() for flag in self.flags],

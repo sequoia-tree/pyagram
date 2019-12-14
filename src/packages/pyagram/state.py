@@ -1,5 +1,3 @@
-from . import display
-from . import encode
 from . import enums
 from . import pyagram_element
 
@@ -16,33 +14,13 @@ class State:
     :param global_frame:
     """
 
-    def __init__(self, global_frame):
+    def __init__(self, global_frame, encoder):
         self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
         self.program_state = ProgramState(self, global_frame)
-        self.memory_state = MemoryState()
+        self.memory_state = MemoryState(self)
         self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
+        self.encoder = encoder
         self.snapshots = []
-    
-    def __str__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        program_state_header = display.separator('program execution')
-        program_state = str(self.program_state)
-        memory_state_header = display.separator('objects in memory')
-        memory_state = str(self.memory_state)
-        print_output_header = display.separator('print output')
-        print_output = self.print_output
-        return '\n'.join((
-            program_state_header,
-            '',
-            program_state,
-            memory_state_header + ('' if memory_state == '' else f'\n\n{memory_state}\n'),
-            print_output_header + ('' if print_output is None else f'\n{print_output}'),
-            display.separator(),
-        ))
     
     def step(self, frame, is_frame_open=None, is_frame_close=None, return_value=None):
         """
@@ -113,20 +91,6 @@ class ProgramState:
         """
         is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.has_returned
-
-    def __str__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        curr_element = f'Current element: {repr(self.curr_element)} (line {self.curr_line_no})'
-        global_frame = str(self.global_frame)
-        return '\n'.join((
-            curr_element,
-            '',
-            global_frame,
-        ))
 
     def step(self, frame, is_frame_open, is_frame_close, return_value):
         """
@@ -251,21 +215,11 @@ class MemoryState:
     code. It includes all referent objects in the pyagram.
     """
 
-    def __init__(self):
+    def __init__(self, state):
+        self.state = state
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
         self.object_debuts = {}
         self.function_parents = {}
-
-    def __str__(self):
-        """
-        <summary>
-
-        :return:
-        """
-        return '\n'.join(
-            f'{id(object)}: {encode.object_str(object, self)}'
-            for object in self.objects
-        )
 
     def step(self):
         """
@@ -284,7 +238,7 @@ class MemoryState:
         return [
             {
                 'id': id(object),
-                'object': encode.object_snapshot(object, self),
+                'object': self.state.encoder.object_snapshot(object, self),
             }
             for object in self.objects
         ]

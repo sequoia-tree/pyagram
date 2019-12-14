@@ -3,21 +3,51 @@ import ast
 from . import banner
 from . import utils
 
-def preprocess_code(src_code):
+class Preprocessor:
     """
-    <summary>
+    """
 
-    :param src_code:
-    :return:
+    def __init__(self, code, num_lines):
+        self.code = ast.parse(code)
+        self.num_lines = num_lines
+    
+    def preprocess(self):
+        self.log_lambdas()
+        self.wrap_calls()
+        ast.fix_missing_locations(self.code)
+        self.code = compile(
+            self.code,
+            filename='<ast>', # TODO: Or perhaps it ought to be '__main__'?
+            mode='exec',
+        )
+
+    def log_lambdas(self):
+        lambda_logger = LambdaLogger()
+        lambda_logger.visit(self.code)
+        lambdas_by_line = lambda_logger.lambdas_by_line
+        for lineno in lambdas_by_line:
+            sorted_lambdas = sorted(lambdas_by_line[lineno], key=lambda node: node.col_offset)
+            for i in range(len(sorted_lambdas)):
+                node = sorted_lambdas[i]
+                node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)
+
+    def wrap_calls(self):
+        self.code = CallWrapper().visit(self.code)
+
+class LambdaLogger(ast.NodeVisitor):
     """
-    src_ast = ast.parse(src_code)
-    new_ast = src_ast
-    new_ast = CallWrapper().visit(new_ast)
-    # new_ast = Placeholder().visit(new_ast)
-    # new_ast = Placeholder().visit(new_ast)
-    ast.fix_missing_locations(new_ast)
-    new_code = compile(new_ast, filename='<ast>', mode='exec')
-    return new_code
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.lambdas_by_line = {}
+    
+    def visit_Lambda(self, node):
+        lineno = node.lineno
+        if lineno not in self.lambdas_by_line:
+            self.lambdas_by_line[lineno] = []
+        self.lambdas_by_line[lineno].append(node)
+        self.generic_visit(node)
 
 class CallWrapper(ast.NodeTransformer):
     """

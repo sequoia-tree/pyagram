@@ -22,7 +22,7 @@ class Postprocessor:
         """
         for flag_snapshot in element_snapshot['flags']:
             self.postprocess_flag_snapshot(flag_snapshot)
-    
+
     def postprocess_flag_snapshot(self, flag_snapshot):
         """
         <summary>
@@ -78,7 +78,7 @@ class Postprocessor:
                         binding_id = banner_bindings[binding_index]
                         is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                         if is_unsupported_binding:
-                            binding = encode.reference_snapshot(None, None)
+                            binding = self.state.encoder.reference_snapshot(None, None)
                         else:
                             if isinstance(binding_id, str):
 
@@ -92,7 +92,7 @@ class Postprocessor:
                             else:
                                 assert isinstance(binding_id, int)
                                 if binding_id == utils.BANNER_FUNCTION_CODE:
-                                    binding = encode.reference_snapshot(pyagram_frame.function, pyagram_flag.state.memory_state)
+                                    binding = self.state.encoder.reference_snapshot(pyagram_frame.function, pyagram_flag.state.memory_state)
                                 else:
 
                                     # See if there's a *args param. If so, let it be param #i. Then if you encounter a numerical binding_id >= i, look not in the frame bindings but at args[binding_id - i].

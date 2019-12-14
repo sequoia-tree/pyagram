@@ -138,6 +138,10 @@ function
 </div>
 """
 
+LAMBDA_TEMPLATE = """
+&#955;<sub>{{ lineno }}.{{ number }}</sub>
+"""
+
 ORDERED_COLLECTION_TEMPLATE = """
   TODO
 """

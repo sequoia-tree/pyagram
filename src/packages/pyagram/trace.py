@@ -1,6 +1,5 @@
 import bdb
 
-from . import display
 from . import enums
 from . import state
 from . import utils
@@ -10,9 +9,9 @@ class Tracer(bdb.Bdb):
     <summary>
     """
 
-    def __init__(self, debug):
+    def __init__(self, encoder):
         super().__init__()
-        self.debug = debug
+        self.encoder = encoder
         self.state = None
 
     def user_call(self, frame, args):
@@ -72,7 +71,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         if self.state is None:
-            self.state = state.State(frame)
+            self.state = state.State(frame, self.encoder)
         self.state.step(frame, is_frame_open, is_frame_close, return_value)
 
     def snapshot(self, trace_type):
@@ -96,20 +95,4 @@ class Tracer(bdb.Bdb):
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
         if take_snapshot:
-            if self.debug:
-                self.display()
             self.state.snapshot()
-
-    def display(self):
-        """
-        <summary>
-
-        :return:
-        """
-        state_str = str(self.state)
-        state_str_height = state_str.count('\n') + 1
-        padding = display.TERMINAL_HEIGHT - (state_str_height + 1)
-        print(state_str)
-        if padding > 0:
-            print('\n' * (padding - 1))
-        input()

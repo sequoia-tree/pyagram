@@ -1,4 +1,5 @@
 import flask
+import re
 
 from . import templates
 
@@ -60,6 +61,15 @@ def get_object_body_html(object_encoding):
     encoding = object_encoding['encoding']
     object_snapshot = object_encoding['object']
     if encoding == 'function':
+        match = re.match(r'^<lambda-(\d+)\.(\d+)>$', object_snapshot['name'])
+        if match is not None:
+            object_snapshot['name'] = get_component_html(
+                templates.LAMBDA_TEMPLATE,
+                {
+                    'lineno': match.group(1),
+                    'number': match.group(2),
+                },
+            )
         return get_component_html(templates.FUNCTION_TEMPLATE, object_snapshot)
     elif encoding == 'ordered_collection':
         return get_component_html(templates.ORDERED_COLLECTION_TEMPLATE, object_snapshot)
