@@ -253,6 +253,7 @@ class MemoryState:
 
     def __init__(self):
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
+        self.object_debuts = {}
         self.function_parents = {}
 
     def __str__(self):
@@ -288,7 +289,7 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object):
+    def track(self, object, debut_index):
         """
         <summary>
 
@@ -296,6 +297,7 @@ class MemoryState:
         """
         if object not in self.objects:
             self.objects.append(object)
+            self.object_debuts[id(object)] = debut_index
 
     def is_tracked(self, object):
         """

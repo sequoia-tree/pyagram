@@ -187,6 +187,7 @@ class PyagramFlag(PyagramElement):
             'is_curr_element': self is self.state.program_state.curr_element,
             'pyagram_flag': self,
             'banner_binding_index': self.banner_binding_index,
+            'snapshot_index': len(self.state.snapshots),
             'frame': None if self.frame is None else self.frame.snapshot(),
             'flags': [flag.snapshot() for flag in self.flags],
         }
@@ -381,7 +382,7 @@ class PyagramFrame(PyagramElement):
             object = objects.pop()
             # TODO: Are you possibly visiting objects that you've already added to the MemoryState in a previous call to this function?
             if not pyagram_types.is_primitive_type(object):
-                self.state.memory_state.track(object)
+                self.state.memory_state.track(object, len(self.state.snapshots))
                 if pyagram_types.is_function_type(object):
                     utils.assign_unique_code_object(object)
                     self.state.memory_state.record_parent(self, object)

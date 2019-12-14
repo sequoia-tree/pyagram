@@ -1,4 +1,4 @@
-from . import postprocess
+from . import postprocessor
 from . import preprocess
 from . import trace
 
@@ -15,9 +15,9 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
-        code = preprocess.preprocess_code(code)
+        code = preprocess.preprocess_code(code) # TODO: Turn `preprocess` into `Preprocessor` for parallelism.
         tracer = trace.Tracer(debug)
         global_bindings = {}
         tracer.run(code, globals=global_bindings, locals=global_bindings)
+        postprocessor.Postprocessor(tracer.state).postprocess()
         self.snapshots = tracer.state.snapshots
-        postprocess.postprocess_snapshots(self.snapshots)
