@@ -41,19 +41,18 @@ function loadSnapshot(i) {
 }
 
 function drawPointers() {
+    var references;
     var reference;
+    var objects;
     var object;
-    var i = 0;
-    while (true) {
-        object = document.getElementById('object-'.concat(i));
-        if (object === null) {
-            break;
-        } else {
-            for (reference of document.getElementsByClassName('reference-'.concat(i))) {
-                drawPointer(reference, object);
-            }
+    var id;
+    objects = document.getElementsByClassName('pyagram-object');
+    for (object of objects) {
+        id = parseInt(object.id.replace(/^object-/, ''));
+        references = document.getElementsByClassName('reference-'.concat(id));
+        for (reference of references) {
+            drawPointer(reference, object);
         }
-        i += 1;
     }
 }
 

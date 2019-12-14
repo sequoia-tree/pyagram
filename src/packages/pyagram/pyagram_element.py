@@ -456,28 +456,3 @@ class PyagramFrame(PyagramElement):
         self.state.step(None)
         self.state.snapshot()
         return self.opened_by
-
-# def f():
-#     print(inspect.currentframe().f_locals)
-#     print(inspect.currentframe().f_code.co_varnames)
-#     print(inspect.currentframe().f_code.co_freevars)
-#     x = 1
-#     y = 2
-#     print(inspect.currentframe().f_locals)
-#     print(inspect.currentframe().f_code.co_varnames)
-#     print(inspect.currentframe().f_code.co_freevars)
-#     def g():
-#         print(inspect.currentframe().f_locals)
-#         print(inspect.currentframe().f_code.co_varnames)
-#         print(inspect.currentframe().f_code.co_freevars)
-#         nonlocal x
-#         x = 3
-#         y = 4
-#         z = 5
-#         print(inspect.currentframe().f_locals)
-#         print(inspect.currentframe().f_code.co_varnames)
-#         print(inspect.currentframe().f_code.co_freevars)
-#     print(inspect.currentframe().f_locals)
-#     print(inspect.currentframe().f_code.co_varnames)
-#     print(inspect.currentframe().f_code.co_freevars)
-#     return g, inspect.currentframe()

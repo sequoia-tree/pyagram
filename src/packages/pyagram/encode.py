@@ -38,12 +38,12 @@ def reference_snapshot(object, memory_state):
     :param memory_state:
     :return:
     """
-    if object is None and memory_state is None:
+    if object is None and memory_state is None: # TODO: If this is the only place memory_state gets used in this function, then you should replace the memory_state param with simply a boolean param is_unknown=False or something like that.
         return [UNKNOWN_REFERENCE_TEXT, GITHUB_ISSUES_URL] # hyperlink: [text, URL]
     elif pyagram_types.is_primitive_type(object):
         return repr(object) if isinstance(object, str) else str(object)
     else:
-        return memory_state.object_ids[id(object)]
+        return id(object)
 
 def object_snapshot(object, memory_state):
     """

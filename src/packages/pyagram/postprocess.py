@@ -132,5 +132,8 @@ def interpolate_flag_banner(flag_snapshot):
                 else:
                     binding = None # This means the box is drawn empty. We haven't gotten around to evaluating that binding yet.
                 bindings.append(binding)
+                if type(binding) is int: # This means the binding refers to an object in memory.
+                    pass # TODO
+                    # TODO: The flag snapshot should include the index i of the snapshot. If you come across a binding that's an object (i.e. a binding of type int), which first appears in the jth snapshot's memory state where j > i, then go back and insert it into the memory states of snapshots i ... j-1. (You should copy over the version of the object from snapshot j, rather than the last snapshot, because it may later be mutated.) Moreover, suppose you do this, and in so doing you insert the object into the kth index of snapshot i's memory state; then you should also move it up to the kth index of snapshots j, j+1, .... (The order matters so that objects stay in the same order when a student passes in keyword arguments in a different order than they appear in a function's signature.)
             banner.append([code, bindings])
     flag_snapshot['banner'] = banner

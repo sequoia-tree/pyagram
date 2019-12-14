@@ -252,7 +252,6 @@ class MemoryState:
     """
 
     def __init__(self):
-        self.object_ids = {}
         self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
         self.function_parents = {}
 
@@ -281,7 +280,13 @@ class MemoryState:
 
         :return:
         """
-        return [encode.object_snapshot(object, self) for object in self.objects]
+        return [
+            {
+                'id': id(object),
+                'object': encode.object_snapshot(object, self),
+            }
+            for object in self.objects
+        ]
 
     def track(self, object):
         """
@@ -289,9 +294,7 @@ class MemoryState:
 
         :return:
         """
-        object_id = id(object)
-        if object_id not in self.object_ids:
-            self.object_ids[object_id] = len(self.objects)
+        if object not in self.objects:
             self.objects.append(object)
 
     def is_tracked(self, object):
@@ -301,7 +304,7 @@ class MemoryState:
         :param object:
         :return:
         """
-        return id(object) in self.object_ids
+        return object in self.objects
 
     def record_parent(self, frame, function):
         """

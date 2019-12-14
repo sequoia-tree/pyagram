@@ -6,11 +6,8 @@ STATE_TEMPLATE = """
         {{ get_frame_html(global_frame) }}
       </td>
       <td valign="top">
-        {% for i in range(memory_state|length) %}
-          {% set object = memory_state[i] %}
-          <div id="object-{{ i }}" class="pyagram-object">
-            {{ get_object_html(object) }}
-          </div>
+        {% for object in memory_state %}
+          {{ get_object_html(object) }}
         {% endfor %}
       </td>
     </tr>
@@ -117,6 +114,12 @@ POINTER_TEMPLATE = """
 <span class="invisible reference-{{ id }}">
   -
 </span>
+"""
+
+OBJECT_TEMPLATE = """
+<div id="object-{{ id }}" class="pyagram-object">
+  {{ get_object_body_html(object) }}
+</div>
 """
 
 FUNCTION_TEMPLATE = """

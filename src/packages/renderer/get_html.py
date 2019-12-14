@@ -53,7 +53,10 @@ def get_reference_html(reference_snapshot):
     else:
         raise TypeError()
 
-def get_object_html(object_encoding):
+def get_object_html(object_snapshot):
+    return get_component_html(templates.OBJECT_TEMPLATE, object_snapshot)
+
+def get_object_body_html(object_encoding):
     encoding = object_encoding['encoding']
     object_snapshot = object_encoding['object']
     if encoding == 'function':
