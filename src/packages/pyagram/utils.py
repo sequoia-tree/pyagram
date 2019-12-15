@@ -103,13 +103,3 @@ def concatenate_adjacent_strings(elements):
             del elements[i + 1]
         else:
             i += 1
-
-def pair_naturals(x, y, *, max_x):
-    """
-    """
-    max_magnitude = 10 ** math.ceil(math.log10(max_x))
-    return max_magnitude * y + x
-
-def unpair_naturals(pair, *, max_x):
-    max_magnitude = 10 ** math.ceil(math.log10(max_x))
-    return pair % max_magnitude, pair // max_magnitude

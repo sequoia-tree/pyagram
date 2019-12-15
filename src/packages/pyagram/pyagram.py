@@ -1,6 +1,7 @@
 from . import encode
 from . import postprocess
 from . import preprocess
+from . import pyagram_error
 from . import trace
 
 class Pyagram:
@@ -15,16 +16,30 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
-        num_lines, global_bindings = len(code.split('\n')), {}
-        preprocessor = preprocess.Preprocessor(code, num_lines)
-        preprocessor.preprocess()
-        encoder = encode.Encoder(num_lines)
-        tracer = trace.Tracer(encoder)
-        tracer.run(
-            preprocessor.code,
-            globals=global_bindings,
-            locals=global_bindings,
-        )
-        postprocessor = postprocess.Postprocessor(tracer.state)
-        postprocessor.postprocess()
-        self.snapshots = tracer.state.snapshots
+        try:
+            global_bindings = {} # TODO: Isn't the default behavior the same as not specifying this?
+            preprocessor = preprocess.Preprocessor(code)
+            preprocessor.preprocess()
+            encoder = encode.Encoder()
+            tracer = trace.Tracer(encoder)
+            tracer.run(
+                preprocessor.code,
+                globals=global_bindings,
+                locals=global_bindings,
+            )
+            postprocessor = postprocess.Postprocessor(tracer.state)
+            postprocessor.postprocess()
+        except pyagram_error.PyagramError as error:
+            self.data = str(error)
+            self.is_error = True
+        else:
+            self.data = tracer.state.snapshots
+            self.is_error = False
+
+    def serialize(self):
+        """
+        """
+        return {
+            'data': self.data,
+            'is_error': self.is_error,
+        }

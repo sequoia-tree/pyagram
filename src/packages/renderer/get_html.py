@@ -61,15 +61,6 @@ def get_object_body_html(object_encoding):
     encoding = object_encoding['encoding']
     object_snapshot = object_encoding['object']
     if encoding == 'function':
-        match = re.match(r'^<lambda-(\d+)\.(\d+)>$', object_snapshot['name'])
-        if match is not None:
-            object_snapshot['name'] = get_component_html(
-                templates.LAMBDA_TEMPLATE,
-                {
-                    'lineno': match.group(1),
-                    'number': match.group(2),
-                },
-            )
         return get_component_html(templates.FUNCTION_TEMPLATE, object_snapshot)
     elif encoding == 'ordered_collection':
         return get_component_html(templates.ORDERED_COLLECTION_TEMPLATE, object_snapshot)
@@ -88,8 +79,15 @@ def get_object_body_html(object_encoding):
     else:
         assert False
 
+def get_lambda_html(lambda_snapshot):
+    return get_component_html(templates.LAMBDA_TEMPLATE, lambda_snapshot)
+
 def get_parameter_html(parameter_snapshot):
-    return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
+    match = re.match(r'^__pyagram_lambda_(\d+)_(\d+)$', parameter_snapshot['name'])
+    if match is None:
+        return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
+    else:
+        return ''
 
 def get_parent_frame_html(parent_frame_name):
     return get_html(

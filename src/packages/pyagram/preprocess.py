@@ -1,17 +1,19 @@
 import ast
+import re
 
 from . import banner
+from . import pyagram_error
 from . import utils
 
 class Preprocessor:
     """
     """
 
-    def __init__(self, code, num_lines):
+    def __init__(self, code):
         self.code = ast.parse(code)
-        self.num_lines = num_lines
     
     def preprocess(self):
+        self.check_args()
         self.log_lambdas()
         self.wrap_calls()
         ast.fix_missing_locations(self.code)
@@ -20,6 +22,12 @@ class Preprocessor:
             filename='<ast>', # TODO: Or perhaps it ought to be '__main__'?
             mode='exec',
         )
+    
+    def check_args(self):
+        arg_checker = ArgChecker()
+        arg_checker.visit(self.code)
+        if not arg_checker.check_passed:
+            raise pyagram_error.PyagramError("Please do not use any arguments prefixed by the string '__pyagram'.")
 
     def log_lambdas(self):
         lambda_logger = LambdaLogger()
@@ -29,10 +37,25 @@ class Preprocessor:
             sorted_lambdas = sorted(lambdas_by_line[lineno], key=lambda node: node.col_offset)
             for i in range(len(sorted_lambdas)):
                 node = sorted_lambdas[i]
-                node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)
+                node.args.kwonlyargs.append(ast.arg(f'__pyagram_lambda_{lineno}_{i + 1}'))
+                node.args.kw_defaults.append(None)
 
     def wrap_calls(self):
         self.code = CallWrapper().visit(self.code)
+
+class ArgChecker(ast.NodeVisitor):
+    """
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.check_passed = True
+    
+    def visit_arg(self, node):
+        match = re.match('^__pyagram', node.arg)
+        if match is not None:
+            self.check_passed = False
+        self.generic_visit(node)
 
 class LambdaLogger(ast.NodeVisitor):
     """

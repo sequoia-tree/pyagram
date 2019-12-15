@@ -1,7 +1,7 @@
 import inspect
+import re
 
 from . import pyagram_types
-from . import utils
 
 UNKNOWN_REFERENCE_TEXT = '<?>'
 GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
@@ -10,8 +10,8 @@ class Encoder:
     """
     """
 
-    def __init__(self, num_lines):
-        self.num_lines = num_lines
+    def __init__(self):
+        pass
 
     def reference_snapshot(self, object, memory_state):
         """
@@ -38,14 +38,23 @@ class Encoder:
         """
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
-            if object.__name__ == '<lambda>':
-                lineno, col_offset = utils.unpair_naturals(object.__code__.co_firstlineno, max_x=self.num_lines)
-                name = f'<lambda-{lineno}.{col_offset}>'
-            else:
-                name = object.__name__
+            is_lambda = object.__name__ == '<lambda>'
+            if is_lambda:
+                for parameter_name in inspect.signature(object).parameters.keys():
+                    match = re.match(r'^__pyagram_lambda_(\d+)_(\d+)$', parameter_name)
+                    if match is not None:
+                        lineno = match.group(1)
+                        number = match.group(2)
             encoding = 'function'
             snapshot = {
-                'name': name,
+                'name': object.__name__,
+                'lambda_id':
+                    {
+                        'lineno': lineno,
+                        'number': number,
+                    }
+                    if is_lambda
+                    else None,
                 'parameters': [
                     {
                         'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],

@@ -125,7 +125,7 @@ OBJECT_TEMPLATE = """
 FUNCTION_TEMPLATE = """
 function
 <span class="pyagram-object-body">
-  {{ name }}(
+  {% if lambda_id is none %}{{ name }}{% else %}{{ get_lambda_html(lambda_id) }}{% endif %}(
   {% for i in range(parameters|length) %}
     {% set parameter = parameters[i] %}
     {{ get_parameter_html(parameter) }}
@@ -143,27 +143,27 @@ LAMBDA_TEMPLATE = """
 """
 
 ORDERED_COLLECTION_TEMPLATE = """
-  TODO
+TODO
 """
 
 UNORDERED_COLLECTION_TEMPLATE = """
-  TODO
+TODO
 """
 
 MAPPING_TEMPLATE = """
-  TODO
+TODO
 """
 
 ITERATOR_TEMPLATE = """
-  TODO
+TODO
 """
 
 GENERATOR_TEMPLATE = """
-  TODO
+TODO
 """
 
 OBJECT_FRAME_TEMPLATE = """
-  TODO
+TODO
 """
 
 OBJECT_REPR_TEMPLATE = """
@@ -173,12 +173,12 @@ OBJECT_REPR_TEMPLATE = """
 """
 
 PARENT_FRAME_TEMPLATE = """
-  [parent: {{ parent_frame_name }}]
+[parent: {{ parent_frame_name }}]
 """
 
 PARAMETER_TEMPLATE = """
-  {{ name }}
-  {% if default is not none %}
-    =<span class="box">{{ get_reference_html(default) }}</span>
-  {% endif %}
+{{ name }}
+{% if default is not none %}
+  =<span class="box">{{ get_reference_html(default) }}</span>
+{% endif %}
 """

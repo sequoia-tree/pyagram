@@ -13,10 +13,11 @@ def root():
 @app.route('/draw')
 def draw(methods=['GET', 'POST']):
     code = flask.request.values.get('code')
-    # TODO: Wrap the next two lines in a try-except-then clause.
+    # TODO: Wrap the next few lines in a try-except-then clause, in case you encounter an error that is not a PyagramError.
     pyagram = pg.Pyagram(code, debug=False)
-    rd.render_components(pyagram.snapshots)
-    return json.dumps(pyagram.snapshots)
+    if not pyagram.is_error:
+        rd.render_components(pyagram.data)
+    return json.dumps(pyagram.serialize())
 
 if __name__ == '__main__':
     app.run()

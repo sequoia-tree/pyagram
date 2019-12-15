@@ -24,12 +24,16 @@ var printOutputPane = document.getElementById(PRINT_OUTPUT_ID);
 
 var pgSnapshots;
 
-function loadPyagram(snapshots) {
-    pgSnapshots = snapshots;
-    pgSlider.min = 0;
-    pgSlider.max = pgSnapshots.length - 1;
-    slider.resetSlider(pgSlider);
-    pgOverlay.style.display = 'none';
+function loadPyagram(pyagram) {
+    if (pyagram.is_error) {
+        alert(pyagram.data);
+    } else {
+        pgSnapshots = pyagram.data;
+        pgSlider.min = 0;
+        pgSlider.max = pgSnapshots.length - 1;
+        slider.resetSlider(pgSlider);
+        pgOverlay.style.display = 'none';    
+    }
 }
 
 function loadSnapshot(i) {
