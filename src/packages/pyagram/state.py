@@ -249,7 +249,7 @@ class MemoryState:
 
         :return:
         """
-        if object not in self.objects:
+        if id(object) not in self.object_debuts:
             self.objects.append(object)
             self.object_debuts[id(object)] = debut_index
 
