@@ -45,6 +45,23 @@ class Encoder:
                     if match is not None:
                         lineno = match.group(1)
                         number = match.group(2)
+
+            parameters = []
+            has_star_arg = False
+            for parameter in inspect.signature(object).parameters.values():
+                if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                    has_star_arg = True
+                elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
+                    parameters.append({
+                        'name': '*',
+                        'default': None,
+                    })
+                    has_star_arg = True
+                parameters.append({
+                    'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
+                    'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
+                })
+
             encoding = 'function'
             snapshot = {
                 'name': object.__name__,
@@ -55,13 +72,7 @@ class Encoder:
                     }
                     if is_lambda
                     else None,
-                'parameters': [
-                    {
-                        'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                        'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
-                    }
-                    for parameter in inspect.signature(object).parameters.values()
-                ],
+                'parameters': parameters,
                 'parent': repr(memory_state.function_parents[object]),
             }
         elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
