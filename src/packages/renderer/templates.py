@@ -138,6 +138,13 @@ function
 </div>
 """
 
+BUILTIN_FUNCTION_TEMPLATE = """
+function
+<span class="pyagram-object-body">
+  {{ name }}(...)
+</span>
+"""
+
 LAMBDA_TEMPLATE = """
 &#955;<sub>{{ lineno }}.{{ number }}</sub>
 """

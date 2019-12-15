@@ -79,6 +79,11 @@ class Encoder:
                 'parameters': encoded_parameters,
                 'parent': repr(memory_state.function_parents[object]),
             }
+        elif object_type in pyagram_types.BUILTIN_FUNCTION_TYPES:
+            encoding = 'builtin_function'
+            snapshot = {
+                'name': object.__name__,
+            }
         elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
             encoding = 'ordered_collection'
             snapshot = {

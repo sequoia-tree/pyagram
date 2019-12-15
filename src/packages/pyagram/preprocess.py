@@ -27,7 +27,7 @@ class Preprocessor:
         arg_checker = ArgChecker()
         arg_checker.visit(self.code)
         if not arg_checker.check_passed:
-            raise pyagram_error.PyagramError("Please do not use any arguments prefixed by the string '__pyagram'.")
+            raise pyagram_error.PyagramError("Please do not use any parameters prefixed by the string '__pyagram'.")
 
     def log_lambdas(self):
         lambda_logger = LambdaLogger()

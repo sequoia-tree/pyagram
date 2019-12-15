@@ -319,11 +319,12 @@ class PyagramFrame(PyagramElement):
                     referents = utils.get_defaults(object)
                 else:
                     referents = list(gc.get_referents(object))
-                objects.extend(
-                    referent
-                    for referent in referents
-                    if not self.state.memory_state.is_tracked(referent)
-                )
+                if not pyagram_types.is_builtin_type(object):
+                    objects.extend(
+                        referent
+                        for referent in referents
+                        if not self.state.memory_state.is_tracked(referent)
+                    )
         # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.is_new_frame = False
         super().step()

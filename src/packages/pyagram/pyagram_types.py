@@ -5,6 +5,7 @@ import types
 PRIMITIVE_TYPES = (numbers.Number, str)
 # Referent types: Compare with `is`.
 FUNCTION_TYPES = (types.FunctionType, types.MethodType) # TODO: Finish -- once you get around to implementing class / instance functionality. (E.g. What about method-wrapper types like None.__str__? And check out type([].append) too!) BUT hold your rahi -- we might only want to track user-defined functions ... I mean, we don't step inside built-ins or even know what their parent frames are. Wrapper_descriptor and slot_wrapper? Maybe we should make method-wrappers and co. get drawn not in the style of functions, but in the style of objects? Oh and one more thing: how do you plan to visualize class functions vs. bound methods (e.g. A.f vs. A().f)?
+BUILTIN_FUNCTION_TYPES =  (types.BuiltinFunctionType, types.BuiltinMethodType)
 ORDERED_COLLECTION_TYPES = (list, tuple, str)
 UNORDERED_COLLECTION_TYPES = (set, frozenset)
 MAPPING_TYPES = (dict, types.MappingProxyType) # TODO: Finish.
@@ -45,3 +46,8 @@ def is_function_type(object):
     :return: Whether or not :object: is a function.
     """
     return isinstance(object, FUNCTION_TYPES)
+
+def is_builtin_type(object):
+    """
+    """
+    return isinstance(object, BUILTIN_FUNCTION_TYPES)

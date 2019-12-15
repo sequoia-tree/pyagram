@@ -62,6 +62,8 @@ def get_object_body_html(object_encoding):
     object_snapshot = object_encoding['object']
     if encoding == 'function':
         return get_component_html(templates.FUNCTION_TEMPLATE, object_snapshot)
+    elif encoding == 'builtin_function':
+        return get_component_html(templates.BUILTIN_FUNCTION_TEMPLATE, object_snapshot)
     elif encoding == 'ordered_collection':
         return get_component_html(templates.ORDERED_COLLECTION_TEMPLATE, object_snapshot)
     elif encoding == 'unordered_collection':
