@@ -88,7 +88,8 @@ class Tracer(bdb.Bdb):
             take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO \
                         and self.state.program_state.curr_line_no != utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = True
+            take_snapshot = self.state.program_state.curr_line_no == utils.OUTER_CALL_LINENO \
+                         or self.state.program_state.curr_line_no == utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
             # TODO: Figure out what should go here.
             take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO
