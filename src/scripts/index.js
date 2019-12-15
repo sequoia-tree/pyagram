@@ -11,7 +11,7 @@ const SVG_CANVAS_ID = 'svg-canvas'; // TODO: Don't hard-code this constant below
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
 const POINTER_BUFFER_X = 100;
-const POINTER_BUFFER_Y = 35;
+const POINTER_BUFFER_Y = 0;
 const NUM_LINES = 30;
 
 var pgEditor = editor.newEditor(EDITOR_ID, NUM_LINES);
