@@ -42,16 +42,6 @@ class PyagramElement:
         self.flags.append(flag)
         return flag
 
-    def flags_to_text(self):
-        """
-        <summary>
-
-        :return:
-        """
-        result = '\n'.join(f'\n{flag}' for flag in self.flags)
-        result = result + '\n' if result.strip('\n') else ''
-        return result
-
 class PyagramFlag(PyagramElement):
     """
     An element of a pyagram which represents the application of a not-yet-evaluated function to a
@@ -83,6 +73,8 @@ class PyagramFlag(PyagramElement):
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
         self.positional_arg_index = 0
+        self.start_index = len(self.state.snapshots)
+        self.close_index = None
         self.frame = None
 
     @property
@@ -162,7 +154,11 @@ class PyagramFlag(PyagramElement):
             'banner_binding_index': self.banner_binding_index,
             'snapshot_index': len(self.state.snapshots),
             'frame': None if self.frame is None else self.frame.snapshot(),
-            'flags': [flag.snapshot() for flag in self.flags],
+            'flags': [
+                flag.snapshot()
+                for flag in self.flags
+                if flag not in self.state.hidden_flags
+            ],
         }
     
     def evaluate_next_banner_binding(self, expect_call):
@@ -220,6 +216,9 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
+        if self.frame is None:
+            self.state.hidden_flags.append(self)
+        self.close_index = len(self.state.snapshots)
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
@@ -350,9 +349,13 @@ class PyagramFrame(PyagramElement):
                 self.state.encoder.reference_snapshot(self.return_value, self.state.memory_state)
                 if self.has_returned
                 else None,
-            'flags': [flag.snapshot() for flag in self.flags],
+            'flags': [
+                flag.snapshot()
+                for flag in self.flags
+                if flag not in self.state.hidden_flags
+            ],
         }
-    
+
     def get_bindings(self):
         """
         <summary>

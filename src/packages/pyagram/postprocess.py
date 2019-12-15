@@ -11,11 +11,14 @@ class Postprocessor:
         self.state = state
     
     def postprocess(self):
+        self.hide_hidden_snapshots()
         self.postprocess_snapshots()
+        self.kill_hidden_snapshots()
     
     def postprocess_snapshots(self):
         for snapshot in self.state.snapshots:
-            self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
+            if snapshot is not None:
+                self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
     
     def postprocess_element_snapshot(self, element_snapshot):
         """
@@ -44,6 +47,21 @@ class Postprocessor:
         :return:
         """
         self.postprocess_element_snapshot(frame_snapshot)
+    
+    def hide_hidden_snapshots(self):
+        for hidden_flag in self.state.hidden_flags:
+            start_index = hidden_flag.start_index
+            close_index = hidden_flag.close_index
+            for i in range(start_index, close_index + 1):
+                self.state.snapshots[i] = None
+    
+    def kill_hidden_snapshots(self):
+        i = 0
+        while i < len(self.state.snapshots):
+            if self.state.snapshots[i] is None:
+                del self.state.snapshots[i]
+            else:
+                i += 1
 
     def interpolate_flag_banner(self, flag_snapshot):
         """

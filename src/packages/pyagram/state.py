@@ -19,6 +19,7 @@ class State:
         self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState(self)
         self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
+        self.hidden_flags = []
         self.encoder = encoder
         self.snapshots = []
     
