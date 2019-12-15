@@ -39,28 +39,32 @@ class Encoder:
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
-            if is_lambda:
-                for parameter_name in inspect.signature(object).parameters.keys():
+            signature = list(inspect.signature(object).parameters.items())
+
+            encoded_parameters, i, has_star_arg = [], 0, False
+            while i < len(signature):
+                encode_parameter = True
+                parameter_name, parameter = signature[i]
+                if is_lambda:
                     match = re.match(r'^__pyagram_lambda_(\d+)_(\d+)$', parameter_name)
                     if match is not None:
                         lineno = match.group(1)
                         number = match.group(2)
-
-            parameters = []
-            has_star_arg = False
-            for parameter in inspect.signature(object).parameters.values():
-                if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
-                    has_star_arg = True
-                elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
-                    parameters.append({
-                        'name': '*',
-                        'default': None,
+                        encode_parameter = False
+                if encode_parameter:
+                    if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                        has_star_arg = True
+                    elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
+                        encoded_parameters.append({
+                            'name': '*',
+                            'default': None,
+                        })
+                        has_star_arg = True
+                    encoded_parameters.append({
+                        'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
+                        'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
                     })
-                    has_star_arg = True
-                parameters.append({
-                    'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                    'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
-                })
+                i += 1
 
             encoding = 'function'
             snapshot = {
@@ -72,12 +76,13 @@ class Encoder:
                     }
                     if is_lambda
                     else None,
-                'parameters': parameters,
+                'parameters': encoded_parameters,
                 'parent': repr(memory_state.function_parents[object]),
             }
         elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
             encoding = 'ordered_collection'
             snapshot = {
+                'type': object_type.__name__,
                 'elements': [
                     self.reference_snapshot(item, memory_state)
                     for item in object
@@ -86,6 +91,7 @@ class Encoder:
         elif object_type in pyagram_types.UNORDERED_COLLECTION_TYPES:
             encoding = 'unordered_collection'
             snapshot = {
+                'type': object_type.__name__,
                 'elements': [
                     self.reference_snapshot(item, memory_state)
                     for item in object

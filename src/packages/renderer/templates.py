@@ -143,7 +143,18 @@ LAMBDA_TEMPLATE = """
 """
 
 ORDERED_COLLECTION_TEMPLATE = """
-TODO
+{{ type }}
+<table class="pyagram-object-body pyagram-ordered-collection" rules="cols">
+  <tr>
+    {% if elements|length == 0 %}
+      TODO
+    {% else %}
+      {% for element in elements %}
+        <td class="pyagram-collection-element">{{ get_reference_html(element) }}</td>
+      {% endfor %}
+    {% endif %}
+  </tr>
+</table>
 """
 
 UNORDERED_COLLECTION_TEMPLATE = """
