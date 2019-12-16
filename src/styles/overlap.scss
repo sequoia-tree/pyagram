@@ -1,4 +1,3 @@
-@import 'border';
 @import 'colors';
 
 @mixin overlap() {
@@ -15,14 +14,13 @@
 }
 
 .overlay {
-  @include overlap();
-  height: 100%;
-  width: 100%;
-  z-index: 1;
   background: $stark-white;
 }
 
-.scroll-overlay {
-  @include top-border($width: $line-width / 2);
-  margin-top: 0.5em;
+.overlay.top {
+  display: block;
+}
+
+.overlay.bottom {
+  display: none;
 }

@@ -1,9 +1,11 @@
 import * as editor from './editor.js';
+import * as overlay from './overlay.js';
 import * as slider from './slider.js';
 
 const EDITOR_ID = 'editor';
 const SLIDER_ID = 'step-slider';
-const OVERLAY_ID = 'overlay';
+const OVERLAY_TOP_ID = 'overlay-top';
+const OVERLAY_BOTTOM_ID = 'overlay-bottom';
 const PYAGRAM_ID = 'pyagram';
 const PRINT_OUTPUT_ID = 'print-output';
 const STATE_TABLE_ID = 'state-table'; // TODO: Don't hard-code this constant below.
@@ -19,7 +21,8 @@ var pgEditorButton = editor.getEditorButton(EDITOR_ID);
 var pgSlider = slider.getSlider(SLIDER_ID);
 var pgSliderLButton = slider.getSliderLButton(SLIDER_ID);
 var pgSliderRButton = slider.getSliderRButton(SLIDER_ID);
-var pgOverlay = document.getElementById(OVERLAY_ID);
+var pgOverlayTop = document.getElementById(OVERLAY_TOP_ID);
+var pgOverlayBottom = document.getElementById(OVERLAY_BOTTOM_ID);
 var pyagramPane = document.getElementById(PYAGRAM_ID);
 var printOutputPane = document.getElementById(PRINT_OUTPUT_ID);
 
@@ -33,7 +36,7 @@ function loadPyagram(pyagram) {
         pgSlider.min = 0;
         pgSlider.max = pgSnapshots.length - 1;
         slider.resetSlider(pgSlider);
-        pgOverlay.style.display = 'none';    
+        overlay.setBottomOverlay(pgOverlayTop, pgOverlayBottom);
     }
 }
 
@@ -94,7 +97,7 @@ function drawPointer(reference, object) {
 }
 
 pgEditor.session.on('change', function(delta) {
-    pgOverlay.style.display = 'block';
+    overlay.setTopOverlay(pgOverlayTop, pgOverlayBottom);
 });
 
 pgEditorButton.onclick = function() {

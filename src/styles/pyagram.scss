@@ -1,5 +1,6 @@
 @import 'border';
 @import 'colors';
+@import 'margin';
 @import 'text';
 
 @mixin binding-name() {
@@ -7,8 +8,8 @@
 }
 
 @mixin pyagram-element() {
+  @include full-margin();
   width: min-content;
-  margin: 1em;
   white-space: nowrap;
   a {
     text-decoration: none;
@@ -60,12 +61,12 @@
 
 .pyagram-object {
   @include pyagram-element();
-  margin-left: 5em;
+  @include left-margin(5em);
   .pyagram-object-body {
     font-family: $mono-font;
   }
   span.pyagram-object-body {
-    margin-left: 0.5em;
+    @include left-margin(0.5em);
   }
 }
 

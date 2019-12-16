@@ -33,6 +33,42 @@ $line-color: $pitch-black;
   border-color: $color;
 }
 
+.top-border {
+  @include top-border();
+}
+
+.bottom-border {
+  @include bottom-border();
+}
+
+.left-border {
+  @include left-border();
+}
+
+.right-border {
+  @include right-border();
+}
+
 .box {
   @include box();
+}
+
+.top-border-thin {
+  @include top-border($width: $line-width / 2);
+}
+
+.bottom-border-thin {
+  @include bottom-border($width: $line-width / 2);
+}
+
+.left-border-thin {
+  @include left-border($width: $line-width / 2);
+}
+
+.right-border-thin {
+  @include right-border($width: $line-width / 2);
+}
+
+.box-thin {
+  @include box($width: $line-width / 2);
 }

@@ -13,8 +13,8 @@
     {{ utils.include_css('main') }}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   </head>
-  <body>
-    <div class="split left">
+  <body class="flex-row">
+    <div class="flex-content-fixed bounded-width">
       <div class="flex-column">
         <div class="flex-content-fixed">
           {{ utils.editor('editor') }}
@@ -22,31 +22,33 @@
         <div class="flex-content-fixed">
           {{ utils.slider('step-slider', 'Step no.', 0, 0) }}
         </div>
-        <div class="flex-content-dynamic scroll-box scroll-overlay">
+        <div class="flex-content-dynamic scroll-box top-border-thin top-margin-thin">
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             Haec et tu ita posuisti, et verba vestra sunt.
-            Non enim iam stirpis bonum quaeret, sed animalis.    
+            Non enim iam stirpis bonum quaeret, sed animalis.
           </p>
         </div>
       </div>
     </div>
-    <div class="split right">
-      <div id="overlay" class="overlay">
+    <div class="flex-content-dynamic">
+      <div id="overlay-top" class="full-height overlay top">
         {{ utils.button('editor-button', 'Draw Pyagram', True) }}
       </div>
-      <div class="flex-column" style="height: 85%;">
-        <div class="flex-content-fixed title">
-          Pyagram
+      <div id="overlay-bottom" class="full-height overlay bottom">
+        <div class="flex-column" style="height: 85%;">
+          <div class="flex-content-fixed title text-center">
+            Pyagram
+          </div>
+          <div id="pyagram" class="flex-content-dynamic scroll-box"></div>
         </div>
-        <div id="pyagram" class="flex-content-dynamic scroll-box"></div>
-      </div>
-      <div class="flex-column" style="height: 15%;">
-        <div class="flex-content-fixed title">
-          Print Output
-        </div>
-        <div class="flex-content-dynamic scroll-box">
-          <p id="print-output" class="mono show-white-space"></p>
+        <div class="flex-column" style="height: 15%;">
+          <div class="flex-content-fixed title text-center">
+            Print Output
+          </div>
+          <div class="flex-content-dynamic scroll-box">
+            <p id="print-output" class="mono show-white-space"></p>
+          </div>
         </div>
       </div>
     </div>

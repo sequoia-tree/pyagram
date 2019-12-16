@@ -97,6 +97,11 @@ def get_parent_frame_html(parent_frame_name):
         parent_frame_name=parent_frame_name,
     )
 
+# TODO: When the 'Draw Pyagram' overlay shows up again, set the slider back to 0 and reset its min and max values.
+# TODO: If the window gets too narrow, the print output should NOT wrap -- it should become horizontally scrollable.
+
+
+
 # TODO: Right now you have two columns in the STATE_TEMPLATE. Perhaps you should have three: one for the flags and frames, one for object frames, and one for other objects (functions, lists, etc.)?
 
 # TODO: After clicking 'Draw Pyagram':

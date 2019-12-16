@@ -1,0 +1,61 @@
+$margin-width: 1em;
+
+@mixin top-margin($width: $margin-width) {
+  margin-top: $width;
+}
+
+@mixin bottom-margin($width: $margin-width) {
+  margin-bottom: $width;
+}
+
+@mixin left-margin($width: $margin-width) {
+  margin-left: $width;
+}
+
+@mixin right-margin($width: $margin-width) {
+  margin-right: $width;
+}
+
+@mixin full-margin($width: $margin-width) {
+  margin: $width;
+}
+
+.top-margin {
+  @include top-margin();
+}
+
+.bottom-margin {
+  @include bottom-margin();
+}
+
+.left-margin {
+  @include top-margin();
+}
+
+.right-margin {
+  @include top-margin();
+}
+
+.full-margin {
+  @include full-margin();
+}
+
+.top-margin-thin {
+  @include top-margin($margin-width / 2);
+}
+
+.bottom-margin-thin {
+  @include bottom-margin($margin-width / 2);
+}
+
+.left-margin-thin {
+  @include top-margin($margin-width / 2);
+}
+
+.right-margin-thin {
+  @include top-margin($margin-width / 2);
+}
+
+.full-margin-thin {
+  @include full-margin($margin-width / 2);
+}

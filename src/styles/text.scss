@@ -2,7 +2,7 @@ $head-font: 'Raleway', sans-serif;
 $sans-font: 'PT Sans', sans-serif;
 $mono-font: 'PT Mono', monospace;
 
-html {
+body {
   font-family: $sans-font;
   font-size: 12.5pt;
 }
@@ -22,6 +22,10 @@ p {
 
 .text-left {
   text-align: left;
+}
+
+.text-center {
+  text-align: center;
 }
 
 .text-right {
