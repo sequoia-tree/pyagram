@@ -9,18 +9,19 @@ class Postprocessor:
 
     def __init__(self, state):
         self.state = state
-    
+
     def postprocess(self):
+        # TODO: What if self.state.program_state.exception_snapshot is not None?
         self.hide_hidden_snapshots()
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots()
-    
+
     def postprocess_snapshots(self):
         for snapshot in self.state.snapshots:
             if snapshot is not None:
                 self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
-    
+
     def postprocess_element_snapshot(self, element_snapshot):
         """
         """

@@ -1,16 +1,20 @@
 from . import get_html
 
-def render_components(snapshots):
+def render_components(pyagram):
     """
     <description> # Give docstrings to the rest of the functions in this file and in get_html.py
 
-    :param snapshots:
+    :param pyagram:
     :return:
     """
-    for snapshot in snapshots:
-        program_state = snapshot.pop('program_state')
-        memory_state = snapshot.pop('memory_state')
-        curr_line_no = program_state['curr_line_no']
-        global_frame = program_state['global_frame']
-        snapshot['curr_line_no'] = curr_line_no
-        snapshot['state'] = get_html.get_state_html(global_frame, memory_state)
+    pyagram['snapshots'] = [
+        {
+            'curr_line_no': snapshot['program_state']['curr_line_no'],
+            'state': get_html.get_state_html(
+                snapshot['program_state']['global_frame'],
+                snapshot['memory_state'],
+            )
+        }
+        for snapshot in pyagram['snapshots']
+    ]
+    pyagram['exception'] = pyagram['exception'] # TODO: Convert the exception to HTML. Get the error message to display in a cute little red box, in the middle of the pyagram window.

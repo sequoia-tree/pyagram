@@ -40,18 +40,20 @@ class Pyagram:
                         locals=global_bindings,
                     )
                 except user_exception.UserException as e:
-                    pass # TODO: Postprocess what you can.
-                    self.data = {
+                    tracer.state.program_state.exception_snapshot = {
                         'type': e.type.__name__,
                         'value': str(e.value),
                         'lineno': e.traceback.tb_lineno,
                     }
-                    self.encoding = 'user_error'
                 else:
-                    postprocessor = postprocess.Postprocessor(tracer.state)
-                    postprocessor.postprocess()
-                    self.data = tracer.state.snapshots
-                    self.encoding = 'pyagram'
+                    tracer.state.program_state.exception_snapshot = None
+                postprocessor = postprocess.Postprocessor(tracer.state)
+                postprocessor.postprocess()
+                self.data = {
+                    'snapshots': tracer.state.snapshots,
+                    'exception': tracer.state.program_state.exception_snapshot,
+                }
+                self.encoding = 'pyagram'
         except Exception as e:
             self.data = str(e)
             self.encoding = 'pyagram_error'
@@ -63,5 +65,5 @@ class Pyagram:
         """
         return {
             'data': self.data,
-            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly). Then there's also 'user_error' (duh).
+            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly).
         }

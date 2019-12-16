@@ -31,7 +31,8 @@ var pgSnapshots;
 function loadPyagram(pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
-            pgSnapshots = pyagram.data;
+            pgSnapshots = pyagram.data.snapshots;
+            // TODO: What about the pyagram.data.exception (if it isn't === null)?
             pgSlider.min = 0;
             pgSlider.max = pgSnapshots.length - 1;
             slider.resetSlider(pgSlider);
