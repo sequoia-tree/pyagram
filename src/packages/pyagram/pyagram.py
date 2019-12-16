@@ -19,19 +19,10 @@ class Pyagram:
 
     def __init__(self, code, *, debug):
         try:
+            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
+            preprocessor = preprocess.Preprocessor(code, num_lines)
             try:
-                num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
-                preprocessor = preprocess.Preprocessor(code, num_lines)
                 preprocessor.preprocess()
-                encoder = encode.Encoder(num_lines)
-                tracer = trace.Tracer(encoder)
-                tracer.run(
-                    preprocessor.code,
-                    globals=global_bindings,
-                    locals=global_bindings,
-                )
-                postprocessor = postprocess.Postprocessor(tracer.state)
-                postprocessor.postprocess()
             except SyntaxError as e:
                 self.data = {
                     'lineno': e.lineno,
@@ -39,16 +30,28 @@ class Pyagram:
                     'text': e.text,
                 }
                 self.encoding = 'syntax_error'
-            except user_exception.UserException as e:
-                self.data = {
-                    'type': e.type.__name__,
-                    'value': str(e.value),
-                    'lineno': e.traceback.tb_lineno,
-                }
-                self.encoding = 'user_error'
             else:
-                self.data = tracer.state.snapshots
-                self.encoding = 'pyagram'
+                encoder = encode.Encoder(num_lines)
+                tracer = trace.Tracer(encoder)
+                try:
+                    tracer.run(
+                        preprocessor.code,
+                        globals=global_bindings,
+                        locals=global_bindings,
+                    )
+                except user_exception.UserException as e:
+                    pass # TODO: Postprocess what you can.
+                    self.data = {
+                        'type': e.type.__name__,
+                        'value': str(e.value),
+                        'lineno': e.traceback.tb_lineno,
+                    }
+                    self.encoding = 'user_error'
+                else:
+                    postprocessor = postprocess.Postprocessor(tracer.state)
+                    postprocessor.postprocess()
+                    self.data = tracer.state.snapshots
+                    self.encoding = 'pyagram'
         except Exception as e:
             self.data = str(e)
             self.encoding = 'pyagram_error'
@@ -60,5 +63,5 @@ class Pyagram:
         """
         return {
             'data': self.data,
-            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly).
+            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly). Then there's also 'user_error' (duh).
         }
