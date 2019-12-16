@@ -253,6 +253,7 @@ class PyagramFrame(PyagramElement):
             del frame.f_globals['__builtins__']
         else:
             self.function = utils.get_function(frame)
+            self.state.memory_state.record_parent(self, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
@@ -313,7 +314,6 @@ class PyagramFrame(PyagramElement):
             if not pyagram_types.is_primitive_type(object):
                 self.state.memory_state.track(object, len(self.state.snapshots))
                 if pyagram_types.is_function_type(object):
-                    utils.assign_unique_code_object(object)
                     self.state.memory_state.record_parent(self, object)
                     referents = utils.get_defaults(object)
                 else:

@@ -35,9 +35,11 @@ class Pyagram:
                 'text': e.text,
             }
             self.encoding = 'syntax_error'
+            raise e # TODO: Delet this. (Or maybe `raise e` if debug==True?)
         except Exception as e:
             self.data = str(e)
             self.encoding = 'pyagram_error'
+            raise e # TODO: Delet this. (Or maybe `raise e` if debug==True?))
         else:
             self.data = tracer.state.snapshots
             self.encoding = 'pyagram'

@@ -1,5 +1,6 @@
 from . import enums
 from . import pyagram_element
+from . import utils
 
 class State:
     """
@@ -244,13 +245,13 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object, debut_index):
+    def track(self, object, debut_index): # TODO: The argument for debut_index is always `len(self.state.snapshots)`. Just get rid of it as a parameter, and instead add the line `debut_index = len(self.state.snapshots)` below.
         """
         <summary>
 
         :return:
         """
-        if id(object) not in self.object_debuts:
+        if not self.is_tracked(object):
             self.objects.append(object)
             self.object_debuts[id(object)] = debut_index
 
@@ -261,7 +262,7 @@ class MemoryState:
         :param object:
         :return:
         """
-        return object in self.objects
+        return id(object) in self.object_debuts
 
     def record_parent(self, frame, function):
         """
@@ -272,6 +273,7 @@ class MemoryState:
         :return:
         """
         if function not in self.function_parents:
+            utils.assign_unique_code_object(function)
             if not frame.is_global_frame and frame.is_new_frame:
                 parent = frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
