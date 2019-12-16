@@ -65,7 +65,6 @@ class Postprocessor:
                 i += 1
 
     def kill_static_snapshots(self):
-        # TODO: Does this work?
         i = len(self.state.snapshots) - 1
         while 0 < i:
             former_snapshot = self.state.snapshots[i - 1]
