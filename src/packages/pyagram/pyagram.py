@@ -1,7 +1,6 @@
 from . import encode
 from . import postprocess
 from . import preprocess
-from . import pyagram_error
 from . import trace
 
 class Pyagram:
@@ -17,10 +16,10 @@ class Pyagram:
 
     def __init__(self, code, *, debug):
         try:
-            global_bindings = {} # TODO: Isn't the default behavior the same as not specifying this?
-            preprocessor = preprocess.Preprocessor(code)
+            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
+            preprocessor = preprocess.Preprocessor(code, num_lines)
             preprocessor.preprocess()
-            encoder = encode.Encoder()
+            encoder = encode.Encoder(num_lines)
             tracer = trace.Tracer(encoder)
             tracer.run(
                 preprocessor.code,
@@ -29,17 +28,24 @@ class Pyagram:
             )
             postprocessor = postprocess.Postprocessor(tracer.state)
             postprocessor.postprocess()
-        except pyagram_error.PyagramError as error:
-            self.data = str(error)
-            self.is_error = True
+        except SyntaxError as e:
+            self.data = {
+                'lineno': e.lineno,
+                'position': e.offset,
+                'text': e.text,
+            }
+            self.encoding = 'syntax_error'
+        except Exception as e:
+            self.data = str(e)
+            self.encoding = 'pyagram_error'
         else:
             self.data = tracer.state.snapshots
-            self.is_error = False
+            self.encoding = 'pyagram'
 
     def serialize(self):
         """
         """
         return {
             'data': self.data,
-            'is_error': self.is_error,
+            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly).
         }

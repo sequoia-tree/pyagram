@@ -22,7 +22,7 @@ class State:
         self.hidden_flags = []
         self.encoder = encoder
         self.snapshots = []
-    
+
     def step(self, frame, is_frame_open=None, is_frame_close=None, return_value=None):
         """
         <summary> # may also pass in frame=None, eg in PyagramFrame.close

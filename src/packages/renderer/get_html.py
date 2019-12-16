@@ -1,5 +1,4 @@
 import flask
-import re
 
 from . import templates
 
@@ -85,11 +84,7 @@ def get_lambda_html(lambda_snapshot):
     return get_component_html(templates.LAMBDA_TEMPLATE, lambda_snapshot)
 
 def get_parameter_html(parameter_snapshot):
-    match = re.match(r'^__pyagram_lambda_(\d+)_(\d+)$', parameter_snapshot['name'])
-    if match is None:
-        return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
-    else:
-        return ''
+    return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
 
 def get_parent_frame_html(parent_frame_name):
     return get_html(

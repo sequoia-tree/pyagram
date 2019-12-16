@@ -15,7 +15,7 @@ def draw(methods=['GET', 'POST']):
     code = flask.request.values.get('code')
     # TODO: Wrap the next few lines in a try-except-then clause, in case you encounter an error that is not a PyagramError.
     pyagram = pg.Pyagram(code, debug=False)
-    if not pyagram.is_error:
+    if pyagram.encoding == 'pyagram':
         rd.render_components(pyagram.data)
     return json.dumps(pyagram.serialize())
 

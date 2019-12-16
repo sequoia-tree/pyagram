@@ -29,14 +29,23 @@ var printOutputPane = document.getElementById(PRINT_OUTPUT_ID);
 var pgSnapshots;
 
 function loadPyagram(pyagram) {
-    if (pyagram.is_error) {
-        alert(pyagram.data);
-    } else {
-        pgSnapshots = pyagram.data;
-        pgSlider.min = 0;
-        pgSlider.max = pgSnapshots.length - 1;
-        slider.resetSlider(pgSlider);
-        overlay.setBottomOverlay(pgOverlayTop, pgOverlayBottom);
+    switch (pyagram.encoding) {
+        case 'pyagram':
+            pgSnapshots = pyagram.data;
+            pgSlider.min = 0;
+            pgSlider.max = pgSnapshots.length - 1;
+            slider.resetSlider(pgSlider);
+            overlay.setBottomOverlay(pgOverlayTop, pgOverlayBottom);
+            break;
+        case 'syntax_error':
+            // TODO
+            break;
+        case 'pyagram_error':
+            // TODO
+            break;
+        default:
+            // TODO
+            break;
     }
 }
 

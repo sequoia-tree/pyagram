@@ -1,7 +1,7 @@
 import inspect
-import re
 
 from . import pyagram_types
+from . import utils
 
 UNKNOWN_REFERENCE_TEXT = '<?>'
 GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
@@ -10,8 +10,8 @@ class Encoder:
     """
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, num_lines):
+        self.num_lines = num_lines
 
     def reference_snapshot(self, object, memory_state):
         """
@@ -39,33 +39,22 @@ class Encoder:
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
-            signature = list(inspect.signature(object).parameters.items())
-
-            encoded_parameters, i, has_star_arg = [], 0, False
-            while i < len(signature):
-                encode_parameter = True
-                parameter_name, parameter = signature[i]
-                if is_lambda:
-                    match = re.match(r'^__pyagram_lambda_(\d+)_(\d+)$', parameter_name)
-                    if match is not None:
-                        lineno = match.group(1)
-                        number = match.group(2)
-                        encode_parameter = False
-                if encode_parameter:
-                    if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
-                        has_star_arg = True
-                    elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
-                        encoded_parameters.append({
-                            'name': '*',
-                            'default': None,
-                        })
-                        has_star_arg = True
-                    encoded_parameters.append({
-                        'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                        'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
+            if is_lambda:
+                lineno, number = utils.unpair_naturals(object.__code__.co_firstlineno, max_x=self.num_lines)
+            parameters, has_star_arg = [], False
+            for parameter in inspect.signature(object).parameters.values():
+                if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                    has_star_arg = True
+                elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
+                    parameters.append({
+                        'name': '*',
+                        'default': None,
                     })
-                i += 1
-
+                    has_star_arg = True
+                parameters.append({
+                    'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
+                    'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
+                })
             encoding = 'function'
             snapshot = {
                 'name': object.__name__,
@@ -76,7 +65,7 @@ class Encoder:
                     }
                     if is_lambda
                     else None,
-                'parameters': encoded_parameters,
+                'parameters': parameters,
                 'parent': repr(memory_state.function_parents[object]),
             }
         elif object_type in pyagram_types.BUILTIN_FUNCTION_TYPES:
