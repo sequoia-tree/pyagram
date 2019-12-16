@@ -119,7 +119,7 @@ class ProgramState:
         :return:
         """
         return {
-            'curr_line_no': self.curr_line_no,
+            'curr_line_no': self.curr_line_no, # TODO: This is either: (*) accurate, (*) utils.INNER_CALL_LINENO, (*) utils.OUTER_CALL_LINENO, or (*) greater than the total number of lines in the program. If you observe the lattermost case, then we are in fact executing a lambda function, and you can extract the appropriate line number using utils.unpair_naturals. See encode.py for an example.
             'global_frame': self.global_frame.snapshot(),
         }
 

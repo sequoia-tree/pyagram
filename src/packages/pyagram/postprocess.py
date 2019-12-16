@@ -69,8 +69,13 @@ class Postprocessor:
         while 0 < i:
             former_snapshot = self.state.snapshots[i - 1]
             latter_snapshot = self.state.snapshots[i]
-            if former_snapshot['program_state']['global_frame'] == latter_snapshot['program_state']['global_frame']:
+            # TODO: We temporarily remove the lineno because that's the only part of the snapshot we don't want to compare. If you never end up using the lineno at all in the visualization, then you shouldn't even include it from the program_state snapshot.
+            former_line_no = former_snapshot['program_state'].pop('curr_line_no')
+            latter_line_no = latter_snapshot['program_state'].pop('curr_line_no')
+            if former_snapshot == latter_snapshot:
                 del self.state.snapshots[i]
+            former_snapshot['program_state']['curr_line_no'] = former_line_no
+            latter_snapshot['program_state']['curr_line_no'] = latter_line_no
             i -= 1
 
     def interpolate_flag_banner(self, flag_snapshot):
@@ -84,7 +89,7 @@ class Postprocessor:
 
         pyagram_flag = flag_snapshot.pop('pyagram_flag')
         pyagram_frame = pyagram_flag.frame
-        frame_bindings = pyagram_frame.initial_bindings # TODO: This throws an error if pyagram_frame is None, which is the case when a flag has no frame (eg for built-in calls like "a.append")
+        frame_bindings = pyagram_frame.initial_bindings
         frame_variables = list(frame_bindings)
         banner_elements = pyagram_flag.banner_elements
         banner_bindings = pyagram_flag.banner_bindings
