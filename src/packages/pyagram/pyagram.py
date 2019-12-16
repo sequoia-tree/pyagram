@@ -1,7 +1,10 @@
+import traceback
+
 from . import encode
 from . import postprocess
 from . import preprocess
 from . import trace
+from . import user_exception
 
 class Pyagram:
     """
@@ -16,33 +19,41 @@ class Pyagram:
 
     def __init__(self, code, *, debug):
         try:
-            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
-            preprocessor = preprocess.Preprocessor(code, num_lines)
-            preprocessor.preprocess()
-            encoder = encode.Encoder(num_lines)
-            tracer = trace.Tracer(encoder)
-            tracer.run(
-                preprocessor.code,
-                globals=global_bindings,
-                locals=global_bindings,
-            )
-            postprocessor = postprocess.Postprocessor(tracer.state)
-            postprocessor.postprocess()
-        except SyntaxError as e:
-            self.data = {
-                'lineno': e.lineno,
-                'position': e.offset,
-                'text': e.text,
-            }
-            self.encoding = 'syntax_error'
-            raise e # TODO: Delet this. (Or maybe `raise e` if debug==True?)
+            try:
+                num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
+                preprocessor = preprocess.Preprocessor(code, num_lines)
+                preprocessor.preprocess()
+                encoder = encode.Encoder(num_lines)
+                tracer = trace.Tracer(encoder)
+                tracer.run(
+                    preprocessor.code,
+                    globals=global_bindings,
+                    locals=global_bindings,
+                )
+                postprocessor = postprocess.Postprocessor(tracer.state)
+                postprocessor.postprocess()
+            except SyntaxError as e:
+                self.data = {
+                    'lineno': e.lineno,
+                    'position': e.offset,
+                    'text': e.text,
+                }
+                self.encoding = 'syntax_error'
+            except user_exception.UserException as e:
+                self.data = {
+                    'type': e.type.__name__,
+                    'value': str(e.value),
+                    'lineno': e.traceback.tb_lineno,
+                }
+                self.encoding = 'user_error'
+            else:
+                self.data = tracer.state.snapshots
+                self.encoding = 'pyagram'
         except Exception as e:
             self.data = str(e)
             self.encoding = 'pyagram_error'
-            raise e # TODO: Delet this. (Or maybe `raise e` if debug==True?))
-        else:
-            self.data = tracer.state.snapshots
-            self.encoding = 'pyagram'
+            if debug:
+                raise e
 
     def serialize(self):
         """

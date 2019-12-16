@@ -18,7 +18,7 @@ class Preprocessor:
         ast.fix_missing_locations(self.code)
         self.code = compile(
             self.code,
-            filename='<ast>', # TODO: Or perhaps it ought to be '__main__'?
+            filename='main.py', # TODO: Why is `__name__` bound to `'builtins'`?
             mode='exec',
         )
 

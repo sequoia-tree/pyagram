@@ -2,6 +2,7 @@ import bdb
 
 from . import enums
 from . import state
+from . import user_exception
 from . import utils
 
 class Tracer(bdb.Bdb):
@@ -57,8 +58,8 @@ class Tracer(bdb.Bdb):
         # TODO: Figure out how you want to address exceptions.
         # TODO: If there is an error, then don't do any of the flag banner nonsense.
         # TODO: Your code relies on a program that works; therefore if the code doesn't work, your code will throw some error that is different from the one thrown by the input code. If there's an error, perhaps run the student's code plain-out and scrape its error message?
-        self.step(frame)
         self.snapshot(enums.TraceTypes.USER_EXCEPTION)
+        raise user_exception.UserException(*exception_info)
 
     def step(self, frame, *, is_frame_open=False, is_frame_close=False, return_value=None):
         """
@@ -91,8 +92,7 @@ class Tracer(bdb.Bdb):
             take_snapshot = self.state.program_state.curr_line_no == utils.OUTER_CALL_LINENO \
                          or self.state.program_state.curr_line_no == utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
-            # TODO: Figure out what should go here.
-            take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO
+            take_snapshot = False
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
         if take_snapshot:

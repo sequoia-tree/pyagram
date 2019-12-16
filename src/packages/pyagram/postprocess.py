@@ -34,10 +34,13 @@ class Postprocessor:
         :param flag_snapshot:
         :return:
         """
-        self.interpolate_flag_banner(flag_snapshot)
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:
+            self.interpolate_flag_banner(flag_snapshot)
             self.postprocess_frame_snapshot(frame_snapshot)
+        else:
+            # TODO: Consider f(g(x), y). If g(x) throws an error, the flag for f(g(x), y) never gets its frame.
+            pass
         self.postprocess_element_snapshot(flag_snapshot)
 
     def postprocess_frame_snapshot(self, frame_snapshot):
