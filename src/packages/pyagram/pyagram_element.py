@@ -160,7 +160,7 @@ class PyagramFlag(PyagramElement):
                 if flag not in self.state.hidden_flags
             ],
         }
-    
+
     def evaluate_next_banner_binding(self, expect_call):
         """
         <summary>

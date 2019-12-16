@@ -14,6 +14,7 @@ class Postprocessor:
         self.hide_hidden_snapshots()
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
+        self.kill_static_snapshots()
     
     def postprocess_snapshots(self):
         for snapshot in self.state.snapshots:
@@ -47,14 +48,14 @@ class Postprocessor:
         :return:
         """
         self.postprocess_element_snapshot(frame_snapshot)
-    
+
     def hide_hidden_snapshots(self):
         for hidden_flag in self.state.hidden_flags:
             start_index = hidden_flag.start_index
             close_index = hidden_flag.close_index
             for i in range(start_index, close_index + 1):
                 self.state.snapshots[i] = None
-    
+
     def kill_hidden_snapshots(self):
         i = 0
         while i < len(self.state.snapshots):
@@ -62,6 +63,16 @@ class Postprocessor:
                 del self.state.snapshots[i]
             else:
                 i += 1
+
+    def kill_static_snapshots(self):
+        # TODO: Does this work?
+        i = len(self.state.snapshots) - 1
+        while 0 < i:
+            former_snapshot = self.state.snapshots[i - 1]
+            latter_snapshot = self.state.snapshots[i]
+            if former_snapshot['program_state']['global_frame'] == latter_snapshot['program_state']['global_frame']:
+                del self.state.snapshots[i]
+            i -= 1
 
     def interpolate_flag_banner(self, flag_snapshot):
         """
@@ -154,17 +165,19 @@ class Postprocessor:
 
             for snapshot_index in range(new_debut_index, debut_index):
                 snapshot = self.state.snapshots[snapshot_index]
-                snapshot['memory_state'].insert(
-                    new_memory_state_index,
-                    {
-                        'id': object_id,
-                        'object': debut_snapshot,
-                    },
-                )
+                if snapshot is not None:
+                    snapshot['memory_state'].insert(
+                        new_memory_state_index,
+                        {
+                            'id': object_id,
+                            'object': debut_snapshot,
+                        },
+                    )
 
             for snapshot_index in range(debut_index, len(self.state.snapshots)):
                 snapshot = self.state.snapshots[snapshot_index]
-                object_snapshot = snapshot['memory_state'].pop(memory_state_index)
-                snapshot['memory_state'].insert(new_memory_state_index, object_snapshot)
+                if snapshot is not None:
+                    object_snapshot = snapshot['memory_state'].pop(memory_state_index)
+                    snapshot['memory_state'].insert(new_memory_state_index, object_snapshot)
 
             self.state.memory_state.object_debuts[object_id] = new_debut_index

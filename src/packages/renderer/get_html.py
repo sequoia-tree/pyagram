@@ -93,7 +93,6 @@ def get_parent_frame_html(parent_frame_name):
     )
 
 # TODO: When the 'Draw Pyagram' overlay shows up again, set the slider back to 0 and reset its min and max values.
-# TODO: If the window gets too narrow, the print output should NOT wrap -- it should become horizontally scrollable.
 
 
 
