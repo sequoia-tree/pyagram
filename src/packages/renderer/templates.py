@@ -200,3 +200,9 @@ PARAMETER_TEMPLATE = """
   =<span class="box">{{ get_reference_html(default) }}</span>
 {% endif %}
 """
+
+PRINT_TEMPLATE = """
+<p class="mono show-white-space">
+  {{ print_output }}
+</p>
+"""

@@ -92,6 +92,12 @@ def get_parent_frame_html(parent_frame_name):
         parent_frame_name=parent_frame_name,
     )
 
+def get_print_html(print_output):
+    return get_html(
+        templates.PRINT_TEMPLATE,
+        print_output=print_output,
+    )
+
 # TODO: When the 'Draw Pyagram' overlay shows up again, set the slider back to 0 and reset its min and max values.
 
 

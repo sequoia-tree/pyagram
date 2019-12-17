@@ -15,7 +15,7 @@ def render_components(pyagram):
                 snapshot['program_state']['global_frame'],
                 snapshot['memory_state'],
             ),
-            'print_output': snapshot['print_output'],
+            'print_output': get_html.get_print_html(snapshot['print_output']),
             'curr_line_no': snapshot['program_state']['curr_line_no'], # TODO: Use this information.
         }
         for snapshot in snapshots
