@@ -15,11 +15,11 @@ class State:
     :param global_frame:
     """
 
-    def __init__(self, global_frame, encoder):
+    def __init__(self, global_frame, encoder, stdout):
         self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
         self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState(self)
-        self.print_output = None # TODO: Handle `print` statements. The first time something gets printed, rebind this to the string being printed. Every time after that, rebind it to '\n'.join(current print_output, new thing being printed).
+        self.print_output = stdout
         self.hidden_flags = []
         self.encoder = encoder
         self.snapshots = []
@@ -46,7 +46,7 @@ class State:
         snapshot = {
             'program_state': self.program_state.snapshot(),
             'memory_state': self.memory_state.snapshot(),
-            'print_output': self.print_output, # TODO: This is a string, or **None** if nothing has been printed yet!
+            'print_output': self.print_output.getvalue(),
         }
         self.snapshots.append(snapshot)
 
@@ -119,8 +119,8 @@ class ProgramState:
         :return:
         """
         return {
-            'curr_line_no': self.curr_line_no, # TODO: This is either: (*) accurate, (*) utils.INNER_CALL_LINENO, (*) utils.OUTER_CALL_LINENO, or (*) greater than the total number of lines in the program. If you observe the lattermost case, then we are in fact executing a lambda function, and you can extract the appropriate line number using utils.unpair_naturals. See encode.py for an example.
             'global_frame': self.global_frame.snapshot(),
+            'curr_line_no': self.curr_line_no, # TODO: This is either: (*) accurate, (*) utils.INNER_CALL_LINENO, (*) utils.OUTER_CALL_LINENO, or (*) greater than the total number of lines in the program. If you observe the lattermost case, then we are in fact executing a lambda function, and you can extract the appropriate line number using utils.unpair_naturals. See encode.py for an example.
         }
 
     def process_frame_open(self, frame):

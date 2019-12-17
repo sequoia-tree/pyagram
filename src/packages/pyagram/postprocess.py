@@ -116,7 +116,7 @@ class Postprocessor:
                             binding_id = banner_bindings[binding_index]
                             is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                             if is_unsupported_binding:
-                                binding = self.state.encoder.reference_snapshot(None, None)
+                                binding = self.state.encoder.reference_snapshot(None, None) # TODO: Add an issues to the Github Issues page for this too.
                             else:
                                 if isinstance(binding_id, str):
 

@@ -20,8 +20,8 @@ class Pyagram:
     def __init__(self, code, *, debug):
         try:
             num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
-            preprocessor = preprocess.Preprocessor(code, num_lines)
             try:
+                preprocessor = preprocess.Preprocessor(code, num_lines)
                 preprocessor.preprocess()
             except SyntaxError as e:
                 self.data = {
@@ -47,6 +47,7 @@ class Pyagram:
                     }
                 else:
                     tracer.state.program_state.exception_snapshot = None
+                tracer.stop()
                 postprocessor = postprocess.Postprocessor(tracer.state)
                 postprocessor.postprocess()
                 self.data = {

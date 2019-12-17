@@ -32,7 +32,6 @@ function loadPyagram(pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
             pgSnapshots = pyagram.data.snapshots;
-            // TODO: What about the pyagram.data.exception (if it isn't === null)?
             pgSlider.min = 0;
             pgSlider.max = pgSnapshots.length - 1;
             slider.resetSlider(pgSlider);
@@ -52,7 +51,7 @@ function loadPyagram(pyagram) {
 
 function loadSnapshot(i) {
     pyagramPane.innerHTML = pgSnapshots[i].state;
-    printOutputPane.innerHTML = '[TODO] curr line no.: '.concat(pgSnapshots[i].curr_line_no); // TODO: Add support for the print output.
+    printOutputPane.innerHTML = pgSnapshots[i].print_output;
     $('#svg-canvas').css('height', $('#state-table').height());
     $('#svg-canvas').css('width', $('#state-table').width());
     drawPointers();

@@ -7,14 +7,20 @@ def render_components(pyagram):
     :param pyagram:
     :return:
     """
-    pyagram['snapshots'] = [
+    snapshots = pyagram.pop('snapshots')
+    exception = pyagram.pop('exception')
+    snapshots = [
         {
-            'curr_line_no': snapshot['program_state']['curr_line_no'],
             'state': get_html.get_state_html(
                 snapshot['program_state']['global_frame'],
                 snapshot['memory_state'],
-            )
+            ),
+            'print_output': snapshot['print_output'],
+            'curr_line_no': snapshot['program_state']['curr_line_no'], # TODO: Use this information.
         }
-        for snapshot in pyagram['snapshots']
+        for snapshot in snapshots
     ]
-    pyagram['exception'] = pyagram['exception'] # TODO: Convert the exception to HTML. Get the error message to display in a cute little red box, in the middle of the pyagram window.
+    if exception is not None:
+        # TODO: Append a new snapshot which is identical except for the addition of a RED error message to the print_output.
+        pass
+    pyagram['snapshots'] = snapshots
