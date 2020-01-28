@@ -1,40 +1,5 @@
-@import 'colors';
+$min-page-height: 768px;
 
-$min-window-height: 740px;
-$min-window-width: 0px;
-
-$bounded-width: 600px;
-
-body {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  min-height: $min-window-height;
-  min-width: $min-window-width;
-  margin: 0;
-}
-
-.scroll-box {
-  overflow: scroll;
-}
-
-.full-height {
-  height: 100%;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.bounded-width {
-  width: 50%;
-  max-width: $bounded-width;
-}
-
-.center {
-  position: relative;
-  float: left;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.page-content {
+  min-height: $min-page-height;
 }

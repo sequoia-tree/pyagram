@@ -1,6 +1,24 @@
+@import 'colors';
+@import 'text';
+
 $accent-width: 2px;
-$trans-time: 0.25s;
+$clickable-radius: 23px;
 
 @mixin clickable() {
-  cursor: pointer;
+  color: black;
+  text-decoration: none;
+  font-size: $clickable-font-size;
+  background: $secondary-color;
+  border: solid $accent-width $primary-color;
+  border-radius: $clickable-radius;
+  transition: 1.0s;
+  &:hover, &.active {
+    @include active-clickable();
+  }
+}
+
+@mixin active-clickable() {
+  color: black;
+  text-decoration: none;
+  background: white;
 }

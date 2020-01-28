@@ -1,0 +1,37 @@
+$head-font: 'Raleway', sans-serif;
+$sans-font: 'PT Sans', sans-serif;
+$mono-font: 'PT Mono', monospace;
+
+body {
+  font-family: $sans-font;
+  font-size: 12.5pt;
+}
+
+p {
+  margin: 0.25em 0.25em;
+}
+
+.title {
+  font-family: $head-font;
+  font-size: 150%;
+}
+
+.mono {
+  font-family: $mono-font;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.show-white-space {
+  white-space: pre-wrap;
+}

@@ -4,7 +4,8 @@
     "watch-css": "sass --watch ./src/styles:./static/styles"
   },
   "dependencies": {
-    "ace-builds": "1.x"
+    "ace-builds": "1.x",
+    "split.js": "1.5.x"
   },
   "devDependencies": {
     "webpack": "4.x",

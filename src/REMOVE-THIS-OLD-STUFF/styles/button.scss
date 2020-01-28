@@ -1,0 +1,69 @@
+@import 'clickable';
+@import 'colors';
+
+@mixin button-border() {
+  position: absolute;
+  content: '';
+  background: $accent-color;
+  transition: all $trans-time linear;
+}
+
+@mixin basic-button() {
+  @include clickable();
+  border-style: solid;
+  border-width: $accent-width;
+  border-color: $accent-color;
+}
+
+.button-outer {
+  @include basic-button();
+  padding: 0.5em;
+}
+
+.button-outer::before, .button-outer::after{
+  @include button-border();
+  height: $accent-width;
+  width: 0;
+}
+
+.button-inner::before, .button-inner::after{
+  @include button-border();
+  height: 0;
+  width: $accent-width;
+}
+
+.button-outer:hover::before, .button-outer:hover::after{
+  width: 100%;
+}
+
+.button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
+  height: 100%;
+}
+
+.button-outer:hover::before, .button-outer:hover::after, .button-outer .button-inner::before, .button-outer .button-inner::after{
+  transition-delay: 0s;
+}
+
+.button-outer::before, .button-outer::after, .button-outer:hover .button-inner::before, .button-outer:hover .button-inner::after{
+  transition-delay: $trans-time;
+}
+
+.button-outer::before{
+  top: 0;
+  right: 0;
+}
+
+.button-outer::after{
+  bottom: 0;
+  left: 0;
+}
+
+.button-outer .button-inner::before{
+  top: 0;
+  left: 0;
+}
+
+.button-outer .button-inner::after{
+  bottom: 0;
+  right: 0;
+}

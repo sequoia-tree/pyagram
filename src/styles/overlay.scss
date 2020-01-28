@@ -1,0 +1,7 @@
+.overlay-wrapper > .overlay {
+  top: 0;
+  left: 0;
+  &:not(.active) {
+    display: none;
+  }
+}

@@ -1,37 +1,58 @@
-$head-font: 'Raleway', sans-serif;
-$sans-font: 'PT Sans', sans-serif;
-$mono-font: 'PT Mono', monospace;
+@import 'colors';
 
-body {
-  font-family: $sans-font;
-  font-size: 12.5pt;
+$serif-font: 'Arapey', serif;
+$sans-serif-font: 'Work Sans', sans-serif;
+$monospace-font: 'Source Code Pro', monospace;
+
+$title-font-size: 60.0pt;
+$section-font-size: 30.0pt;
+$subsection-font-size: 24.0pt;
+$subsubsection-font-size: 18.0pt;
+$clickable-font-size: 13.5pt;
+$paragraph-font-size: 12.5pt;
+
+a, a:hover {
+  color: $primary-color;
+  text-decoration: none;
 }
 
-p {
-  margin: 0.25em 0.25em;
+.font-family-serif {
+  font-family: $serif-font;
 }
 
-.title {
-  font-family: $head-font;
-  font-size: 150%;
+.font-family-sans-serif {
+  font-family: $sans-serif-font;
 }
 
-.mono {
-  font-family: $mono-font;
+.font-family-monospace {
+  font-family: $monospace-font;
 }
 
-.text-left {
-  text-align: left;
+.font-size-title {
+  font-size: $title-font-size;
 }
 
-.text-center {
-  text-align: center;
+.font-size-section {
+  font-size: $section-font-size;
 }
 
-.text-right {
-  text-align: right;
+.font-size-subsection {
+  font-size: $subsection-font-size;
 }
 
-.show-white-space {
-  white-space: pre-wrap;
+.font-size-subsubsection {
+  font-size: $subsubsection-font-size;
+}
+
+.font-size-clickable {
+  font-size: $clickable-font-size;
+}
+
+.font-size-paragraph {
+  font-size: $paragraph-font-size;
+}
+
+.text-reverse {
+  unicode-bidi: bidi-override;
+  direction: rtl;
 }

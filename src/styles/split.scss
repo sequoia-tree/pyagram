@@ -1,0 +1,20 @@
+@import 'colors';
+
+.split {
+  display: flex;
+  &.split-horizontal {
+    flex-direction: row;
+    & > .gutter.gutter-horizontal {
+      cursor: ew-resize;
+    }
+  }
+  &.split-vertical {
+    flex-direction: column;
+    & > .gutter.gutter-vertical {
+      cursor: ns-resize;
+    }
+  }
+  & > .gutter {
+    background: $secondary-color;
+  }
+}

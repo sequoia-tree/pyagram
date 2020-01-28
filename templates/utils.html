@@ -6,16 +6,91 @@
   <script type="text/javascript" src="{{ url_for('static', filename='scripts/{}.js'.format(file)) }}"></script>
 {% endmacro %}
 
-{% macro editor(id) %}
-  <div id="{{ id }}"></div>
+{% macro split(id, direction, panels) %}
+  <div class="split split-{{ direction }} h-100 w-100" id="split-{{ id }}">
+    {% for panel_id, panel_encoding, panel_context in panels %}
+      <div id="split-{{ id }}-panel-{{ panel_id }}">{{ decode_content(panel_id, panel_encoding, panel_context, **kwargs) }}</div>
+    {% endfor %}
+  </div>
 {% endmacro %}
 
-{% macro button(id, text, center) %}
-  <div id="{{ id }}" class="button-outer {% if center %} center {% endif %}">
-    <div class="button-inner title">
-      {{ text }}
+{% macro overlay(id, top, bottom, center_vertically=True) %}
+  <div class="overlay-wrapper d-inline-block position-relative h-100 w-100">
+    {{ decode_content('{}-bottom'.format(id), *bottom, **kwargs) }}
+    <div class="overlay position-absolute h-100 w-100 bg-white" id="overlay-{{ id }}">
+      {% if center_vertically %}
+        <div class="d-flex flex-column justify-content-center h-100 w-100">
+      {% endif %}
+      {{ decode_content('{}-top'.format(id), *top, **kwargs) }}
+      {% if center_vertically %}
+        </div>
+      {% endif %}
     </div>
   </div>
+{% endmacro %}
+
+{% macro decode_content(id, encoding, context) %}
+  {% if encoding == 'template' %}
+    {% include '{}.html'.format(id) %}
+  {% elif encoding == 'textbook' %}
+    {% for part_title, chapters in context.items() %}
+      {{ section(3, part_title, False) }}
+      {% for chapter in chapters %}
+        <div class="my-2">
+          <a href="{{ url_for('chapter:{}'.format(chapter)) }}">{{ kwargs['chapter_titles'][chapter] }}</a>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  {% elif encoding == 'handbook' %}
+    {% for chapter in context %}
+      <div class="my-2">
+        <a href="{{ url_for('chapter:{}'.format(chapter)) }}">{{ kwargs['chapter_titles'][chapter] }}</a>
+      </div>
+    {% endfor %}
+  {% elif encoding == 'html' %}
+    {{ context|safe }}
+  {% elif encoding == 'text' %}
+    {{ context }}
+  {% endif %}
+{% endmacro %}
+
+{% macro button(id, label, href=None, big=False, reverse=False) %}
+  <div class="d-flex flex-row justify-content-center my-3">
+    <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
+  </div>
+{% endmacro %}
+
+{% macro section(level, label, render_link=True) %}
+  {% set id = label.replace(' ', '-') %}
+  <div class="section my-3 text-uppercase font-family-serif font-size-{{ 'sub' * (level - 1) }}section" id="section-{{ id }}">
+    {{ label }}
+    {% if render_link %}
+      <a class="section-link" href="#section-{{ id }}">&#167;</a>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% macro editor(id) %}
+  <div id="{{ id }}"></div>
 {% endmacro %}
 
 {% macro slider(id, label, min, max) %}

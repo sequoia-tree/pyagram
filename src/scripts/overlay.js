@@ -1,9 +1,9 @@
-export function setTopOverlay(topOverlay, bottomOverlay) {
-    topOverlay.style.display = 'block';
-    bottomOverlay.style.display = 'none';
+const ACTIVE_CLASS_NAME = 'active';
+
+export function setTop(overlay) {
+    overlay.classList.add(ACTIVE_CLASS_NAME);
 }
 
-export function setBottomOverlay(topOverlay, bottomOverlay) {
-    topOverlay.style.display = 'none';
-    bottomOverlay.style.display = 'block';
+export function setBottom(overlay) {
+    overlay.classList.remove(ACTIVE_CLASS_NAME);
 }
