@@ -54,15 +54,19 @@
   {% endif %}
 {% endmacro %}
 
+{% macro editor(id) %}
+  <div id="{{ id }}"></div>
+{% endmacro %}
+
 {% macro button(id, label, href=None, big=False, reverse=False) %}
   <div class="d-flex flex-row justify-content-center my-3">
     <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
   </div>
 {% endmacro %}
 
-{% macro section(level, label, render_link=True) %}
+{% macro section(level, label, render_link=True, center=False) %}
   {% set id = label.replace(' ', '-') %}
-  <div class="section my-3 text-uppercase font-family-serif font-size-{{ 'sub' * (level - 1) }}section" id="section-{{ id }}">
+  <div class="section my-3 text-uppercase {% if center %} text-center {% endif %} font-family-serif font-size-{{ 'sub' * (level - 1) }}section" id="section-{{ id }}">
     {{ label }}
     {% if render_link %}
       <a class="section-link" href="#section-{{ id }}">&#167;</a>
@@ -70,38 +74,15 @@
   </div>
 {% endmacro %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{% macro editor(id) %}
-  <div id="{{ id }}"></div>
-{% endmacro %}
-
-{% macro slider(id, label, min, max) %}
-  <div class="slider-wrapper center">
-    <input id="{{ id }}" class="slider" type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}">
-    <div class="flex-row">
-      <div id="{{ id }}-l-button" class="flex-content-fixed slider-button">&#11164;</div>
-      <div class="flex-content-dynamic"></div>
-      <div class="flex-content-fixed">{{ label }} <span id="{{ id }}-label"></span></div>
-      <div class="flex-content-dynamic"></div>
-      <div id="{{ id }}-r-button" class="flex-content-fixed slider-button">&#11166;</div>
+{% macro slider(id, pre_label, post_label, min, max) %}
+  <div class="my-3">
+    <div class="d-flex flex-row my-3">
+      <input type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}" class="flex-grow-1 mx-3" id="slider-{{ id }}">
     </div>
+    <div class="d-flex flex-row align-items-center">
+      <a class="button font-weight-bold mx-3 px-5" id="slider-{{ id }}-button-l"><</a>
+      <div class="flex-grow-1 text-center">{{ pre_label }}<span id="slider-{{ id }}-label">{{ min }}</span>{{ post_label }}</div>
+      <a class="button font-weight-bold mx-3 px-5" id="slider-{{ id }}-button-r">></a>
+    </div>  
   </div>
 {% endmacro %}

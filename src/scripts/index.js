@@ -1,5 +1,6 @@
 import * as Editor from './editor.js';
 import * as Overlay from './overlay.js';
+import * as Pyagram from './pyagram.js';
 import * as Split from './split.js';
 
 const SPLIT_PANEL_INPUT_ID = 'split-input-output-split-panel-input';
@@ -18,8 +19,12 @@ Split.split(
         SPLIT_PANEL_OUTPUT_ID,
     ],
     [
-        100, // TODO: Change, perhaps to 0?
-        200, // TODO: Change, perhaps to 0?
+        50,
+        50,
+    ],
+    [
+        15, // TODO: Change, perhaps to 0?
+        15, // TODO: Change, perhaps to 0?
     ],
 );
 
@@ -30,8 +35,12 @@ Split.split(
         SPLIT_PANEL_PRINT_OUTPUT_ID,
     ],
     [
-        100, // TODO: Change, perhaps to 0?
-        200, // TODO: Change, perhaps to 0?
+        80,
+        20,
+    ],
+    [
+        15, // TODO: Change, perhaps to 0?
+        15, // TODO: Change, perhaps to 0?
     ],
 );
 
@@ -48,15 +57,17 @@ drawPyagramButton.onclick = function() {
     if (code === '') {
         alert('First write some code that you want to visualize.');
     } else {
-        Overlay.setBottom(outputOverlay); // TODO: Put this in loadPyagram, after drawing the diagram
-        // $.ajax({
-        //     type: 'GET',
-        //     url: '/draw',
-        //     data: {'code': code},
-        //     contentType: 'application/json',
-        //     dataType: 'json',
-        //     success: loadPyagram,
-        // });
+        $.ajax({
+            type: 'GET',
+            url: '/draw',
+            data: {'code': code},
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(pyagram) {
+                Pyagram.drawPyagram(pyagram);
+                Overlay.setBottom(outputOverlay);
+            },
+        });
     }
 };
 

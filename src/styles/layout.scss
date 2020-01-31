@@ -1,4 +1,4 @@
-$min-page-height: 768px;
+$min-page-height: 768px; // TODO: Maybe stick the editor, slider, and hr in a div and then use JS to set the min-height of the split to the height of said div?
 
 .page-content {
   min-height: $min-page-height;

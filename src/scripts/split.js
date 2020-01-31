@@ -2,11 +2,12 @@ import Split from 'split.js';
 
 const GUTTER_SIZE = 8;
 
-export function split(direction, panelIDs, minSize) {
+export function split(direction, panelIDs, initialSizes, minSizes) {
     Split(
         panelIDs.map(panelID => '#' + panelID),
         {
-            minSize: minSize,
+            sizes: initialSizes,
+            minSize: minSizes,
             gutterSize: GUTTER_SIZE,
             snapOffset: 0,
             direction: direction,

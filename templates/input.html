@@ -1,6 +1,6 @@
 {% import 'utils.html' as utils %}
 
-<div id="editor"></div>
-<div>slider goes here</div>
-<div>hr goes here</div>
+{{ utils.editor('editor') }}
+{{ utils.slider('snapshot-slider', 'Step ', '', 0, 0) }}
+<hr class="my-0">
 <div>scrollable text region goes here</div>

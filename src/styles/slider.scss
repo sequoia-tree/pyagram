@@ -1,0 +1,53 @@
+@import 'clickable';
+
+$slider-height: 10px;
+
+@mixin slider-track() {
+  height: $slider-height;
+  border-radius: $slider-height / 2;
+  background: $secondary-color;
+}
+
+@mixin slider-thumb() {
+  @include clickable();
+  height: 2 * $slider-height;
+  width: 2 * $slider-height;
+  border-radius: 50%;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  @include slider-track();
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    @include slider-thumb();
+  }
+  &::-moz-range-thumb {
+    @include slider-thumb();
+  }
+  &::-moz-focus-outer {
+    border: 0;
+  }
+  &::-ms-track {
+    border-width: ($slider-height / 2 + $accent-width) 0;
+    border-color: transparent;
+    color: transparent;
+  }
+  &::-ms-thumb {
+    @include slider-thumb();
+  }
+  &:focus {
+    outline: none;
+  }
+  &:hover {
+    &::-webkit-slider-thumb {
+      @include active-clickable();
+    }
+    &::-moz-range-thumb {
+      @include active-clickable();
+    }
+    &::-ms-thumb {
+      @include active-clickable();
+    }
+  }
+}

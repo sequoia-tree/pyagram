@@ -12,6 +12,7 @@ $clickable-radius: 23px;
   border: solid $accent-width $primary-color;
   border-radius: $clickable-radius;
   transition: 1.0s;
+  cursor: pointer;
   &:hover, &.active {
     @include active-clickable();
   }
