@@ -1,6 +1,7 @@
 import * as Editor from './editor.js';
 import * as Overlay from './overlay.js';
 import * as Pyagram from './pyagram.js';
+import * as Slider from './slider.js';
 import * as Split from './split.js';
 
 const SPLIT_PANEL_INPUT_ID = 'split-input-output-split-panel-input';
@@ -8,6 +9,10 @@ const SPLIT_PANEL_OUTPUT_ID = 'split-input-output-split-panel-output';
 const SPLIT_PANEL_PYAGRAM_ID = 'split-pyagram-print-output-split-panel-pyagram';
 const SPLIT_PANEL_PRINT_OUTPUT_ID = 'split-pyagram-print-output-split-panel-print-output';
 const EDITOR_ID = 'editor';
+const SLIDER_ID = 'slider-snapshot-slider';
+const SLIDER_LABEL_ID = 'slider-snapshot-slider-label';
+const SLIDER_L_BUTTON_ID = 'slider-snapshot-slider-button-l';
+const SLIDER_R_BUTTON_ID = 'slider-snapshot-slider-button-r';
 const OUTPUT_OVERLAY_ID = 'overlay-output-overlay';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw-pyagram';
 const NUM_LINES = 30;
@@ -45,11 +50,19 @@ Split.split(
 );
 
 var editor = Editor.editor(EDITOR_ID, NUM_LINES);
+var slider = document.getElementById(SLIDER_ID);
+var sliderLabel = document.getElementById(SLIDER_LABEL_ID);
+var sliderButtonL = document.getElementById(SLIDER_L_BUTTON_ID);
+var sliderButtonR = document.getElementById(SLIDER_R_BUTTON_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
 
 editor.session.on('change', function(delta) {
     Overlay.setTop(outputOverlay);
+});
+
+Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
+    Pyagram.drawSnapshot(newValue);
 });
 
 drawPyagramButton.onclick = function() {
@@ -60,11 +73,13 @@ drawPyagramButton.onclick = function() {
         $.ajax({
             type: 'GET',
             url: '/draw',
-            data: {'code': code},
+            data: {
+                'code': code,
+            },
             contentType: 'application/json',
             dataType: 'json',
             success: function(pyagram) {
-                Pyagram.drawPyagram(pyagram);
+                Pyagram.drawPyagram(pyagram, slider);
                 Overlay.setBottom(outputOverlay);
             },
         });

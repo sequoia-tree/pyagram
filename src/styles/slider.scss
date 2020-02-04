@@ -29,8 +29,6 @@ input[type=range] {
     border: 0;
   }
   &::-ms-track {
-    border-width: ($slider-height / 2 + $accent-width) 0;
-    border-color: transparent;
     color: transparent;
   }
   &::-ms-thumb {
