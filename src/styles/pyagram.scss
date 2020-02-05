@@ -1,0 +1,69 @@
+@import 'borders';
+@import 'colors';
+
+@mixin fit-to-text() {
+  width: min-content;
+  white-space: nowrap;
+}
+
+.pyagram-flag {
+  @include fit-to-text();
+  @include border-left();
+  .pyagram-banner {
+    @include border-top();
+    @include border-bottom();
+    @include border-right();
+  }
+}
+
+.pyagram-frame {
+  @include fit-to-text();
+  @include border();
+}
+
+.pyagram-value {
+  @include border();
+}
+
+.pyagram-object {
+  @include fit-to-text();
+}
+
+// TODO: Why is templates.py using <p> tags? Don't. Use <div> instead.
+
+// TODO: Go through templates.py and rewrite.
+
+// TODO: Clean up custom classes and remove those which are unnecessary.
+
+// TODO: REDO THIS STUFF
+
+// TODO: Use Bootstrap classes for margins.
+
+// TODO: There should be padding on the edges of frames / flags and between bindings in frames.
+
+.pyagram-object {
+
+  // @include left-margin(5em);
+  .pyagram-object-body {
+    // font-family: $monospace-font;
+  }
+  span.pyagram-object-body {
+    // @include left-margin(0.5em);
+  }
+}
+
+.pyagram-ordered-collection {
+  // @include box();
+  .pyagram-collection-element {
+    // @include box();
+    padding: 0.5em;
+  }
+}
+
+.curr-element {
+  background: rgba($primary-color, 0.5);
+}
+
+.pyagram-placeholder {
+  color: transparent;
+}

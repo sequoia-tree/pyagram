@@ -1,0 +1,21 @@
+$border-width: 2px;
+
+@mixin border($width: $border-width, $color: black) {
+  border: solid $width $color;
+}
+
+@mixin border-top($width: $border-width, $color: black) {
+  border-top: solid $width $color;
+}
+
+@mixin border-bottom($width: $border-width, $color: black) {
+  border-bottom: solid $width $color;
+}
+
+@mixin border-left($width: $border-width, $color: black) {
+  border-left: solid $width $color;
+}
+
+@mixin border-right($width: $border-width, $color: black) {
+  border-right: solid $width $color;
+}

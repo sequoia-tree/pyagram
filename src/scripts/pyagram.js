@@ -1,12 +1,13 @@
 import * as Slider from './slider.js';
 
-export function drawPyagram(pyagram, slider) {
+var snapshots;
+
+export function drawPyagram(slider, pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
-            // TODO
-            // pgSnapshots = pyagram.data.snapshots;
-            // slider.min = 0;
-            // slider.max = pgSnapshots.length - 1;
+            snapshots = pyagram.data.snapshots;
+            slider.min = 0;
+            slider.max = snapshots.length - 1;
             Slider.reset(slider);
             break;
         case 'syntax_error':
@@ -21,8 +22,10 @@ export function drawPyagram(pyagram, slider) {
     }
 }
 
-export function drawSnapshot(snapshotIndex) {
-    // TODO
+export function drawSnapshot(snapshotIndex, pyagram, printOutput) {
+    pyagram.innerHTML = snapshots[snapshotIndex].state;
+    // TODO: Does the overflow scroll vertically and horizontally?
+    // TODO: Use the other attributes of snapshots[snapshotIndex].
 }
 
 // TODO: Once everything works like it did before winter break, delete the directory pyagram/src/REMOVE-THIS-OLD-STUFF.
@@ -30,29 +33,6 @@ export function drawSnapshot(snapshotIndex) {
 
 
 
-
-// var pgSnapshots;
-
-// function loadPyagram(pyagram) {
-//     switch (pyagram.encoding) {
-//         case 'pyagram':
-//             pgSnapshots = pyagram.data.snapshots;
-//             pgSlider.min = 0;
-//             pgSlider.max = pgSnapshots.length - 1;
-//             slider.resetSlider(pgSlider);
-//             overlay.setBottomOverlay(pgOverlayTop, pgOverlayBottom);
-//             break;
-//         case 'syntax_error':
-//             // TODO
-//             break;
-//         case 'pyagram_error':
-//             // TODO
-//             break;
-//         default:
-//             // TODO
-//             break;
-//     }
-// }
 
 // function loadSnapshot(i) {
 //     pyagramPane.innerHTML = pgSnapshots[i].state;

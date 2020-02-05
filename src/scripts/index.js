@@ -15,6 +15,8 @@ const SLIDER_L_BUTTON_ID = 'slider-snapshot-slider-button-l';
 const SLIDER_R_BUTTON_ID = 'slider-snapshot-slider-button-r';
 const OUTPUT_OVERLAY_ID = 'overlay-output-overlay';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw-pyagram';
+const PYAGRAM_ID = 'pyagram';
+const PRINT_OUTPUT_ID = 'print-output';
 const NUM_LINES = 30;
 
 Split.split(
@@ -56,13 +58,15 @@ var sliderButtonL = document.getElementById(SLIDER_L_BUTTON_ID);
 var sliderButtonR = document.getElementById(SLIDER_R_BUTTON_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
+var pyagram = document.getElementById(PYAGRAM_ID);
+var printOutput = document.getElementById(PRINT_OUTPUT_ID);
 
 editor.session.on('change', function(delta) {
     Overlay.setTop(outputOverlay);
 });
 
 Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
-    Pyagram.drawSnapshot(newValue);
+    Pyagram.drawSnapshot(newValue, pyagram, printOutput);
 });
 
 drawPyagramButton.onclick = function() {
@@ -79,7 +83,7 @@ drawPyagramButton.onclick = function() {
             contentType: 'application/json',
             dataType: 'json',
             success: function(pyagram) {
-                Pyagram.drawPyagram(pyagram, slider);
+                Pyagram.drawPyagram(slider, pyagram);
                 Overlay.setBottom(outputOverlay);
             },
         });
