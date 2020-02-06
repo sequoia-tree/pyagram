@@ -48,7 +48,3 @@
 .pyagram-placeholder {
   color: transparent;
 }
-
-// TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
-
-// TODO: There should be padding on the edges of frames / flags and between bindings in frames.

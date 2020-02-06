@@ -25,6 +25,7 @@ export function drawPyagram(slider, pyagram) {
 export function drawSnapshot(snapshotIndex, pyagram, printOutput) {
     pyagram.innerHTML = snapshots[snapshotIndex].state;
     // TODO: Use the other attributes of snapshots[snapshotIndex].
+    // TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
 }
 
 // TODO: Once everything works like it did before winter break, delete the directory pyagram/src/REMOVE-THIS-OLD-STUFF.
