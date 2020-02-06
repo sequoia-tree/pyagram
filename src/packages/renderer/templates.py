@@ -49,7 +49,7 @@ ELEMENT_TEMPLATE = """
 """
 
 FLAG_TEMPLATE = """
-<div class="pyagram-flag ml-3 my-3">
+<div class="pyagram-flag m-3">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
     <table class="text-center font-family-monospace">
       <tr>
@@ -100,7 +100,7 @@ FLAG_TEMPLATE = """
 """
 
 FRAME_TEMPLATE = """
-<div class="pyagram-frame ml-3 my-3 {% if is_curr_element %} curr-element {% endif %}">
+<div class="pyagram-frame m-3 {% if is_curr_element %} curr-element {% endif %}">
   <div class="pyagram-frame-name">
     {{ name }} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
   </div>
