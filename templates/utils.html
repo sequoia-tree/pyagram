@@ -14,10 +14,24 @@
   </div>
 {% endmacro %}
 
-{% macro overlay(id, top, bottom, center_vertically=True) %}
+{% macro flex_scroll(direction, pre_contents, post_contents, scroll_content, scroll_id=None) %}
+  <div class="d-flex {% if direction == 'vertical' %} flex-column {% elif direction == 'horizontal' %} flex-row {% endif %} h-100 w-100">
+    {% for pre_content in pre_contents %}
+      {{ decode_content(*pre_content, **kwargs) }}
+    {% endfor %}
+    <div class="flex-grow-1 flex-scroll-{{ direction }}" {% if scroll_id is not none %} id="{{ scroll_id }}" {% endif %}>
+      {{ decode_content(*scroll_content, **kwargs) }}
+    </div>
+    {% for post_content in post_contents %}
+      {{ decode_content(*post_content, **kwargs) }}
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro overlay(id, top, bottom, start_active=False, center_vertically=True) %}
   <div class="overlay-wrapper d-inline-block position-relative h-100 w-100">
     {{ decode_content('{}-bottom'.format(id), *bottom, **kwargs) }}
-    <div class="overlay position-absolute h-100 w-100 active" id="overlay-{{ id }}">
+    <div class="overlay position-absolute h-100 w-100 {% if start_active %} active {% endif %}" id="overlay-{{ id }}">
       {% if center_vertically %}
         <div class="d-flex flex-column justify-content-center h-100 w-100">
       {% endif %}

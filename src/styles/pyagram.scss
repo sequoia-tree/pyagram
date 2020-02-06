@@ -29,6 +29,8 @@
   @include fit-to-text();
 }
 
+// TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
+
 // TODO: Why is templates.py using <p> tags? Don't. Use <div> instead.
 
 // TODO: Go through templates.py and rewrite.

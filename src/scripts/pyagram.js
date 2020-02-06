@@ -24,7 +24,6 @@ export function drawPyagram(slider, pyagram) {
 
 export function drawSnapshot(snapshotIndex, pyagram, printOutput) {
     pyagram.innerHTML = snapshots[snapshotIndex].state;
-    // TODO: Does the overflow scroll vertically and horizontally?
     // TODO: Use the other attributes of snapshots[snapshotIndex].
 }
 

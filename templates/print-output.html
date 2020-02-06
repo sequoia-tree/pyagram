@@ -1,7 +1,21 @@
 {% import 'utils.html' as utils %}
 
-<div class="d-flex flex-column h-100 w-100">
-  {{ utils.section(3, 'Print Output', False, True) }}
-  <hr class="mx-0 my-0">
-  <div class="flex-grow-1" id="print-output"></div>
-</div>
+{{ utils.flex_scroll(
+  'vertical',
+  [
+      (None, 'html', utils.section(3, 'Print Output', False, True)),
+      (None, 'html', '<hr class="m-0">'),
+  ],
+  [],
+  (
+      None,
+      'html',
+      utils.flex_scroll(
+          'horizontal',
+          [],
+          [],
+          (None, 'html', ''),
+          'print-output',
+      ),
+  ),
+) }}
