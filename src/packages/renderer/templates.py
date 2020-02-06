@@ -11,7 +11,6 @@ STATE_TEMPLATE = """
     </td>
   </tr>
 </table>
-<!-- TODO: SVG stuff goes here. -->
 """
 
 # TODO: This is how you *used to* do SVG stuff.
@@ -50,7 +49,7 @@ ELEMENT_TEMPLATE = """
 """
 
 FLAG_TEMPLATE = """
-<div class="pyagram-flag m-3">
+<div class="pyagram-flag ml-3 my-3">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
     <table class="text-center font-family-monospace">
       <tr>
@@ -93,7 +92,7 @@ FLAG_TEMPLATE = """
   </div>
   {{ get_element_html(this) }}
   {% if frame is none %}
-    <p class="pyagram-placeholder font-family-monospace">...</p>
+    <div class="pyagram-placeholder font-family-monospace">...</div>
   {% else %}
     {{ get_frame_html(frame) }}
   {% endif %}
@@ -101,10 +100,10 @@ FLAG_TEMPLATE = """
 """
 
 FRAME_TEMPLATE = """
-<div class="pyagram-frame m-3 {% if is_curr_element %} curr-element {% endif %}">
-  <p>
+<div class="pyagram-frame ml-3 my-3 {% if is_curr_element %} curr-element {% endif %}">
+  <div class="pyagram-frame-name">
     {{ name }} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
-  </p>
+  </div>
   <table class="ml-auto mr-0 font-family-monospace">
     {% for key, value in bindings.items() %}
       <tr>
@@ -141,8 +140,13 @@ OBJECT_TEMPLATE = """
 
 FUNCTION_TEMPLATE = """
 function
-<span class="pyagram-object-body">
-  {% if lambda_id is none %}{{ name }}{% else %}{{ get_lambda_html(lambda_id) }}{% endif %}(
+<span class="ml-2 font-family-monospace">
+  {% if lambda_id is none %}
+    {{ name }}
+  {% else %}
+    {{ get_lambda_html(lambda_id) }}
+  {% endif %}
+  (
   {% for i in range(parameters|length) %}
     {% set parameter = parameters[i] %}
     {{ get_parameter_html(parameter) }}
@@ -157,7 +161,7 @@ function
 
 BUILTIN_FUNCTION_TEMPLATE = """
 function
-<span class="pyagram-object-body">
+<span class="ml-2 font-family-monospace">
   {{ name }}(...)
 </span>
 """
@@ -166,15 +170,17 @@ LAMBDA_TEMPLATE = """
 &#955;<sub>{{ lineno }}.{{ number }}</sub>
 """
 
+# TODO: Put the {{ type }} on the same line as the boxes. Can you put the <table> in a <span>? Or make a <table> with one <tr> which contains two <td>s: the {{ type }}, and the boxes' <table>?
+# TODO: px-2, or p-3?
 ORDERED_COLLECTION_TEMPLATE = """
 {{ type }}
-<table class="pyagram-object-body pyagram-ordered-collection" rules="cols">
+<table class="pyagram-ordered-collection font-family-monospace" rules="cols">
   <tr>
     {% if elements|length == 0 %}
       TODO
     {% else %}
       {% for element in elements %}
-        <td class="pyagram-collection-element">{{ get_reference_html(element) }}</td>
+        <td class="pyagram-collection-element px-2">{{ get_reference_html(element) }}</td>
       {% endfor %}
     {% endif %}
   </tr>
@@ -202,7 +208,7 @@ TODO
 """
 
 OBJECT_REPR_TEMPLATE = """
-<div class="pyagram-object-body">
+<div class="font-family-monospace">
   {{ repr }}
 </div>
 """
@@ -214,12 +220,13 @@ PARENT_FRAME_TEMPLATE = """
 PARAMETER_TEMPLATE = """
 {{ name }}
 {% if default is not none %}
-  =<span class="box">{{ get_reference_html(default) }}</span>
+  =<span class="pyagram-value">{{ get_reference_html(default) }}</span>
 {% endif %}
 """
 
+# TODO: Figure out how you plan to do the print output.
 PRINT_TEMPLATE = """
-<p class="font-family-monospace show-white-space">
+<div class="font-family-monospace">
   {{ print_output }}
-</p>
+</div>
 """

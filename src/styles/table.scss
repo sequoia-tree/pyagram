@@ -1,0 +1,6 @@
+$table-spacing: 2px;
+
+table {
+  border-collapse: separate;
+  border-spacing: $table-spacing;
+}

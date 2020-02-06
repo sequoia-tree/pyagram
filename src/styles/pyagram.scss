@@ -1,5 +1,6 @@
 @import 'borders';
 @import 'colors';
+@import 'table';
 
 @mixin fit-to-text() {
   width: min-content;
@@ -9,7 +10,7 @@
 .pyagram-flag {
   @include fit-to-text();
   @include border-left();
-  .pyagram-banner {
+  & > .pyagram-banner {
     @include border-top();
     @include border-bottom();
     @include border-right();
@@ -19,6 +20,10 @@
 .pyagram-frame {
   @include fit-to-text();
   @include border();
+  & > .pyagram-frame-name {
+    padding-left: $table-spacing;
+    padding-right: $table-spacing;
+  }
 }
 
 .pyagram-value {
@@ -29,36 +34,10 @@
   @include fit-to-text();
 }
 
-// TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
-
-// TODO: Why is templates.py using <p> tags? Don't. Use <div> instead.
-
-// TODO: Go through templates.py and rewrite.
-
-// TODO: Clean up custom classes and remove those which are unnecessary.
-
-// TODO: REDO THIS STUFF
-
-// TODO: Use Bootstrap classes for margins.
-
-// TODO: There should be padding on the edges of frames / flags and between bindings in frames.
-
-.pyagram-object {
-
-  // @include left-margin(5em);
-  .pyagram-object-body {
-    // font-family: $monospace-font;
-  }
-  span.pyagram-object-body {
-    // @include left-margin(0.5em);
-  }
-}
-
 .pyagram-ordered-collection {
-  // @include box();
+  @include border();
   .pyagram-collection-element {
-    // @include box();
-    padding: 0.5em;
+    @include border();
   }
 }
 
@@ -69,3 +48,7 @@
 .pyagram-placeholder {
   color: transparent;
 }
+
+// TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
+
+// TODO: There should be padding on the edges of frames / flags and between bindings in frames.
