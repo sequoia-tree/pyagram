@@ -1,5 +1,5 @@
 STATE_TEMPLATE = """
-<table>
+<table id="state-table">
   <tr>
     <td valign="top">
       {{ get_frame_html(global_frame) }}
@@ -12,35 +12,19 @@ STATE_TEMPLATE = """
   </tr>
 </table>
 """
-
-# TODO: This is how you *used to* do SVG stuff.
-# STATE_TEMPLATE = """
-# <div class="overlap-container">
-#   <table id="state-table" class="overlap">
-#     <tr>
-#       <td valign="top">
-#         {{ get_frame_html(global_frame) }}
-#       </td>
-#       <td valign="top">
-#         {% for object in memory_state %}
-#           {{ get_object_html(object) }}
-#         {% endfor %}
-#       </td>
-#     </tr>
-#   </table>
-#   <svg id="svg-canvas" class="overlap" xmlns="http://www.w3.org/2000/svg">
-#     <defs>
-#       <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
-#         <circle cx="5" cy="5" r="1.5" fill="black"/>
-#       </marker>
-#       <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-#         <path d="M0,0 L10,5 0,10 Z"/>
-#       </marker>
-#     </defs>
-#     <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"></g>
-#   </svg>
-# </div>
-# """
+# TODO: Display pointers using the same approach as PyTutor. Then you don't have to have a separate SVG layer overlapping your actual diagram, which is both cleaner and easier. Look into jsPlumb.
+# TODO: This is old, but may still be useful for something ...
+# <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
+#   <defs>
+#     <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
+#       <circle cx="5" cy="5" r="1.5" fill="black"/>
+#     </marker>
+#     <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
+#       <path d="M0,0 L10,5 0,10 Z"/>
+#     </marker>
+#   </defs>
+#   <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
+# </svg>
 
 ELEMENT_TEMPLATE = """
 {% for flag in flags %}
