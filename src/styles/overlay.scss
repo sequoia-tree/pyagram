@@ -1,7 +1,9 @@
+$overlay-opacity: 1.0;
+
 .overlay-wrapper > .overlay {
   top: 0;
   left: 0;
-  background: rgba(white, 0.9);
+  background: rgba(white, $overlay-opacity);
   &:not(.active) {
     display: none;
   }
