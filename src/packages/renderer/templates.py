@@ -25,7 +25,7 @@ STATE_TEMPLATE = """
   </svg>
 </div>
 """
-# TODO: There seems to be less spacing between the state table and the objects when there's a really long variable name, for some reason.
+# TODO: There seems to be less spacing between the state table and the objects when there's a really long variable name, for some reason ...
 
 ELEMENT_TEMPLATE = """
 {% for flag in flags %}
@@ -153,17 +153,14 @@ function
 </span>
 """
 
-# TODO: Only specify "no. {{ number }}" if there's more than one lambda function on that line.
+# TODO: Only specify the {{ number }} if there's more than one lambda function on that line.
 LAMBDA_TEMPLATE = """
-&#955;<sub>line {{ lineno }}, no. {{ number }}</sub>
+&#955;<sub>{{ lineno }}#{{ number }}</sub>
 """
 
-# TODO: Put the {{ type }} on the same line as the boxes. Can you put the <table> in a <span>? Or make a <table> with one <tr> which contains two <td>s: the {{ type }}, and the boxes' <table>?
-# TODO: px-2, or p-3?
-# TODO: It seems there's a weird double-border thing happening here. It looks fancy -- which is to say, overcomplicated.
 ORDERED_COLLECTION_TEMPLATE = """
 {{ type }}
-<table class="pyagram-ordered-collection font-family-monospace" rules="cols">
+<table class="pyagram-ordered-collection ml-2 font-family-monospace" rules="cols">
   <tr>
     {% if elements|length == 0 %}
       TODO
