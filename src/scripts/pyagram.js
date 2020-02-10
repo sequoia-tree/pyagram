@@ -3,6 +3,8 @@ import * as Slider from './slider.js';
 const POINTERS_SVG_GROUP_ID = 'pointers';
 const OBJECT_CLASS_NAME = 'pyagram-object';
 const POINTER_CLASS_NAME = 'pyagram-pointer';
+const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
+const REFERENCE_CLASS_NAME = 'pyagram-reference';
 
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
@@ -46,6 +48,9 @@ export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, 
 function drawSVGCanvas(stateTable, SVGCanvas) {
     SVGCanvas.css('height', stateTable.height());
     SVGCanvas.css('width', stateTable.width());
+    $(
+        `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
+    ).removeClass('text-left').addClass('text-center');
 }
 
 function drawPointers(SVGCanvas) {

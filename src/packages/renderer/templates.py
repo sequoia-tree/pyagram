@@ -26,7 +26,6 @@ STATE_TEMPLATE = """
 </div>
 """
 # TODO: There seems to be less spacing between the state table and the objects when there's a really long variable name, for some reason.
-# TODO: Since the SVG element overlaps the pyagram element, you can't have clickable things (like URLs) in the pyagram element. Change your pyagram "link" encoding to a "highlighted" encoding.
 
 ELEMENT_TEMPLATE = """
 {% for flag in flags %}
@@ -94,13 +93,13 @@ FRAME_TEMPLATE = """
     {% for key, value in bindings.items() %}
       <tr>
         <td class="text-right">{{ key }}</td>
-        <td class="pyagram-value text-left">{{ get_reference_html(value) }}</td>
+        <td class="pyagram-value pyagram-frame-value text-left">{{ get_reference_html(value) }}</td>
       </tr>
     {% endfor %}
     {% if return_value is not none %}
       <tr>
         <td class="text-right font-family-sans-serif">Return value</td>
-        <td class="pyagram-value text-left">{{ get_reference_html(return_value) }}</td>
+        <td class="pyagram-value pyagram-frame-value text-left">{{ get_reference_html(return_value) }}</td>
       </tr>
     {% endif %}
   </table>
@@ -108,12 +107,14 @@ FRAME_TEMPLATE = """
 {{ get_element_html(this) }}
 """
 
-LINK_TEMPLATE = """
-<a href="{{ link }}">{{ text }}</a>
+META_REFERENCE_TEMPLATE = """
+<span class="pyagram-{{ cls }}">
+  {{ text }}
+</span>
 """
 
 POINTER_TEMPLATE = """
-<span class="pyagram-placeholder reference-{{ id }}">
+<span class="pyagram-placeholder pyagram-reference reference-{{ id }}">
   -
 </span>
 """
@@ -159,6 +160,7 @@ LAMBDA_TEMPLATE = """
 
 # TODO: Put the {{ type }} on the same line as the boxes. Can you put the <table> in a <span>? Or make a <table> with one <tr> which contains two <td>s: the {{ type }}, and the boxes' <table>?
 # TODO: px-2, or p-3?
+# TODO: It seems there's a weird double-border thing happening here. It looks fancy -- which is to say, overcomplicated.
 ORDERED_COLLECTION_TEMPLATE = """
 {{ type }}
 <table class="pyagram-ordered-collection font-family-monospace" rules="cols">

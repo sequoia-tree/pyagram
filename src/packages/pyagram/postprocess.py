@@ -1,6 +1,9 @@
 from . import encode
 from . import utils
 
+UNKNOWN_VALUE_CLASS = 'unknown'
+UNKNOWN_VALUE_ENCODING = '<?>'
+
 class Postprocessor:
     """
     """
@@ -116,7 +119,7 @@ class Postprocessor:
                             binding_id = banner_bindings[binding_index]
                             is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                             if is_unsupported_binding:
-                                binding = self.state.encoder.reference_snapshot(None, None) # TODO: Add an issues to the Github Issues page for this too.
+                                binding = self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)
                             else:
                                 if isinstance(binding_id, str):
 
@@ -146,7 +149,7 @@ class Postprocessor:
                         if type(binding) is int: # This means the binding refers to an object in memory.
                             self.enforce_early_debut(binding, snapshot_index)
                 else:
-                    bindings = [self.state.encoder.reference_snapshot(None, None)]
+                    bindings = [self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
                 banner.append([code, bindings])
         flag_snapshot['banner'] = banner
 

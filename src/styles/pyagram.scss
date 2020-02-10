@@ -30,6 +30,10 @@
   @include border();
 }
 
+.pyagram-unknown {
+  color: red;
+}
+
 .pyagram-object {
   @include fit-to-text();
 }

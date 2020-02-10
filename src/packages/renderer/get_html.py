@@ -36,12 +36,10 @@ def get_frame_html(frame_snapshot):
     return get_component_html(templates.FRAME_TEMPLATE, frame_snapshot)
 
 def get_reference_html(reference_snapshot):
-    if isinstance(reference_snapshot, list):
-        assert len(reference_snapshot) == 2
+    if isinstance(reference_snapshot, dict):
         return get_html(
-            templates.LINK_TEMPLATE,
-            text=reference_snapshot[0],
-            link=reference_snapshot[1],
+            templates.META_REFERENCE_TEMPLATE,
+            **reference_snapshot,
         )
     elif isinstance(reference_snapshot, str):
         return reference_snapshot

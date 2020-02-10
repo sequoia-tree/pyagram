@@ -3,9 +3,6 @@ import inspect
 from . import pyagram_types
 from . import utils
 
-UNKNOWN_REFERENCE_TEXT = '<?>'
-GITHUB_ISSUES_URL = 'https://github.com/sequoia-tree/pyagram/issues'
-
 class Encoder:
     """
     """
@@ -13,7 +10,7 @@ class Encoder:
     def __init__(self, num_lines):
         self.num_lines = num_lines
 
-    def reference_snapshot(self, object, memory_state):
+    def reference_snapshot(self, object, memory_state, **kwargs):
         """
         <summary> # snapshot a reference to a value (may be a primitive or referent type)
 
@@ -21,8 +18,9 @@ class Encoder:
         :param memory_state:
         :return:
         """
-        if object is None and memory_state is None: # TODO: If this is the only place memory_state gets used in this function, then you should replace the memory_state param with simply a boolean param is_unknown=False or something like that. Or if you like, you could do something that's more extensible to other URLs just in case you ever want to make use of that functionality.
-            return [UNKNOWN_REFERENCE_TEXT, GITHUB_ISSUES_URL] # hyperlink: [text, URL]
+        # TODO: memory_state is not used in this function, so it shouldn't be a param.
+        if 0 < len(kwargs):
+            return kwargs
         elif pyagram_types.is_primitive_type(object):
             return repr(object) if isinstance(object, str) else str(object)
         else:
