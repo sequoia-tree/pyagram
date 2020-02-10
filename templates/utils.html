@@ -74,7 +74,7 @@
 
 {% macro button(id, label, href=None, big=False, reverse=False) %}
   <div class="d-flex flex-row justify-content-center my-3">
-    <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
+    <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" {% if big %} style="border-radius: 100vh;" {% endif %} id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
   </div>
 {% endmacro %}
 

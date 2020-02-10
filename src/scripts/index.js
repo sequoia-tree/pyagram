@@ -17,6 +17,8 @@ const OUTPUT_OVERLAY_ID = 'overlay-output-overlay';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw-pyagram';
 const PYAGRAM_ID = 'pyagram';
 const PRINT_OUTPUT_ID = 'print-output';
+const PYAGRAM_STATE_TABLE_ID = 'pyagram-state-table';
+const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
 const NUM_LINES = 30;
 
 Split.split(
@@ -66,7 +68,7 @@ editor.session.on('change', function(delta) {
 });
 
 Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
-    Pyagram.drawSnapshot(newValue, pyagram, printOutput);
+    Pyagram.drawSnapshot(newValue, pyagram, printOutput, PYAGRAM_STATE_TABLE_ID, PYAGRAM_SVG_CANVAS_ID);
 });
 
 drawPyagramButton.onclick = function() {

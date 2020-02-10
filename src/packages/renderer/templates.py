@@ -1,30 +1,32 @@
 STATE_TEMPLATE = """
-<table id="state-table">
-  <tr>
-    <td valign="top">
-      {{ get_frame_html(global_frame) }}
-    </td>
-    <td valign="top">
-      {% for object in memory_state %}
-        {{ get_object_html(object) }}
-      {% endfor %}
-    </td>
-  </tr>
-</table>
+<div class="overlap-wrapper">
+  <table class="overlap" id="pyagram-state-table">
+    <tr>
+      <td valign="top">
+        {{ get_frame_html(global_frame) }}
+      </td>
+      <td valign="top">
+        {% for object in memory_state %}
+          {{ get_object_html(object) }}
+        {% endfor %}
+      </td>
+    </tr>
+  </table>
+  <svg class="overlap" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
+        <circle cx="5" cy="5" r="1.5" fill="black"/>
+      </marker>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
+        <path d="M0,0 L10,5 0,10 Z"/>
+      </marker>
+    </defs>
+    <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>
 """
-# TODO: Display pointers using the same approach as PyTutor. Then you don't have to have a separate SVG layer overlapping your actual diagram, which is both cleaner and easier. Look into jsPlumb.
-# TODO: This is old, but may still be useful for something ...
-# <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
-#   <defs>
-#     <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
-#       <circle cx="5" cy="5" r="1.5" fill="black"/>
-#     </marker>
-#     <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-#       <path d="M0,0 L10,5 0,10 Z"/>
-#     </marker>
-#   </defs>
-#   <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
-# </svg>
+# TODO: There seems to be less spacing between the state table and the objects when there's a really long variable name, for some reason.
+# TODO: Since the SVG element overlaps the pyagram element, you can't have clickable things (like URLs) in the pyagram element. Change your pyagram "link" encoding to a "highlighted" encoding.
 
 ELEMENT_TEMPLATE = """
 {% for flag in flags %}
@@ -150,8 +152,9 @@ function
 </span>
 """
 
+# TODO: Only specify "no. {{ number }}" if there's more than one lambda function on that line.
 LAMBDA_TEMPLATE = """
-&#955;<sub>{{ lineno }}.{{ number }}</sub>
+&#955;<sub>line {{ lineno }}, no. {{ number }}</sub>
 """
 
 # TODO: Put the {{ type }} on the same line as the boxes. Can you put the <table> in a <span>? Or make a <table> with one <tr> which contains two <td>s: the {{ type }}, and the boxes' <table>?
