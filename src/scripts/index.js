@@ -19,6 +19,7 @@ const PYAGRAM_ID = 'pyagram';
 const PRINT_OUTPUT_ID = 'print-output';
 const PYAGRAM_STATE_TABLE_ID = 'pyagram-state-table';
 const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
+const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
 const NUM_LINES = 30;
 
 Split.split(
@@ -76,6 +77,10 @@ drawPyagramButton.onclick = function() {
     if (code === '') {
         alert('First write some code that you want to visualize.');
     } else {
+        var drawPyagramButtonEffect = drawPyagramButton.onclick;
+        drawPyagramButton.onclick = function() {};
+        var drawPyagramButtonText = drawPyagramButton.innerHTML;
+        drawPyagramButton.innerHTML = DRAW_PYAGRAM_BUTTON_WAIT_TEXT;
         $.ajax({
             type: 'GET',
             url: '/draw',
@@ -87,6 +92,8 @@ drawPyagramButton.onclick = function() {
             success: function(pyagram) {
                 Pyagram.drawPyagram(slider, pyagram);
                 Overlay.setBottom(outputOverlay);
+                drawPyagramButton.onclick = drawPyagramButtonEffect;
+                drawPyagramButton.innerHTML = drawPyagramButtonText;
             },
         });
     }
