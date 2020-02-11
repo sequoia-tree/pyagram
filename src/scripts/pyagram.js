@@ -37,7 +37,6 @@ export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, 
     pyagram.innerHTML = snapshots[snapshotIndex].state;
     // TODO: Use the printOutput.
     // TODO: Use the other attributes of snapshots[snapshotIndex].
-    // TODO: Once everything works like it did before winter break, delete pyagram/src/REMOVE-THIS-OLD-STUFF.
     // TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
     var stateTable = $('#'.concat(stateTableID));
     var SVGCanvas = $('#'.concat(SVGCanvasID));

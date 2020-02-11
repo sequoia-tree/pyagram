@@ -11,6 +11,7 @@ class Preprocessor:
     def __init__(self, code, num_lines):
         self.code = ast.parse(code)
         self.num_lines = num_lines
+        self.lambdas_by_line = None
     
     def preprocess(self):
         self.log_lambdas()
@@ -25,9 +26,9 @@ class Preprocessor:
     def log_lambdas(self):
         lambda_logger = LambdaLogger()
         lambda_logger.visit(self.code)
-        lambdas_by_line = lambda_logger.lambdas_by_line
-        for lineno in lambdas_by_line:
-            sorted_lambdas = sorted(lambdas_by_line[lineno], key=lambda node: node.col_offset)
+        self.lambdas_by_line = lambda_logger.lambdas_by_line
+        for lineno in self.lambdas_by_line:
+            sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
             for i in range(len(sorted_lambdas)):
                 node = sorted_lambdas[i]
                 node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)

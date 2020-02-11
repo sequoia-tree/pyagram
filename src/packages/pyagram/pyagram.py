@@ -31,7 +31,7 @@ class Pyagram:
                 }
                 self.encoding = 'syntax_error'
             else:
-                encoder = encode.Encoder(num_lines)
+                encoder = encode.Encoder(num_lines, preprocessor.lambdas_by_line)
                 tracer = trace.Tracer(encoder)
                 try:
                     tracer.run(

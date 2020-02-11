@@ -152,9 +152,14 @@ function
 </span>
 """
 
-# TODO: Only specify the {{ number }} if there's more than one lambda function on that line.
 LAMBDA_TEMPLATE = """
-&#955;<sub>{{ lineno }}#{{ number }}</sub>
+&#955;
+<sub>
+  {{ lineno }}
+  {% if not single %}
+    #{{ number }}
+  {% endif %}
+</sub>
 """
 
 ORDERED_COLLECTION_TEMPLATE = """

@@ -7,8 +7,9 @@ class Encoder:
     """
     """
 
-    def __init__(self, num_lines):
+    def __init__(self, num_lines, lambdas_by_line):
         self.num_lines = num_lines
+        self.lambdas_by_line = lambdas_by_line
 
     def reference_snapshot(self, object, memory_state, **kwargs):
         """
@@ -60,6 +61,7 @@ class Encoder:
                     {
                         'lineno': lineno,
                         'number': number,
+                        'single': len(self.lambdas_by_line[lineno]) <= 1,
                     }
                     if is_lambda
                     else None,
