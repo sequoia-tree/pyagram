@@ -34,10 +34,13 @@ export function drawPyagram(slider, pyagram) {
 }
 
 export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, SVGCanvasID) {
-    pyagram.innerHTML = snapshots[snapshotIndex].state;
-    // TODO: Use the printOutput.
-    // TODO: Use the other attributes of snapshots[snapshotIndex].
-    // TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
+    var snapshot = snapshots[snapshotIndex];
+    pyagram.innerHTML = snapshot.state;
+    printOutput.innerHTML = snapshot.print_output;
+    if (snapshot.exception !== null) {
+        printOutput.innerHTML += snapshot.exception;
+    }
+    // TODO: Use snapshot.curr_line_no.
     var stateTable = $('#'.concat(stateTableID));
     var SVGCanvas = $('#'.concat(SVGCanvasID));
     drawSVGCanvas(stateTable, SVGCanvas);

@@ -216,7 +216,9 @@ PARAMETER_TEMPLATE = """
 
 # TODO: Figure out how you plan to do the print output.
 PRINT_TEMPLATE = """
-<div class="font-family-monospace">
-  {{ print_output }}
-</div>
+{% for line in print_output %}
+  <div class="print-output {% if is_exception %} pyagram-exception {% endif %} font-family-monospace">
+    {{ line }}
+  </div>
+{% endfor %}
 """

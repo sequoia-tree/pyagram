@@ -90,15 +90,19 @@ def get_parent_frame_html(parent_frame_name):
         parent_frame_name=parent_frame_name,
     )
 
-def get_print_html(print_output):
+def get_print_html(print_output, **kwargs):
     return get_html(
         templates.PRINT_TEMPLATE,
         print_output=print_output,
+        **kwargs,
     )
 
+def get_exception_html(type, value, lineno):
+    return get_print_html([f'{type}: {value}'], is_exception=True)
+
+# TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
+
 # TODO: When the 'Draw Pyagram' overlay shows up again, set the slider back to 0 and reset its min and max values.
-
-
 
 # TODO: Right now you have two columns in the STATE_TEMPLATE. Perhaps you should have three: one for the flags and frames, one for object frames, and one for other objects (functions, lists, etc.)?
 

@@ -28,12 +28,12 @@ Split.split(
         SPLIT_PANEL_OUTPUT_ID,
     ],
     [
-        50,
-        50,
+        35,
+        65,
     ],
     [
-        15, // TODO: Change, perhaps to 0?
-        15, // TODO: Change, perhaps to 0?
+        0,
+        0,
     ],
 );
 
@@ -48,8 +48,8 @@ Split.split(
         20,
     ],
     [
-        15, // TODO: Change, perhaps to 0?
-        15, // TODO: Change, perhaps to 0?
+        0,
+        0,
     ],
 );
 

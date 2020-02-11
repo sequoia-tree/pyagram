@@ -1,3 +1,5 @@
+import copy
+
 from . import get_html
 
 def render_components(pyagram):
@@ -9,18 +11,23 @@ def render_components(pyagram):
     """
     snapshots = pyagram.pop('snapshots')
     exception = pyagram.pop('exception')
+    has_exception = exception is not None
+    if has_exception:
+        exception_snapshot = copy.deepcopy(snapshots[-1])
+        snapshots.append(exception_snapshot)
     snapshots = [
         {
             'state': get_html.get_state_html(
                 snapshot['program_state']['global_frame'],
                 snapshot['memory_state'],
             ),
+            'exception': None,
             'print_output': get_html.get_print_html(snapshot['print_output']),
-            'curr_line_no': snapshot['program_state']['curr_line_no'], # TODO: Use this information.
+            'curr_line_no': snapshot['program_state']['curr_line_no'],
         }
         for snapshot in snapshots
     ]
-    if exception is not None:
-        # TODO: Append a new snapshot which is identical except for the addition of a RED error message to the print_output.
-        pass
+    if has_exception:
+        exception_snapshot = snapshots[-1]
+        exception_snapshot['exception'] = get_html.get_exception_html(**exception)
     pyagram['snapshots'] = snapshots

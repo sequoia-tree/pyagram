@@ -19,7 +19,7 @@ class Pyagram:
 
     def __init__(self, code, *, debug):
         try:
-            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior the same as not specifying the global_bindings?
+            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior of Bdb.run the same as not specifying the global_bindings?
             try:
                 preprocessor = preprocess.Preprocessor(code, num_lines)
                 preprocessor.preprocess()

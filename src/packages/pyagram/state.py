@@ -46,7 +46,7 @@ class State:
         snapshot = {
             'program_state': self.program_state.snapshot(),
             'memory_state': self.memory_state.snapshot(),
-            'print_output': self.print_output.getvalue(),
+            'print_output': self.print_output.getvalue().split('\n'),
         }
         self.snapshots.append(snapshot)
 
