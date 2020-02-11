@@ -1,6 +1,7 @@
 .overlap-wrapper {
   display: grid;
   & > .overlap {
+    display: block;
     grid-row-start: 1;
     grid-column-start: 1;
   }

@@ -41,7 +41,6 @@
 .pyagram-ordered-collection {
   @include border();
   display: inline-table;
-  border-collapse: collapse;
   .pyagram-collection-element {
     @include border();
   }

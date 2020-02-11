@@ -1,11 +1,11 @@
 STATE_TEMPLATE = """
 <div class="overlap-wrapper">
-  <table class="overlap" id="pyagram-state-table">
+  <table class="overlap border-collapse" id="pyagram-state-table">
     <tr>
       <td valign="top">
         {{ get_frame_html(global_frame) }}
       </td>
-      <td valign="top">
+      <td valign="top" class="pl-5">
         {% for object in memory_state %}
           {{ get_object_html(object) }}
         {% endfor %}
@@ -25,7 +25,6 @@ STATE_TEMPLATE = """
   </svg>
 </div>
 """
-# TODO: There seems to be less spacing between the state table and the objects when there's a really long variable name, for some reason ...
 
 ELEMENT_TEMPLATE = """
 {% for flag in flags %}
@@ -160,7 +159,7 @@ LAMBDA_TEMPLATE = """
 
 ORDERED_COLLECTION_TEMPLATE = """
 {{ type }}
-<table class="pyagram-ordered-collection ml-2 font-family-monospace" rules="cols">
+<table class="pyagram-ordered-collection border-collapse ml-2 font-family-monospace" rules="cols">
   <tr>
     {% if elements|length == 0 %}
       TODO
