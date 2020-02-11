@@ -1,10 +1,15 @@
-$overlay-opacity: 1.0;
+$overlay-opacity: 0.9;
 
 .overlay-wrapper > .overlay {
   top: 0;
   left: 0;
-  background: rgba(white, $overlay-opacity);
-  &:not(.active) {
+  &.active-init {
+    background: white;
+  }
+  &.active {
+    background: rgba(white, $overlay-opacity);
+  }
+  &:not(.active-init):not(.active) {
     display: none;
   }
 }

@@ -102,8 +102,6 @@ def get_exception_html(type, value, lineno):
 
 # TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
 
-# TODO: When the 'Draw Pyagram' overlay shows up again, set the slider back to 0 and reset its min and max values.
-
 # TODO: Right now you have two columns in the STATE_TEMPLATE. Perhaps you should have three: one for the flags and frames, one for object frames, and one for other objects (functions, lists, etc.)?
 
 # TODO: After clicking 'Draw Pyagram':

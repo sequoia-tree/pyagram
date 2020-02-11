@@ -31,7 +31,7 @@
 {% macro overlay(id, top, bottom, start_active=False, center_vertically=True) %}
   <div class="overlay-wrapper d-inline-block position-relative h-100 w-100">
     {{ decode_content('{}-bottom'.format(id), *bottom, **kwargs) }}
-    <div class="overlay position-absolute h-100 w-100 {% if start_active %} active {% endif %}" id="overlay-{{ id }}">
+    <div class="overlay position-absolute h-100 w-100 {% if start_active %} active-init {% endif %}" id="overlay-{{ id }}">
       {% if center_vertically %}
         <div class="d-flex flex-column justify-content-center h-100 w-100">
       {% endif %}
