@@ -1,4 +1,5 @@
 # Meta
+.DS_Store
 .vscode/
 
 # Front-end
@@ -7,5 +8,5 @@ static/styles/*
 static/scripts/*
 
 # Back-end
-env/
+venv/
 __pycache__/
