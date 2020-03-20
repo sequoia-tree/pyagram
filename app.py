@@ -34,6 +34,7 @@ def render_draw(app):
         return json.dumps(pyagram.serialize())
     return draw
 
-app = flask.Flask(__name__)
-render_endpoints(app)
-app.run()
+if __name__ == '__main__':
+    app = flask.Flask(__name__)
+    render_endpoints(app)
+    app.run()
