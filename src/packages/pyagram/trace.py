@@ -85,17 +85,15 @@ class Tracer(bdb.Bdb):
         if self.state.program_state.curr_element is None:
             take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_CALL:
-            take_snapshot = False
+            take_snapshot = True
         elif trace_type is enums.TraceTypes.USER_LINE:
             take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO \
                         and self.state.program_state.curr_line_no != utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = self.state.program_state.curr_line_no == utils.OUTER_CALL_LINENO \
-                         or self.state.program_state.curr_line_no == utils.INNER_CALL_LINENO
+            take_snapshot = self.state.program_state.curr_line_no == utils.INNER_CALL_LINENO
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
             take_snapshot = False
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
-        take_snapshot = True # TODO: DELETE THIS! FIGURE OUT WHEN TO TAKE SNAPSHOTS!
         if take_snapshot:
             self.state.snapshot()
