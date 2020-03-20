@@ -60,6 +60,7 @@ class ProgramState:
     """
 
     def __init__(self, state, global_frame):
+        self.frame_types = {}
         self.curr_line_no = None
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
@@ -105,11 +106,15 @@ class ProgramState:
         :return: None.
         """
         if frame is not None:
+            if frame not in self.frame_types:
+                # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
+                self.frame_types[frame] = enums.FrameTypes.identify_frame_type(frame)
+            frame_type = self.frame_types[frame]
             self.curr_line_no = frame.f_lineno
             if is_frame_open:
-                self.process_frame_open(frame)
+                self.process_frame_open(frame, frame_type)
             if is_frame_close:
-                self.process_frame_close(frame, return_value)
+                self.process_frame_close(frame, frame_type, return_value)
         self.global_frame.step()
 
     def snapshot(self):
@@ -123,14 +128,14 @@ class ProgramState:
             'curr_line_no': self.curr_line_no, # TODO: This is either: (*) accurate, (*) utils.INNER_CALL_LINENO, (*) utils.OUTER_CALL_LINENO, or (*) greater than the total number of lines in the program. If you observe the lattermost case, then we are in fact executing a lambda function, and you can extract the appropriate line number using utils.unpair_naturals. See encode.py for an example.
         }
 
-    def process_frame_open(self, frame):
+    def process_frame_open(self, frame, frame_type):
         """
         <summary>
 
         :param frame:
+        :param frame_type:
         :return:
         """
-        frame_type = enums.FrameTypes.identify_frame_type(frame)
         if frame_type is enums.FrameTypes.SRC_CALL:
 
             is_implicit = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
@@ -145,15 +150,15 @@ class ProgramState:
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
-    def process_frame_close(self, frame, return_value):
+    def process_frame_close(self, frame, frame_type, return_value):
         """
         <summary>
 
         :param frame:
+        :param frame_type:
         :param return_value:
         :return:
         """
-        frame_type = enums.FrameTypes.identify_frame_type(frame)
         if frame_type is enums.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(return_value)
         elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:

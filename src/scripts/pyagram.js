@@ -88,7 +88,7 @@ function drawPointer(SVGCanvas, reference, object) {
     startCoordinate.y -= nullCoordinate.y;
     endCoordinate.x -= nullCoordinate.x;
     endCoordinate.y -= nullCoordinate.y;
-    var pathStr = 
+    var pathStr =
         'M' +
         startCoordinate.x + ',' + startCoordinate.y + ' ' +
         'Q' +

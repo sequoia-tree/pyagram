@@ -1,3 +1,5 @@
+import io
+import sys
 import traceback
 
 from . import encode
@@ -18,6 +20,9 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
+        old_stdout = sys.stdout
+        new_stdout = io.StringIO()
+        sys.stdout = new_stdout
         try:
             num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior of Bdb.run the same as not specifying the global_bindings?
             try:
@@ -32,7 +37,7 @@ class Pyagram:
                 self.encoding = 'syntax_error'
             else:
                 encoder = encode.Encoder(num_lines, preprocessor.lambdas_by_line)
-                tracer = trace.Tracer(encoder)
+                tracer = trace.Tracer(encoder, new_stdout)
                 try:
                     tracer.run(
                         preprocessor.code,
@@ -47,7 +52,6 @@ class Pyagram:
                     }
                 else:
                     tracer.state.program_state.exception_snapshot = None
-                tracer.stop()
                 postprocessor = postprocess.Postprocessor(tracer.state)
                 postprocessor.postprocess()
                 self.data = {
@@ -59,7 +63,10 @@ class Pyagram:
             self.data = str(e)
             self.encoding = 'pyagram_error'
             if debug:
+                sys.stdout = old_stdout
+                print(new_stdout.getvalue())
                 raise e
+        sys.stdout = old_stdout
 
     def serialize(self):
         """

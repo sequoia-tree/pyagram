@@ -12,7 +12,7 @@ class Preprocessor:
         self.code = ast.parse(code)
         self.num_lines = num_lines
         self.lambdas_by_line = None
-    
+
     def preprocess(self):
         self.log_lambdas()
         self.wrap_calls()
@@ -43,7 +43,7 @@ class LambdaLogger(ast.NodeVisitor):
     def __init__(self):
         super().__init__()
         self.lambdas_by_line = {}
-    
+
     def visit_Lambda(self, node):
         lineno = node.lineno
         if lineno not in self.lambdas_by_line:
@@ -80,6 +80,7 @@ class CallWrapper(ast.NodeTransformer):
 
         inner_lambda = ast.Lambda(
             args=ast.arguments(
+                posonlyargs=[],
                 args=[],
                 vararg=None,
                 kwonlyargs=[],
@@ -91,6 +92,7 @@ class CallWrapper(ast.NodeTransformer):
         )
         outer_lambda = ast.Lambda(
             args=ast.arguments(
+                posonlyargs=[],
                 args=[
                     ast.arg(arg='banner', annotation=None),
                     ast.arg(arg='call', annotation=None),

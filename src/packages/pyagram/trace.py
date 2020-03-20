@@ -1,6 +1,4 @@
 import bdb
-import io
-import sys
 
 from . import enums
 from . import state
@@ -12,13 +10,11 @@ class Tracer(bdb.Bdb):
     <summary>
     """
 
-    def __init__(self, encoder):
+    def __init__(self, encoder, stdout):
         super().__init__()
         self.encoder = encoder
+        self.stdout = stdout
         self.state = None
-        self.old_stdout = sys.stdout
-        self.new_stdout = io.StringIO()
-        sys.stdout = self.new_stdout
 
     def user_call(self, frame, args):
         """
@@ -66,9 +62,6 @@ class Tracer(bdb.Bdb):
         self.snapshot(enums.TraceTypes.USER_EXCEPTION)
         raise user_exception.UserException(*exception_info)
 
-    def stop(self):
-        sys.stdout = self.old_stdout
-
     def step(self, frame, *, is_frame_open=False, is_frame_close=False, return_value=None):
         """
         <summary>
@@ -80,7 +73,7 @@ class Tracer(bdb.Bdb):
         :return:
         """
         if self.state is None:
-            self.state = state.State(frame, self.encoder, self.new_stdout)
+            self.state = state.State(frame, self.encoder, self.stdout)
         self.state.step(frame, is_frame_open, is_frame_close, return_value)
 
     def snapshot(self, trace_type):
@@ -103,5 +96,6 @@ class Tracer(bdb.Bdb):
             take_snapshot = False
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
+        take_snapshot = True # TODO: DELETE THIS! FIGURE OUT WHEN TO TAKE SNAPSHOTS!
         if take_snapshot:
             self.state.snapshot()

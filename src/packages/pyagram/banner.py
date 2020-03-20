@@ -23,7 +23,7 @@ class Banner:
         self.add_args_info(node.args)
         self.add_kwds_info(node.keywords)
         self.elements.append(CLOSE_PARENTHESIS)
-    
+
     @property
     def banner(self):
         """
@@ -38,7 +38,7 @@ class Banner:
             ],
             ctx=ast.Load(),
         )
-    
+
     def add_func_info(self, func):
         """
         <summary>
@@ -47,7 +47,7 @@ class Banner:
         :return:
         """
         self.add_bindings(func)
-    
+
     def add_args_info(self, args):
         """
         <summary>
@@ -78,7 +78,7 @@ class Banner:
             else:
                 self.add_bindings(arg)
             self.has_prev_input = True
-    
+
     def add_kwds_info(self, kwds):
         """
         <summary>
@@ -102,7 +102,7 @@ class Banner:
                 self.elements.append(ast.Str(f'{param.s}='))
                 self.add_bindings(arg, (arg,), (param,))
             self.has_prev_input = True
-    
+
     def add_bindings(self, node, values=None, params=None):
         """
         <summary>
@@ -117,7 +117,7 @@ class Banner:
             values = (node,)
             params = (None,)
         assert len(values) == len(params)
-        code = ast.Str(astunparse.unparse(node).strip('\n'))
+        code = ast.Str(astunparse.unparse(node).strip('\n')) # TODO: You may be able to circumvent the necessity for astunparse if you can leverage <node>.col_offset and <node>.end_col_offset.
         bindings = []
         if is_unsupported_binding:
             binding = ast.NameConstant(None) # TODO: When binding_info is None, the binding is unsupported -- ie it's a `*args` or `**kwargs` expression where `args` is not a list, tuple, or string / `kwargs` is not a dict. In such cases render the binding as a question mark. If you click on the question mark, you should be brought to the Pyagram GitHub Issues page, where there should be an issue describing the fact that this behaviour is not currently supported.

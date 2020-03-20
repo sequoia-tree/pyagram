@@ -22,6 +22,7 @@ def render_root(app):
                 ('print-output', 'template', None),
             ],
         )
+    return root
 
 def render_draw(app):
     @app.route('/draw')
@@ -31,8 +32,8 @@ def render_draw(app):
         if pyagram.encoding == 'pyagram':
             rd.render_components(pyagram.data)
         return json.dumps(pyagram.serialize())
+    return draw
 
-if __name__ == '__main__':
-    app = flask.Flask(__name__)
-    render_endpoints(app)
-    app.run()
+app = flask.Flask(__name__)
+render_endpoints(app)
+app.run()

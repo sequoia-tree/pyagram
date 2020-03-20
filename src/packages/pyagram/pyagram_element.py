@@ -46,7 +46,7 @@ class PyagramFlag(PyagramElement):
     """
     An element of a pyagram which represents the application of a not-yet-evaluated function to a
     set of not-yet-evaluated arguments.
-    
+
     Upon opening a flag, the following occurs:
     1. The flag's banner is made to bear the code corresponding to the function call in question.
     2. The function is evaluated, and its value written on the banner beneath the code
@@ -69,6 +69,7 @@ class PyagramFlag(PyagramElement):
         self.is_new_flag = True
         banner_elements, banner_bindings = banner
         utils.concatenate_adjacent_strings(banner_elements)
+        self.has_processed_subflag_since_prev_eval = False
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
@@ -112,7 +113,7 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         return f'Flag {self.id}'
-    
+
     def step(self):
         """
         <summary>
@@ -125,13 +126,13 @@ class PyagramFlag(PyagramElement):
 
             if self is self.state.program_state.curr_element:
                 if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
-                    
+
                     if not self.is_new_flag:
                         self.evaluate_next_banner_binding(True)
                     next_binding_might_not_be_call = True
                     while next_binding_might_not_be_call and not self.banner_is_complete:
                         next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
-                
+
                 self.has_processed_subflag_since_prev_eval = False
             else:
                 self.has_processed_subflag_since_prev_eval = True
@@ -164,7 +165,7 @@ class PyagramFlag(PyagramElement):
     def evaluate_next_banner_binding(self, expect_call):
         """
         <summary>
-        
+
         :return:
         """
         # Examine the next binding.
@@ -225,7 +226,7 @@ class PyagramFrame(PyagramElement):
     """
     An element of a pyagram which represents the application of an already-evaluated function to a
     set of already-evaluated arguments.
-    
+
     Upon opening a frame, the following occurs:
     1. The function's parameters are bound to their respective arguments inside the frame.
     2. The function's code is executed one step at a time, and the frame's bindings are
@@ -275,7 +276,7 @@ class PyagramFrame(PyagramElement):
         :return:
         """
         return self.opened_by is None
-    
+
     @property
     def parent(self):
         """
