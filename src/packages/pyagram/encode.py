@@ -40,9 +40,11 @@ class Encoder:
             is_lambda = object.__name__ == '<lambda>'
             if is_lambda:
                 lineno, number = utils.unpair_naturals(object.__code__.co_firstlineno, max_x=self.num_lines)
-            parameters, has_star_arg = [], False
-            for parameter in inspect.signature(object).parameters.values():
-                if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+            parameters, slash_arg_index, has_star_arg = [], None, False
+            for i, parameter in enumerate(inspect.signature(object).parameters.values()):
+                if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
+                    slash_arg_index = i + 1
+                elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
                     has_star_arg = True
                 elif parameter.kind is inspect.Parameter.KEYWORD_ONLY and not has_star_arg:
                     parameters.append({
@@ -53,6 +55,11 @@ class Encoder:
                 parameters.append({
                     'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
                     'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
+                })
+            if slash_arg_index is not None:
+                parameters.insert(slash_arg_index, {
+                    'name': '/',
+                    'default': None,
                 })
             encoding = 'function'
             snapshot = {
