@@ -180,7 +180,20 @@ ORDERED_COLLECTION_TEMPLATE = """
 """
 
 UNORDERED_COLLECTION_TEMPLATE = """
-TODO
+{% if elements|length == 0 %}
+  empty {{ type }}
+{% else %}
+  <div class="d-flex flex-row align-items-center">
+    <div>{{type}}</div>
+    <table class="pyagram-unordered-collection ml-1 font-family-monospace">
+    <tr>
+      {% for element in elements %}
+        <td class="pyagram-collection-element px-2">{{ get_reference_html(element) }}</td>
+      {% endfor %}
+    </tr>
+  </table>
+  </div>
+{% endif %}
 """
 
 MAPPING_TEMPLATE = """

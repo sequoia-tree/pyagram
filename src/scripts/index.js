@@ -20,7 +20,7 @@ const PRINT_OUTPUT_ID = 'print-output';
 const PYAGRAM_STATE_TABLE_ID = 'pyagram-state-table';
 const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
 const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
-const NUM_LINES = 30; // TODO: Make this 15, so that it shows nicely on smaller windows too. (Perhaps make the min window height smaller too.)
+const NUM_LINES = 20;
 
 Split.split(
     'horizontal',

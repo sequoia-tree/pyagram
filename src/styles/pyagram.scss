@@ -40,10 +40,14 @@
 
 .pyagram-ordered-collection {
   @include border();
-  display: inline-table;
   .pyagram-collection-element {
     @include border();
   }
+}
+
+.pyagram-unordered-collection {
+  @include border();
+  border-radius: 100vh;
 }
 
 .curr-element {
