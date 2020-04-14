@@ -113,6 +113,7 @@ class Encoder:
         elif object_type in pyagram_types.GENERATOR_TYPES:
             encoding = 'generator'
             snapshot = NotImplemented # TODO
+            # TODO: Probably make use of `gi_frame` in the `inspect` module.
         else:
             if hasattr(object, '__dict__'):
                 encoding = 'object_frame'

@@ -9,7 +9,7 @@ BUILTIN_FUNCTION_TYPES =  (types.BuiltinFunctionType, types.BuiltinMethodType)
 ORDERED_COLLECTION_TYPES = (list, tuple, str)
 UNORDERED_COLLECTION_TYPES = (set, frozenset)
 MAPPING_TYPES = (dict,) # TODO: Finish.
-ITERATOR_TYPES = () # TODO: Finish.
+ITERATOR_TYPES = () # TODO: Finish. (list_iterator, tuple_iterator, str_iterator, set_iterator, ... see below)
 GENERATOR_TYPES = (types.GeneratorType,)
 # TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
 # TODO:     odict, odict_keys, ordereddict, etc.
@@ -18,15 +18,17 @@ GENERATOR_TYPES = (types.GeneratorType,)
 # TODO:     Counter
 # TODO:     What about namedtuple classes / instances?
 # TODO:     collections.*
-# TODO:     list_iterator
-# TODO:     tuple_iterator
-# TODO:     str_iterator
-# TODO:     set_iterator
-# TODO:     dict_keyiterator
-# TODO:     dict_valueiterator
-# TODO:     dict_itemiterator
-# TODO:     range_iterator, range
-# TODO:     map [the output of a call to `map`; a kind of iterator]
+# TODO:     various built-in iterators ...
+# TODO:         list_iterator
+# TODO:         tuple_iterator
+# TODO:         str_iterator
+# TODO:         set_iterator
+# TODO:         dict_keyiterator
+# TODO:         dict_valueiterator
+# TODO:         dict_itemiterator
+# TODO:         range_iterator
+# TODO:         map [the output of a call to `map`; a kind of iterator]
+# TODO:     range ?
 # TODO:     Various built-in Exceptions
 # TODO: I think https://docs.python.org/3.8/library/types.html is a full list of types.
 
