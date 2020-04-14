@@ -73,5 +73,5 @@ class Pyagram:
         """
         return {
             'data': self.data,
-            'encoding': self.encoding, # TODO: You have to handle all the following encodings: 'syntax_error' (the student has a syntax error and their code cannot compile), 'pyagram_error' (something went wrong with YOUR code, not the students'), and 'pyagram' (everything went smoothly).
+            'encoding': self.encoding,
         }

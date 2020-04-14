@@ -28,7 +28,6 @@ export function drawPyagram(slider, pyagram) {
             // TODO
             break;
         default:
-            // TODO
             break;
     }
 }
