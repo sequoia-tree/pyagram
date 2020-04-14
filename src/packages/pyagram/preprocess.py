@@ -9,40 +9,43 @@ class Preprocessor:
     """
 
     def __init__(self, code, num_lines):
-        self.code = ast.parse(code)
+        self.code = code
+        self.ast = ast.parse(code)
         self.num_lines = num_lines
-        self.lambdas_by_line = None
+        self.lambdas_by_line = {}
 
     def preprocess(self):
         self.log_lambdas()
         self.wrap_calls()
-        ast.fix_missing_locations(self.code)
-        self.code = compile(
-            self.code,
+        self.encode_lambdas()
+        ast.fix_missing_locations(self.ast)
+        self.ast = compile(
+            self.ast,
             filename='main.py', # TODO: Why is `__name__` bound to `'builtins'`?
             mode='exec',
         )
 
     def log_lambdas(self):
-        lambda_logger = LambdaLogger()
-        lambda_logger.visit(self.code)
-        self.lambdas_by_line = lambda_logger.lambdas_by_line
-        for lineno in self.lambdas_by_line:
-            sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
-            for i in range(len(sorted_lambdas)):
-                node = sorted_lambdas[i]
-                node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)
+        lambda_logger = LambdaLogger(self.lambdas_by_line)
+        lambda_logger.visit(self.ast)
 
     def wrap_calls(self):
-        self.code = CallWrapper().visit(self.code)
+        call_wrapper = CallWrapper(self.code)
+        self.ast = call_wrapper.visit(self.ast)
+
+    def encode_lambdas(self):
+        for lineno in self.lambdas_by_line:
+            sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
+            for i, node in enumerate(sorted_lambdas):
+                node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)
 
 class LambdaLogger(ast.NodeVisitor):
     """
     """
 
-    def __init__(self):
+    def __init__(self, lambdas_by_line):
         super().__init__()
-        self.lambdas_by_line = {}
+        self.lambdas_by_line = lambdas_by_line
 
     def visit_Lambda(self, node):
         lineno = node.lineno
@@ -56,8 +59,9 @@ class CallWrapper(ast.NodeTransformer):
     <summary>
     """
 
-    def __init__(self):
+    def __init__(self, code):
         super().__init__()
+        self.code = code
         self.id_counter = 0
 
     def visit_Call(self, node):
@@ -88,7 +92,7 @@ class CallWrapper(ast.NodeTransformer):
                 defaults=[],
                 kw_defaults=[],
             ),
-            body=banner.Banner(node).banner,
+            body=banner.Banner(self.code, node).banner,
         )
         outer_lambda = ast.Lambda(
             args=ast.arguments(

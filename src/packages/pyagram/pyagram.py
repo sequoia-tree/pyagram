@@ -40,7 +40,7 @@ class Pyagram:
                 tracer = trace.Tracer(encoder, new_stdout)
                 try:
                     tracer.run(
-                        preprocessor.code,
+                        preprocessor.ast,
                         globals=global_bindings,
                         locals=global_bindings,
                     )
