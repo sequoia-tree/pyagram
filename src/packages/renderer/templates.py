@@ -197,7 +197,25 @@ UNORDERED_COLLECTION_TEMPLATE = """
 """
 
 MAPPING_TEMPLATE = """
-TODO
+{% if items|length == 0 %}
+  empty {{ type }}
+{% else %}
+  <div class="d-flex flex-row align-items-center">
+    <div>{{type}}</div>
+    <table class="pyagram-mapping border-collapse ml-1 font-family-monospace" rules="cols">
+    <tr>
+      {% for item in items %}
+        <td class="pyagram-mapping-key px-2 text-center">{{ get_reference_html(item[0]) }}</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      {% for item in items %}
+        <td class="pyagram-mapping-value px-2 text-center">{{ get_reference_html(item[1]) }}</td>
+      {% endfor %}
+    </tr>
+  </table>
+  </div>
+{% endif %}
 """
 
 ITERATOR_TEMPLATE = """

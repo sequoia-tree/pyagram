@@ -101,6 +101,7 @@ class Encoder:
         elif object_type in pyagram_types.MAPPING_TYPES:
             encoding = 'mapping'
             snapshot =  {
+                'type': object_type.__name__,
                 'items': [
                     [self.reference_snapshot(key, memory_state), self.reference_snapshot(value, memory_state)]
                     for key, value in object.items()

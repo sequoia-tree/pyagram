@@ -50,6 +50,16 @@
   border-radius: 100vh;
 }
 
+.pyagram-mapping {
+  @include border();
+  .pyagram-mapping-key {
+    @include border();
+  }
+  .pyagram-mapping-value {
+    @include border();
+  }
+}
+
 .curr-element {
   background: rgba($primary-color, 0.5);
 }
