@@ -2,10 +2,10 @@ STATE_TEMPLATE = """
 <div class="overlap-wrapper">
   <table class="overlap border-collapse" id="pyagram-state-table">
     <tr>
-      <td valign="top">
+      <td class="align-top">
         {{ get_frame_html(global_frame) }}
       </td>
-      <td valign="top" class="pl-5">
+      <td class="align-top pl-5">
         {% for object in memory_state %}
           {{ get_object_html(object) }}
         {% endfor %}
@@ -163,18 +163,20 @@ LAMBDA_TEMPLATE = """
 """
 
 ORDERED_COLLECTION_TEMPLATE = """
-{{ type }}
-<table class="pyagram-ordered-collection border-collapse ml-2 font-family-monospace" rules="cols">
-  <tr>
-    {% if elements|length == 0 %}
-      TODO
-    {% else %}
+{% if elements|length == 0 %}
+  empty {{ type }}
+{% else %}
+  <div class="d-flex flex-row align-items-center">
+    <div>{{type}}</div>
+    <table class="pyagram-ordered-collection border-collapse ml-1 font-family-monospace" rules="cols">
+    <tr>
       {% for element in elements %}
         <td class="pyagram-collection-element px-2">{{ get_reference_html(element) }}</td>
       {% endfor %}
-    {% endif %}
-  </tr>
-</table>
+    </tr>
+  </table>
+  </div>
+{% endif %}
 """
 
 UNORDERED_COLLECTION_TEMPLATE = """
