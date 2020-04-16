@@ -120,7 +120,7 @@ class Encoder:
             snapshot = {
                 'is_curr_element': False,
                 'name': object.frame.f_code.co_name,
-                'parent': None, # TODO: Use <`class A` object>.__bases__. You'll have to fill this in retroactively for earlier snapshots, after calling close_pyagram_class_frame in state.py. Perhaps make get_parent_frame_html take a *parents arg? Remember, there can be MULTIPLE PARENTS!
+                'parents': object,
                 'bindings': {
                     key: self.reference_snapshot(value, memory_state)
                     for key, value in object.frame.f_locals.items()

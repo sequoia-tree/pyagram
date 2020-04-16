@@ -90,7 +90,7 @@ FRAME_TEMPLATE = """
       class <span class="font-family-monospace">{{ name }}</span>
     {% else %}
       {{ name }}
-    {% endif %} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
+    {% endif %} {{ get_parent_frame_html(parents, monospace=is_class_frame) }}
   </div>
   <table class="ml-auto mr-0 font-family-monospace">
     {% for key, value in bindings.items() %}
@@ -114,6 +114,14 @@ META_REFERENCE_TEMPLATE = """
 <span class="pyagram-{{ cls }}">
   {{ text }}
 </span>
+"""
+
+PLAINTEXT_TEMPLATE = """
+{% if monospace %}
+  <span class="font-family-monospace">{{ text }}</span>
+{% else %}
+  {{ text }}
+{% endif %}
 """
 
 POINTER_TEMPLATE = """
@@ -145,7 +153,7 @@ function
   )
 </span>
 <div>
-  {{ get_parent_frame_html(parent) }}
+  {{ get_parent_frame_html([parent]) }}
 </div>
 """
 
@@ -241,7 +249,12 @@ OBJECT_REPR_TEMPLATE = """
 """
 
 PARENT_FRAME_TEMPLATE = """
-[parent: {{ parent_frame_name }}]
+{% if parents|length == 0 %}
+{% elif parents|length == 1 %}
+  [parent: {{ parents[0] }}]
+{% else %}
+  [parents: {% for i in range(parents|length - 1) %}{{ parents[i] }}, {% endfor %}{{ parents[-1] }}]
+{% endif %}
 """
 
 PARAMETER_TEMPLATE = """

@@ -327,7 +327,10 @@ class PyagramFrame(PyagramElement):
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'name': repr(self),
-            'parent': None if self.parent is None else repr(self.parent),
+            'parents':
+                []
+                if self.parent is None
+                else [repr(self.parent)],
             'bindings': bindings,
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value, self.state.memory_state)
@@ -385,4 +388,5 @@ class PyagramClassFrame:
         self.id = id(self)
         self.state = state
         self.frame = frame
+        self.parents = None
         self.state.memory_state.class_frames_by_frame[frame] = self

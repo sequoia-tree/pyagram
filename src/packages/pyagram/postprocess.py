@@ -21,6 +21,7 @@ class Postprocessor:
         for snapshot in self.state.snapshots:
             if snapshot is not None:
                 self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
+                self.postprocess_memory_snapshot(snapshot['memory_state'])
 
     def postprocess_element_snapshot(self, element_snapshot):
         """
@@ -49,6 +50,18 @@ class Postprocessor:
         :return:
         """
         self.postprocess_element_snapshot(frame_snapshot)
+
+    def postprocess_memory_snapshot(self, memory_snapshot):
+        for object_snapshot in memory_snapshot:
+            encoding = object_snapshot['object']['encoding']
+            snapshot = object_snapshot['object']['object']
+            if encoding == 'class_frame':
+                class_frame = snapshot['parents']
+                if class_frame.parents is None:
+                    parents = [self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
+                else:
+                    parents = [parent.__name__ for parent in class_frame.parents]
+                snapshot['parents'] = parents
 
     def hide_hidden_snapshots(self):
         for hidden_flag in self.state.hidden_flags:

@@ -337,6 +337,9 @@ class MemoryState:
         class_frame = self.class_frames_by_frame[frame_object]
         self.class_frames_by_class[class_object] = class_frame
         class_frame.id = id(class_object)
+        class_frame.parents = class_object.__bases__
+
+# TODO: In PyagramClassFrame.__init__ maybe do something like `del frame.f_globals['__builtins__']`, as in PyagramFrame.__init__, to remove '__module__' and '__qualname__'? Or you could just not display them.
 
 # TODO: I think inspect.signature doesn't play well with Methods ... look at all the places you use it. You can't treat functions and methods the same.
 
@@ -347,10 +350,6 @@ class MemoryState:
 #         x = 2
 # TODO: Either (1) Make the program_state.curr_element track whether you're in a class definition, or (2) introduce a curr_frame variable, or (3) hold out hope that the __qualname__ can somehow solve this?
 
-# TODO: In PyagramClassFrame.__init__ maybe do something like `del frame.f_globals['__builtins__']`, as in PyagramFrame.__init__, to remove '__module__' and '__qualname__'? Or you could just not display them.
-
-# TODO: Get parent classes to display (see encode.py)
-
-# TODO: Maybe make the pointers green, so they stand out from the rest of the diagram.
-
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
+
+# TODO: Then, get instances of classes to show up all nice.

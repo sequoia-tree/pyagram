@@ -35,14 +35,18 @@ def get_flag_html(flag_snapshot):
 def get_frame_html(frame_snapshot):
     return get_component_html(templates.FRAME_TEMPLATE, frame_snapshot)
 
-def get_reference_html(reference_snapshot):
+def get_reference_html(reference_snapshot, *, monospace=False):
     if isinstance(reference_snapshot, dict):
         return get_html(
             templates.META_REFERENCE_TEMPLATE,
             **reference_snapshot,
         )
     elif isinstance(reference_snapshot, str):
-        return reference_snapshot
+        return get_html(
+            templates.PLAINTEXT_TEMPLATE,
+            text=reference_snapshot,
+            monospace=monospace,
+        )
     elif isinstance(reference_snapshot, int):
         return get_html(
             templates.POINTER_TEMPLATE,
@@ -86,10 +90,13 @@ def get_lambda_html(lambda_snapshot):
 def get_parameter_html(parameter_snapshot):
     return get_component_html(templates.PARAMETER_TEMPLATE, parameter_snapshot)
 
-def get_parent_frame_html(parent_frame_name):
+def get_parent_frame_html(parents_snapshot, *, monospace=False):
     return get_html(
         templates.PARENT_FRAME_TEMPLATE,
-        parent_frame_name=parent_frame_name,
+        parents=[
+            get_reference_html(parent_reference, monospace=monospace)
+            for parent_reference in parents_snapshot
+        ],
     )
 
 def get_print_html(print_output, **kwargs):
