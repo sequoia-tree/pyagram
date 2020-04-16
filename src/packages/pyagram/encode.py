@@ -1,5 +1,6 @@
 import inspect
 
+from . import pyagram_element
 from . import pyagram_types
 from . import utils
 
@@ -114,10 +115,26 @@ class Encoder:
             encoding = 'generator'
             snapshot = NotImplemented # TODO
             # TODO: Probably make use of `gi_frame` in the `inspect` module.
+        elif object_type is pyagram_element.PyagramClassFrame:
+            encoding = 'class_frame'
+            snapshot = {
+                'is_curr_element': False,
+                'name': object.frame.f_code.co_name,
+                'parent': None, # TODO: Use <`class A` object>.__bases__. You'll have to fill this in retroactively for earlier snapshots, after calling close_pyagram_class_frame in state.py. Perhaps make get_parent_frame_html take a *parents arg? Remember, there can be MULTIPLE PARENTS!
+                'bindings': {
+                    key: self.reference_snapshot(value, memory_state)
+                    for key, value in object.frame.f_locals.items()
+                },
+                'return_value': None,
+                'flags': [],
+                'is_class_frame': True,
+            }
         else:
             if hasattr(object, '__dict__'):
-                encoding = 'object_frame'
-                snapshot = NotImplemented # TODO
+                encoding = 'object_dict'
+                snapshot = {
+                    'TODO': object.__dict__, # TODO
+                } # TODO
                 # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
                 # TODO: If `object_type is Type` then write "class X [p=Y]", else "instance X [p=Y]".
                 # TODO: Some objects have a *lot* of items in their `.__dict__`. You have a few options:

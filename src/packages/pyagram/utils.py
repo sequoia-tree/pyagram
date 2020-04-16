@@ -7,6 +7,7 @@ from . import pyagram_types
 
 INNER_CALL_LINENO = -1
 OUTER_CALL_LINENO = -2
+CLASS_DEFN_LINENO = -3
 
 BANNER_FUNCTION_CODE = -1
 BANNER_UNSUPPORTED_CODE = -2
@@ -47,7 +48,13 @@ def assign_unique_code_object(function):
     :param function:
     :return:
     """
-    function.__code__ = function.__code__.replace() # TODO: This doesn't really merit its own function, does it?
+    if isinstance(function, types.FunctionType):
+        function = function
+    elif isinstance(function, types.MethodType):
+        function = function.__func__
+    else:
+        assert False
+    function.__code__ = function.__code__.replace()
 
 def get_variable_params(function):
     """

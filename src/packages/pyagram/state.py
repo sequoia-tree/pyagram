@@ -1,5 +1,8 @@
+import gc
+
 from . import enums
 from . import pyagram_element
+from . import pyagram_types
 from . import utils
 
 class State:
@@ -60,10 +63,13 @@ class ProgramState:
     """
 
     def __init__(self, state, global_frame):
+        self.state = state
         self.frame_types = {}
-        self.curr_line_no = None
+        self.prev_line_no = 0
+        self.curr_line_no = 0
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
+        self.expected_class_binding = None
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -110,7 +116,15 @@ class ProgramState:
                 # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
                 self.frame_types[frame] = enums.FrameTypes.identify_frame_type(frame)
             frame_type = self.frame_types[frame]
+            self.prev_line_no = self.curr_line_no
             self.curr_line_no = frame.f_lineno
+            if self.expected_class_binding is not None:
+
+                frame_object = self.expected_class_binding
+                class_object = self.curr_element.frame.f_locals[frame_object.f_code.co_name]
+                self.state.memory_state.record_class_frame(frame_object, class_object)
+
+                self.expected_class_binding = None
             if is_frame_open:
                 self.process_frame_open(frame, frame_type)
             if is_frame_close:
@@ -147,6 +161,8 @@ class ProgramState:
             pass
         elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             self.close_pyagram_flag()
+        elif frame_type is enums.FrameTypes.CLASS_DEFINITION:
+            self.open_class_frame(frame)
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
@@ -165,6 +181,8 @@ class ProgramState:
             self.open_pyagram_flag(return_value)
         elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
+        elif frame_type is enums.FrameTypes.CLASS_DEFINITION:
+            self.close_class_frame(frame)
         else:
             raise enums.FrameTypes.illegal_frame_type(frame_type)
 
@@ -188,6 +206,11 @@ class ProgramState:
         """
         assert self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.add_frame(frame, is_implicit)
+
+    def open_class_frame(self, frame):
+        assert self.is_ongoing_frame
+        class_frame = pyagram_element.PyagramClassFrame(frame, state=self.state)
+        self.state.memory_state.track(class_frame)
 
     def close_pyagram_flag(self):
         """
@@ -216,6 +239,10 @@ class ProgramState:
         if is_implicit:
             self.curr_element = self.curr_element.close()
 
+    def close_class_frame(self, frame):
+        assert self.is_ongoing_frame
+        self.expected_class_binding = frame
+
 class MemoryState:
     """
     The instantaneous state of the memory at a particular step during the execution of the input
@@ -224,9 +251,11 @@ class MemoryState:
 
     def __init__(self, state):
         self.state = state
-        self.objects = [] # TODO: Make sure that every object gets displayed in the same place on the web-page, across different steps of the visualization. One approach: render the last step first (since it will have all the objects visualized); then make sure every object gets drawn in the same place in every previous step.
+        self.objects = []
         self.object_debuts = {}
         self.function_parents = {}
+        self.class_frames_by_frame = {}
+        self.class_frames_by_class = {}
 
     def step(self):
         """
@@ -234,7 +263,20 @@ class MemoryState:
 
         :return:
         """
-        pass
+        if isinstance(self.state.program_state.curr_element, pyagram_element.PyagramFrame):
+            curr_frame = self.state.program_state.curr_element
+            for object in self.objects:
+                if not pyagram_types.is_builtin_type(object):
+                    if isinstance(object, pyagram_element.PyagramClassFrame):
+                        referents = object.frame.f_locals.values()
+                    elif pyagram_types.is_function_type(object):
+                        self.record_parent(curr_frame, object)
+                        referents = utils.get_defaults(object)
+                    else:
+                        referents = gc.get_referents(object)
+                    for referent in referents:
+                        self.track(referent)
+            curr_frame.is_new_frame = False
 
     def snapshot(self):
         """
@@ -244,19 +286,23 @@ class MemoryState:
         """
         return [
             {
-                'id': id(object),
+                'id': object.id if isinstance(object, pyagram_element.PyagramClassFrame) else id(object),
                 'object': self.state.encoder.object_snapshot(object, self),
             }
             for object in self.objects
         ]
 
-    def track(self, object, debut_index): # TODO: The argument for debut_index is always `len(self.state.snapshots)`. Just get rid of it as a parameter, and instead add the line `debut_index = len(self.state.snapshots)` below.
+    def track(self, object):
         """
         <summary>
 
         :return:
         """
-        if not self.is_tracked(object):
+        is_object = not pyagram_types.is_primitive_type(object)
+        is_unseen = not self.is_tracked(object)
+        is_masked = isinstance(object, type) and object in self.class_frames_by_class
+        if is_object and is_unseen and not is_masked:
+            debut_index = len(self.state.snapshots)
             self.objects.append(object)
             self.object_debuts[id(object)] = debut_index
 
@@ -286,3 +332,25 @@ class MemoryState:
             else:
                 parent = frame
             self.function_parents[function] = parent
+
+    def record_class_frame(self, frame_object, class_object):
+        class_frame = self.class_frames_by_frame[frame_object]
+        self.class_frames_by_class[class_object] = class_frame
+        class_frame.id = id(class_object)
+
+# TODO: I think inspect.signature doesn't play well with Methods ... look at all the places you use it. You can't treat functions and methods the same.
+
+# TODO: Nested classes don't work yet.
+# class A:
+#     x = 1
+#     class B:
+#         x = 2
+# TODO: Either (1) Make the program_state.curr_element track whether you're in a class definition, or (2) introduce a curr_frame variable, or (3) hold out hope that the __qualname__ can somehow solve this?
+
+# TODO: In PyagramClassFrame.__init__ maybe do something like `del frame.f_globals['__builtins__']`, as in PyagramFrame.__init__, to remove '__module__' and '__qualname__'? Or you could just not display them.
+
+# TODO: Get parent classes to display (see encode.py)
+
+# TODO: Maybe make the pointers green, so they stand out from the rest of the diagram.
+
+# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?

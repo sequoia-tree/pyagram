@@ -16,6 +16,7 @@ class Preprocessor:
 
     def preprocess(self):
         self.log_lambdas()
+        self.encode_classes()
         self.wrap_calls()
         self.encode_lambdas()
         ast.fix_missing_locations(self.ast)
@@ -29,6 +30,10 @@ class Preprocessor:
         lambda_logger = LambdaLogger(self.lambdas_by_line)
         lambda_logger.visit(self.ast)
 
+    def encode_classes(self):
+        class_encoder = ClassEncoder()
+        self.ast = class_encoder.visit(self.ast)
+
     def wrap_calls(self):
         call_wrapper = CallWrapper(self.code)
         self.ast = call_wrapper.visit(self.ast)
@@ -38,6 +43,8 @@ class Preprocessor:
             sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
             for i, node in enumerate(sorted_lambdas):
                 node.lineno = utils.pair_naturals(node.lineno, i + 1, max_x=self.num_lines)
+
+# TODO: Right now the LambdaLogger, ClassEncoder, and CallWrapper all do a traversal over the entire AST. That's not even necessary. You can unite them into a single class, subclassing ast.NodeTransformer; then you'd only be doing one traversal over the entire AST. Much more efficient.
 
 class LambdaLogger(ast.NodeVisitor):
     """
@@ -53,6 +60,18 @@ class LambdaLogger(ast.NodeVisitor):
             self.lambdas_by_line[lineno] = []
         self.lambdas_by_line[lineno].append(node)
         self.generic_visit(node)
+
+class ClassEncoder(ast.NodeTransformer):
+    """
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def visit_ClassDef(self, node):
+        node.lineno = utils.CLASS_DEFN_LINENO
+        self.generic_visit(node)
+        return node
 
 class CallWrapper(ast.NodeTransformer):
     """

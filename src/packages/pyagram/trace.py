@@ -85,15 +85,17 @@ class Tracer(bdb.Bdb):
         if self.state.program_state.curr_element is None:
             take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_CALL:
-            take_snapshot = True
+            take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_LINE:
-            take_snapshot = self.state.program_state.curr_line_no != utils.OUTER_CALL_LINENO \
-                        and self.state.program_state.curr_line_no != utils.INNER_CALL_LINENO
+            take_snapshot = self.state.program_state.prev_line_no != utils.INNER_CALL_LINENO \
+                        and self.state.program_state.prev_line_no != utils.OUTER_CALL_LINENO \
+                        and not self.state.program_state.is_complete_flag
         elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = self.state.program_state.curr_line_no == utils.INNER_CALL_LINENO
+            take_snapshot = not self.state.program_state.is_complete_flag
         elif trace_type is enums.TraceTypes.USER_EXCEPTION:
             take_snapshot = False
         else:
             raise enums.TraceTypes.illegal_trace_type(trace_type)
+        # TODO: This still isn't quite perfect. You take duplicate snapshots in some cases, which get pruned out during postprocessing, but it'd be much more efficient if you could get this right.
         if take_snapshot:
             self.state.snapshot()

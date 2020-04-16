@@ -84,9 +84,13 @@ FLAG_TEMPLATE = """
 """
 
 FRAME_TEMPLATE = """
-<div class="pyagram-frame m-3 {% if is_curr_element %} curr-element {% endif %}">
+<div class="pyagram-frame {% if is_class_frame %} mr-3 {% else %} mx-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">
   <div class="pyagram-frame-name">
-    {{ name }} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
+    {% if is_class_frame %}
+      class <span class="font-family-monospace">{{ name }}</span>
+    {% else %}
+      {{ name }}
+    {% endif %} {% if parent is not none %} {{ get_parent_frame_html(parent) }} {% endif %}
   </div>
   <table class="ml-auto mr-0 font-family-monospace">
     {% for key, value in bindings.items() %}
@@ -226,8 +230,8 @@ GENERATOR_TEMPLATE = """
 TODO
 """
 
-OBJECT_FRAME_TEMPLATE = """
-TODO
+OBJECT_DICT_TEMPLATE = """
+{{ TODO }}
 """
 
 OBJECT_REPR_TEMPLATE = """

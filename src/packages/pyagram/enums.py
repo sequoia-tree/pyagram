@@ -28,6 +28,7 @@ class FrameTypes:
     SRC_CALL_PRECURSOR = object()
     SRC_CALL = object()
     SRC_CALL_SUCCESSOR = object()
+    CLASS_DEFINITION = object()
 
     @staticmethod
     def illegal_frame_type(frame_type):
@@ -55,5 +56,7 @@ class FrameTypes:
             return FrameTypes.SRC_CALL_PRECURSOR
         if lineno == utils.OUTER_CALL_LINENO:
             return FrameTypes.SRC_CALL_SUCCESSOR
+        if lineno == utils.CLASS_DEFN_LINENO:
+            return FrameTypes.CLASS_DEFINITION
         assert 0 < lineno
         return FrameTypes.SRC_CALL

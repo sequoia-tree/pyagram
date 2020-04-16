@@ -71,8 +71,10 @@ def get_object_body_html(object_encoding):
         return get_component_html(templates.ITERATOR_TEMPLATE, object_snapshot)
     elif encoding == 'generator':
         return get_component_html(templates.GENERATOR_TEMPLATE, object_snapshot)
-    elif encoding == 'object_frame':
-        return get_component_html(templates.OBJECT_FRAME_TEMPLATE, object_snapshot)
+    elif encoding == 'class_frame':
+        return get_component_html(templates.FRAME_TEMPLATE, object_snapshot)
+    elif encoding == 'object_dict':
+        return get_component_html(templates.OBJECT_DICT_TEMPLATE, object_snapshot)
     elif encoding == 'object_repr':
         return get_component_html(templates.OBJECT_REPR_TEMPLATE, object_snapshot)
     else:

@@ -1,7 +1,5 @@
-import gc
 import inspect
 
-from . import pyagram_types
 from . import utils
 
 class PyagramElement:
@@ -300,33 +298,18 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
-        # Two goals:
+        # Two goals -- originally here but now mostly migrated to MemoryState.step:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
         # (2) Obtain a reference to all objects floating around in memory; store said references in the MemoryState.
+        # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.bindings = self.get_bindings()
         objects = list(self.bindings.values())
         if not self.is_global_frame:
             objects.append(self.function)
         if self.has_returned:
             objects.append(self.return_value)
-        while objects:
-            object = objects.pop()
-            # TODO: Are you possibly visiting objects that you've already added to the MemoryState in a previous call to this function?
-            if not pyagram_types.is_primitive_type(object):
-                self.state.memory_state.track(object, len(self.state.snapshots))
-                if pyagram_types.is_function_type(object):
-                    self.state.memory_state.record_parent(self, object)
-                    referents = utils.get_defaults(object)
-                else:
-                    referents = list(gc.get_referents(object))
-                if not pyagram_types.is_builtin_type(object):
-                    objects.extend(
-                        referent
-                        for referent in referents
-                        if not self.state.memory_state.is_tracked(referent)
-                    )
-        # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
-        self.is_new_frame = False
+        for object in objects:
+            self.state.memory_state.track(object)
         super().step()
 
     def snapshot(self):
@@ -355,6 +338,7 @@ class PyagramFrame(PyagramElement):
                 for flag in self.flags
                 if flag not in self.state.hidden_flags
             ],
+            'is_class_frame': False,
         }
 
     def get_bindings(self):
@@ -392,3 +376,13 @@ class PyagramFrame(PyagramElement):
         self.state.step(None)
         self.state.snapshot()
         return self.opened_by
+
+class PyagramClassFrame:
+    """
+    """
+
+    def __init__(self, frame, *, state):
+        self.id = id(self)
+        self.state = state
+        self.frame = frame
+        self.state.memory_state.class_frames_by_frame[frame] = self
