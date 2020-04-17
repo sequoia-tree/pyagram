@@ -128,17 +128,22 @@ class Encoder:
                 },
                 'return_value': None,
                 'flags': [],
-                'is_class_frame': True,
             }
         else:
             if hasattr(object, '__dict__'):
                 encoding = 'object_dict'
                 snapshot = {
-                    'TODO': object.__dict__, # TODO
-                } # TODO
-                # TODO: The `snapshot` should be a generic OOP object-frame, as in your textbook. (The object frame's bindings should be `object.__dict__`.)
-                # TODO: If `object_type is Type` then write "class X [p=Y]", else "instance X [p=Y]".
-                # TODO: Some objects have a *lot* of items in their `.__dict__`. You have a few options:
+                    'is_curr_element': False,
+                    'name': type(object).__name__,
+                    'parents': [],
+                    'bindings': {
+                        key: self.reference_snapshot(value, memory_state)
+                        for key, value in object.__dict__.items()
+                    },
+                    'return_value': None,
+                    'flags': [],
+                }
+                # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...
                 # (*) Make it an option [default ON] to render the contents in object frames.
                 # (*) Limit the size of each object frame, but make the contents scrollable on the site.
                 # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.

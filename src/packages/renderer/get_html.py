@@ -12,11 +12,12 @@ def get_html(template, **kwargs):
         **globals(),
     ))
 
-def get_component_html(template, component_snapshot):
+def get_component_html(template, component_snapshot, **kwargs):
     return get_html(
         template,
         this=component_snapshot,
         **component_snapshot,
+        **kwargs,
     )
 
 def get_state_html(global_frame_snapshot, memory_state_snapshot):
@@ -33,7 +34,7 @@ def get_flag_html(flag_snapshot):
     return get_component_html(templates.FLAG_TEMPLATE, flag_snapshot)
 
 def get_frame_html(frame_snapshot):
-    return get_component_html(templates.FRAME_TEMPLATE, frame_snapshot)
+    return get_component_html(templates.FRAME_TEMPLATE, frame_snapshot, frame_type='function')
 
 def get_reference_html(reference_snapshot, *, monospace=False):
     if isinstance(reference_snapshot, dict):
@@ -76,9 +77,9 @@ def get_object_body_html(object_encoding):
     elif encoding == 'generator':
         return get_component_html(templates.GENERATOR_TEMPLATE, object_snapshot)
     elif encoding == 'class_frame':
-        return get_component_html(templates.FRAME_TEMPLATE, object_snapshot)
+        return get_component_html(templates.FRAME_TEMPLATE, object_snapshot, frame_type='class')
     elif encoding == 'object_dict':
-        return get_component_html(templates.OBJECT_DICT_TEMPLATE, object_snapshot)
+        return get_component_html(templates.FRAME_TEMPLATE, object_snapshot, frame_type='instance')
     elif encoding == 'object_repr':
         return get_component_html(templates.OBJECT_REPR_TEMPLATE, object_snapshot)
     else:

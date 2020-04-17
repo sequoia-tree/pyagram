@@ -274,6 +274,8 @@ class MemoryState:
                         referents = utils.get_defaults(object)
                     else:
                         referents = gc.get_referents(object)
+                        if hasattr(object, '__dict__'):
+                            referents = filter(lambda referent: referent is not object.__dict__, referents)
                     for referent in referents:
                         self.track(referent)
             curr_frame.is_new_frame = False
@@ -339,13 +341,20 @@ class MemoryState:
         class_frame.id = id(class_object)
         class_frame.parents = class_object.__bases__
 
-# TODO: I think inspect.signature doesn't play well with Methods ... look at all the places you use it. You can't treat functions and methods the same.
+# TODO: Make this work ...
+# class A:
+#     class B:
+#         x = 1
+#     b1 = B()
+#     b2 = B()
+#     B = None
+# a = A()
+# a.x = A.b1.x
+# b2 = A.b2
+# b2.x = A.b1.x + 3
+# A.x = b2.x - A.b1.x # TODO: This works, but doesn't update the diagram for some reason ...
+# TODO: Also, make the pointers show up nicely in this one. Right now it's fairly ambiguous.
 
-# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
-
-# TODO: Then, get instances of classes to show up all nice.
 # TODO: Then, make sure methods and bound methods work fine.
-
-# TODO: You may be able to get references to a class' instances via the class itself. It maintains weakrefs to its instances right?
-
-# TODO: You'll have to consider the debut index of instances since you can do calls like `y = f(A(), g(B()))`.
+# TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
+# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?

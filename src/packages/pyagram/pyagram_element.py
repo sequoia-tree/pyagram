@@ -341,7 +341,6 @@ class PyagramFrame(PyagramElement):
                 for flag in self.flags
                 if flag not in self.state.hidden_flags
             ],
-            'is_class_frame': False,
         }
 
     def get_bindings(self):
