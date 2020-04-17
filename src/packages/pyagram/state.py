@@ -339,33 +339,6 @@ class MemoryState:
         class_frame.id = id(class_object)
         class_frame.parents = class_object.__bases__
 
-# TODO: In PyagramClassFrame.__init__ maybe do something like `del frame.f_globals['__builtins__']`, as in PyagramFrame.__init__, to remove '__module__' and '__qualname__'? Or you could just not display them.
-# TODO: Delete __module__ from the frame bindings, and filter __qualname__ so that it's there but not displayed.
-
-# Suppose you have this:
-# class A:
-#     class B:
-#         pass
-#     B = None
-
-# class A:
-#     class B:
-#         class C:
-#             pass
-
-# Here, without the commented-out line, class B appears a little early.
-# class A:
-#     # x = 1
-#     class B:
-#         pass
-# def f():
-#     class A:
-#         def f(): return
-#         def g(self): return
-#     return A
-# a = f()
-# b = A.B
-
 # TODO: I think inspect.signature doesn't play well with Methods ... look at all the places you use it. You can't treat functions and methods the same.
 
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?

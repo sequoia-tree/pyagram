@@ -384,6 +384,11 @@ class PyagramClassFrame:
     """
     """
 
+    HIDDEN_BINDINGS = {
+        '__module__',
+        '__qualname__',
+    }
+
     def __init__(self, frame, *, state):
         self.id = id(self)
         self.state = state
