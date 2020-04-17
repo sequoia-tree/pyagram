@@ -121,7 +121,7 @@ class ProgramState:
             if self.expected_class_binding is not None:
 
                 frame_object = self.expected_class_binding
-                class_object = self.curr_element.frame.f_locals[frame_object.f_code.co_name]
+                class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
                 self.state.memory_state.record_class_frame(frame_object, class_object)
 
                 self.expected_class_binding = None
@@ -340,16 +340,39 @@ class MemoryState:
         class_frame.parents = class_object.__bases__
 
 # TODO: In PyagramClassFrame.__init__ maybe do something like `del frame.f_globals['__builtins__']`, as in PyagramFrame.__init__, to remove '__module__' and '__qualname__'? Or you could just not display them.
+# TODO: Delete __module__ from the frame bindings, and filter __qualname__ so that it's there but not displayed.
+
+# Suppose you have this:
+# class A:
+#     class B:
+#         pass
+#     B = None
+
+# class A:
+#     class B:
+#         class C:
+#             pass
+
+# Here, without the commented-out line, class B appears a little early.
+# class A:
+#     # x = 1
+#     class B:
+#         pass
+# def f():
+#     class A:
+#         def f(): return
+#         def g(self): return
+#     return A
+# a = f()
+# b = A.B
 
 # TODO: I think inspect.signature doesn't play well with Methods ... look at all the places you use it. You can't treat functions and methods the same.
-
-# TODO: Nested classes don't work yet.
-# class A:
-#     x = 1
-#     class B:
-#         x = 2
-# TODO: Either (1) Make the program_state.curr_element track whether you're in a class definition, or (2) introduce a curr_frame variable, or (3) hold out hope that the __qualname__ can somehow solve this?
 
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
 
 # TODO: Then, get instances of classes to show up all nice.
+# TODO: Then, make sure methods and bound methods work fine.
+
+# TODO: You may be able to get references to a class' instances via the class itself. It maintains weakrefs to its instances right?
+
+# TODO: You'll have to consider the debut index of instances since you can do calls like `y = f(A(), g(B()))`.
