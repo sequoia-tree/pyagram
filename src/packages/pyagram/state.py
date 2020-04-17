@@ -268,16 +268,22 @@ class MemoryState:
             for object in self.objects:
                 if not pyagram_types.is_builtin_type(object):
                     if isinstance(object, pyagram_element.PyagramClassFrame):
-                        referents = object.frame.f_locals.values()
+                        referents = object.bindings.values()
+                        ignored = [
+                            object.bindings[hidden_binding]
+                            for hidden_binding in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
+                            if hidden_binding in object.bindings
+                        ]
                     elif pyagram_types.is_function_type(object):
                         self.record_parent(curr_frame, object)
                         referents = utils.get_defaults(object)
+                        ignored = []
                     else:
                         referents = gc.get_referents(object)
-                        if hasattr(object, '__dict__'):
-                            referents = filter(lambda referent: referent is not object.__dict__, referents)
+                        ignored = [object.__dict__] if hasattr(object, '__dict__') else []
                     for referent in referents:
-                        self.track(referent)
+                        if referent not in ignored:
+                            self.track(referent)
             curr_frame.is_new_frame = False
 
     def snapshot(self):
@@ -340,20 +346,9 @@ class MemoryState:
         self.class_frames_by_class[class_object] = class_frame
         class_frame.id = id(class_object)
         class_frame.parents = class_object.__bases__
+        class_frame.bindings = class_object.__dict__
 
-# TODO: Make this work ...
-# class A:
-#     class B:
-#         x = 1
-#     b1 = B()
-#     b2 = B()
-#     B = None
-# a = A()
-# a.x = A.b1.x
-# b2 = A.b2
-# b2.x = A.b1.x + 3
-# A.x = b2.x - A.b1.x # TODO: This works, but doesn't update the diagram for some reason ...
-# TODO: Also, make the pointers show up nicely in this one. Right now it's fairly ambiguous.
+# TODO: You've only tried it with instances of user-defined classes so far. Try it with some built-in stuff.
 
 # TODO: Then, make sure methods and bound methods work fine.
 # TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.

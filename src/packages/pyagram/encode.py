@@ -123,7 +123,7 @@ class Encoder:
                 'parents': object,
                 'bindings': {
                     key: self.reference_snapshot(value, memory_state)
-                    for key, value in object.frame.f_locals.items()
+                    for key, value in object.bindings.items()
                     if key not in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
                 },
                 'return_value': None,
