@@ -351,6 +351,15 @@ class MemoryState:
         class_frame.parents = class_object.__bases__
         class_frame.bindings = class_object.__dict__
 
+# TODO: Make built-in objects display nice.
+# (*) Why do the slot wrappers and methods not show up like other functions? Fix that.
+# (*) Maybe if the repr is of the form <CLASS INSTANCE_NAME at 0xHEXADECIMAL> you can instead display it as you display other instances, i.e. a box with "CLASS instance" written inside? Things like None and NotImplemented should still be represented the same way though, as just the word None or NotImplemented according to their repr.
+# (*) This displays horribly! Maybe if the object is an INSTANCE of the `type` class then (1) draw it like one of your PyagramClassFrames; (2) write a `...` somewhere; and (3) omit most of the contents by adding it all to `ignored`.
+# a = object()
+# b = IndexError('Oops.')
+# x = object
+# y = IndexError
+
 # TODO: Make sure methods and bound methods of classes and instances work fine.
 # TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
