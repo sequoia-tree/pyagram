@@ -278,9 +278,12 @@ class MemoryState:
                         self.record_parent(curr_frame, object)
                         referents = utils.get_defaults(object)
                         ignored = []
+                    elif hasattr(object, '__dict__'):
+                        referents = object.__dict__.values()
+                        ignored = []
                     else:
                         referents = gc.get_referents(object)
-                        ignored = [object.__dict__] if hasattr(object, '__dict__') else []
+                        ignored = []
                     for referent in referents:
                         if referent not in ignored:
                             self.track(referent)
@@ -348,8 +351,6 @@ class MemoryState:
         class_frame.parents = class_object.__bases__
         class_frame.bindings = class_object.__dict__
 
-# TODO: You've only tried it with instances of user-defined classes so far. Try it with some built-in stuff.
-
-# TODO: Then, make sure methods and bound methods work fine.
+# TODO: Make sure methods and bound methods of classes and instances work fine.
 # TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
