@@ -267,29 +267,37 @@ class MemoryState:
             curr_frame = self.state.program_state.curr_element
             for object in self.objects:
                 if not pyagram_types.is_builtin_type(object):
-                    if isinstance(object, pyagram_element.PyagramClassFrame):
-                        referents = object.bindings.values()
-                        ignored = [
-                            object.bindings[hidden_binding]
-                            for hidden_binding in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
-                            if hidden_binding in object.bindings
-                        ]
-                    elif pyagram_types.is_function_type(object):
+
+                    object_type = type(object)
+                    if object_type in pyagram_types.FUNCTION_TYPES:
                         self.record_parent(curr_frame, object)
                         referents = utils.get_defaults(object)
-                        ignored = []
-                    elif pyagram_types.is_generator_type(object):
+                    elif object_type in pyagram_types.BUILTIN_FUNCTION_TYPES:
                         referents = []
-                        ignored = []
+                    elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
+                        # TODO: Here where you use gc, you don't actually need it. For ORDERED_COLLECTION_TYPES you can just do something like `iter(object)`, or maybe just `object`. Similar for UNORDERED_COLLECTION_TYPES. For MAPPING_TYPES it's a bit more complex, but not by much -- you just have to get all the keys and values in the mapping.
+                        referents = gc.get_referents(object)
+                    elif object_type in pyagram_types.UNORDERED_COLLECTION_TYPES:
+                        referents = gc.get_referents(object)
+                    elif object_type in pyagram_types.MAPPING_TYPES:
+                        referents = gc.get_referents(object)
+                    elif object_type in pyagram_types.ITERATOR_TYPES:
+                        referents = []
+                    elif object_type in pyagram_types.GENERATOR_TYPES:
+                        referents = []
+                    elif object_type is pyagram_element.PyagramClassFrame:
+                        referents = [
+                            value
+                            for key, value in object.bindings.items()
+                            if key not in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
+                        ]
                     elif hasattr(object, '__dict__'):
                         referents = object.__dict__.values()
-                        ignored = []
                     else:
-                        referents = gc.get_referents(object)
-                        ignored = []
+                        referents = []
+
                     for referent in referents:
-                        if referent not in ignored:
-                            self.track(referent)
+                        self.track(referent)
             curr_frame.is_new_frame = False
 
     def snapshot(self):
@@ -364,6 +372,12 @@ class MemoryState:
 #     x = 4
 # You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
 # Snapshot on line 129?
+
+# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that?
+# class A:
+#     pass
+# a = A()
+# a.__dict__ = {a: 1}
 
 # TODO: Generators
 # def fib():
