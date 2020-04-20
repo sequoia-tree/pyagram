@@ -54,3 +54,8 @@ def is_builtin_type(object):
     """
     """
     return isinstance(object, BUILTIN_FUNCTION_TYPES)
+
+def is_generator_type(object):
+    """
+    """
+    return isinstance(object, GENERATOR_TYPES)

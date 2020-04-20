@@ -113,8 +113,12 @@ class Encoder:
             snapshot = NotImplemented # TODO
         elif object_type in pyagram_types.GENERATOR_TYPES:
             encoding = 'generator'
-            snapshot = NotImplemented # TODO
-            # TODO: Probably make use of `gi_frame` in the `inspect` module.
+            snapshot = {
+                'TODO': repr(object), # TODO
+            }
+            # TODO: Use of `gi_frame` in the `inspect` module.
+            # TODO: Use `gi_running` to see if it's the curr_element too.
+            # TODO: Make sure to track() the bindings in the frame, and also the `gi_yieldfrom` if it's not None.
         elif object_type is pyagram_element.PyagramClassFrame:
             encoding = 'class_frame'
             snapshot = {
@@ -129,29 +133,28 @@ class Encoder:
                 'return_value': None,
                 'flags': [],
             }
+        elif hasattr(object, '__dict__'):
+            encoding = 'object_dict'
+            snapshot = {
+                'is_curr_element': False,
+                'name': type(object).__name__,
+                'parents': [],
+                'bindings': {
+                    key: self.reference_snapshot(value, memory_state)
+                    for key, value in object.__dict__.items()
+                },
+                'return_value': None,
+                'flags': [],
+            }
+            # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...
+            # (*) Make it an option [default ON] to render the contents in object frames.
+            # (*) Limit the size of each object frame, but make the contents scrollable on the site.
+            # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
         else:
-            if hasattr(object, '__dict__'):
-                encoding = 'object_dict'
-                snapshot = {
-                    'is_curr_element': False,
-                    'name': type(object).__name__,
-                    'parents': [],
-                    'bindings': {
-                        key: self.reference_snapshot(value, memory_state)
-                        for key, value in object.__dict__.items()
-                    },
-                    'return_value': None,
-                    'flags': [],
-                }
-                # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...
-                # (*) Make it an option [default ON] to render the contents in object frames.
-                # (*) Limit the size of each object frame, but make the contents scrollable on the site.
-                # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
-            else:
-                encoding = 'object_repr'
-                snapshot = {
-                    'repr': repr(object),
-                }
+            encoding = 'object_repr'
+            snapshot = {
+                'repr': repr(object),
+            }
         return {
             'encoding': encoding, # So the decoder knows the structure of `snapshot`.
             'object': snapshot,

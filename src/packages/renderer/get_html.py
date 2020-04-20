@@ -36,7 +36,7 @@ def get_flag_html(flag_snapshot):
 def get_frame_html(frame_snapshot):
     return get_component_html(templates.FRAME_TEMPLATE, frame_snapshot, frame_type='function')
 
-def get_reference_html(reference_snapshot, *, monospace=False):
+def get_reference_html(reference_snapshot, *, monospace=True):
     if isinstance(reference_snapshot, dict):
         return get_html(
             templates.META_REFERENCE_TEMPLATE,

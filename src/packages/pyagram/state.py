@@ -278,6 +278,9 @@ class MemoryState:
                         self.record_parent(curr_frame, object)
                         referents = utils.get_defaults(object)
                         ignored = []
+                    elif pyagram_types.is_generator_type(object):
+                        referents = []
+                        ignored = []
                     elif hasattr(object, '__dict__'):
                         referents = object.__dict__.values()
                         ignored = []
@@ -351,8 +354,59 @@ class MemoryState:
         class_frame.parents = class_object.__bases__
         class_frame.bindings = class_object.__dict__
 
+# TODO: In this code ...
+# class A:
+#     x = 1
+#     class B:
+#         x = 2
+#     class C:
+#         x = 3
+#     x = 4
+# You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
+# Snapshot on line 129?
+
+# TODO: Generators
+# def fib():
+#     prev, cur = 0, 1
+#     while True:
+#         yield prev
+#         prev, cur = cur, prev + cur
+# f = fib()
+# a = next(f)
+
+# TODO: Make magic methods display nice. Both flags are wrong here ...
+# class A:
+#     def __init__(self):
+#         pass
+#     def __lt__(self, other):
+#         return True
+# a = A()
+# b = A()
+# c = a < b
+
+# TODO: Bound methods should not be visualized. Instead of a pointer to a particular bound function, you should see a pointer to the function on which it's based (ie its .__func__). This is unfortunate but necessary behavior, since it's impossible to tell, given just the code object, whether you're calling a function or the bound method based on that function. Similar behavior for wrappers, descriptors, etc.
+# def f():
+#     class A:
+#         def f(self):
+#             return 0
+#     return A
+# A = f()
+# a = A()
+# b = A()
+# c = a.f()
+# a.f = b.f
+# xyz = a.f
+# A.f = lambda x: 1
+# d = a.f()
+# e = A.f(a)
+# TODO: Make sure methods and bound methods of classes and instances work fine.
+# TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
+# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
+# Functions, unbound methods, and <slot wrapper>s should display the same way.
+# Bound methods include a <bound method> type, and a <method-wrapper> type.
+
 # TODO: Make built-in objects display nice.
-# (*) Why do the slot wrappers and methods not show up like other functions? Fix that.
+# (*) Why do the slot wrappers and method descriptors not show up like other functions? Fix that.
 # (*) Maybe if the repr is of the form <CLASS INSTANCE_NAME at 0xHEXADECIMAL> you can instead display it as you display other instances, i.e. a box with "CLASS instance" written inside? Things like None and NotImplemented should still be represented the same way though, as just the word None or NotImplemented according to their repr.
 # (*) This displays horribly! Maybe if the object is an INSTANCE of the `type` class then (1) draw it like one of your PyagramClassFrames; (2) write a `...` somewhere; and (3) omit most of the contents by adding it all to `ignored`.
 # a = object()
@@ -360,6 +414,6 @@ class MemoryState:
 # x = object
 # y = IndexError
 
-# TODO: Make sure methods and bound methods of classes and instances work fine.
-# TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
-# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
+# TODO: Iterators
+
+# TODO: Comprehensions (list comp, dict comp, genexp, etc.)

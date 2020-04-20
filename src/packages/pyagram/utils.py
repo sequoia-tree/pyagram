@@ -14,7 +14,7 @@ BANNER_UNSUPPORTED_CODE = -2
 
 def get_function(frame):
     """
-    Get the function which was called  todo todo
+    Get the function which was called todo todo
 
     :param frame: The built-in :frame: object corresponding to some function call.
     :return: The function

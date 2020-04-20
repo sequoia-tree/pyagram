@@ -238,7 +238,7 @@ TODO
 """
 
 GENERATOR_TEMPLATE = """
-TODO
+{{ TODO }}
 """
 
 # TODO: Reconsider how you display these.
