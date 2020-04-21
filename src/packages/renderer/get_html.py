@@ -75,7 +75,7 @@ def get_object_body_html(object_encoding):
     elif encoding == 'iterator':
         return get_component_html(templates.ITERATOR_TEMPLATE, object_snapshot)
     elif encoding == 'generator':
-        return get_component_html(templates.GENERATOR_TEMPLATE, object_snapshot)
+        return get_component_html(templates.FRAME_TEMPLATE, object_snapshot, frame_type='generator')
     elif encoding == 'class_frame':
         return get_component_html(templates.FRAME_TEMPLATE, object_snapshot, frame_type='class')
     elif encoding == 'object_dict':
@@ -108,7 +108,10 @@ def get_print_html(print_output, **kwargs):
     )
 
 def get_exception_html(type, value, lineno):
-    return get_print_html([f'{type}: {value}'], is_exception=True)
+    if 0 < len(value):
+        return get_print_html([f'{type}: {value}'], is_exception=True)
+    else:
+        return get_print_html([type], is_exception=True)
 
 # TODO: Instead of having layout.scss, just use jQuery to get the height of the editor + scrollbar, and set that element to have min-height: X + "px".
 

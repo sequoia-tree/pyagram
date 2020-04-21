@@ -1,4 +1,5 @@
 import gc
+import inspect
 
 from . import enums
 from . import pyagram_element
@@ -252,9 +253,11 @@ class MemoryState:
         self.state = state
         self.objects = []
         self.object_debuts = {}
-        self.function_parents = {}
         self.class_frames_by_frame = {}
         self.class_frames_by_class = {}
+        self.generator_frames = {}
+        self.generator_functs = {}
+        self.function_parents = {}
 
     def step(self):
         """
@@ -283,7 +286,9 @@ class MemoryState:
                     elif object_type in pyagram_types.ITERATOR_TYPES:
                         referents = []
                     elif object_type in pyagram_types.GENERATOR_TYPES:
-                        referents = []
+                        referents = list(inspect.getgeneratorlocals(object).values())
+                        if object.gi_yieldfrom is not None:
+                            referents.append(object.gi_yieldfrom)
                     elif object_type is pyagram_element.PyagramClassFrame:
                         referents = [
                             value
@@ -326,6 +331,8 @@ class MemoryState:
             debut_index = len(self.state.snapshots)
             self.objects.append(object)
             self.object_debuts[id(object)] = debut_index
+            if inspect.isgenerator(object):
+                self.generator_functs[object] = utils.get_function(object.gi_frame)
 
     def is_tracked(self, object):
         """
@@ -335,6 +342,24 @@ class MemoryState:
         :return:
         """
         return id(object) in self.object_debuts
+
+    def record_class_frame(self, frame_object, class_object):
+        class_frame = self.class_frames_by_frame[frame_object]
+        self.class_frames_by_class[class_object] = class_frame
+        class_frame.id = id(class_object)
+        class_frame.parents = class_object.__bases__
+        class_frame.bindings = class_object.__dict__
+
+    def record_generator_frame(self, pyagram_frame):
+        generator = None
+        for object in gc.get_referrers(pyagram_frame.frame):
+            if inspect.isgenerator(object):
+                assert generator is None, f'multiple generators refer to frame object {pyagram_frame.frame}'
+                generator = object
+        if generator in self.generator_frames:
+            assert self.generator_frames[generator].frame is pyagram_frame.frame
+        self.generator_frames[generator] = pyagram_frame
+        self.track(generator)
 
     def record_parent(self, frame, function):
         """
@@ -353,13 +378,6 @@ class MemoryState:
             else:
                 parent = frame
             self.function_parents[function] = parent
-
-    def record_class_frame(self, frame_object, class_object):
-        class_frame = self.class_frames_by_frame[frame_object]
-        self.class_frames_by_class[class_object] = class_frame
-        class_frame.id = id(class_object)
-        class_frame.parents = class_object.__bases__
-        class_frame.bindings = class_object.__dict__
 
 # TODO: In this code ...
 # class A:
@@ -380,8 +398,29 @@ class MemoryState:
 #     while True:
 #         yield prev
 #         prev, cur = cur, prev + cur
+# def g(x):
+#     return x
 # f = fib()
 # a = next(f)
+# b = next(f)
+# c = next(fib())
+# d = next(g(f))
+# e = next(g(fib()))
+# TODO: also ...
+# def g(lst):
+#     yield [a]
+#     yield 2
+#     yield from lst
+#     yield from ls2
+#     yield 9
+# a = g([3, 4, 5])
+# ls2 = [6, 7, 8]
+# while True:
+#     x = next(a)
+# TODO: Make sure to track() the bindings in the frame, and also the `gi_yieldfrom` if it's not None.
+# TODO: Maybe when yielding from, it should say "Yield value from" or "Yield from", instead of "Yield value"
+
+# TODO: In class instance frames, write "[parent = class A]".
 
 # TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that? Also, depending, make sure to track() the right stuff!
 # class A:
@@ -391,7 +430,7 @@ class MemoryState:
 
 # TODO: Make magic methods display nice. Both flags are wrong here ...
 # class A:
-#     def __init__(self):
+#     def __init__(self): # TODO: If the frame.function is a class' .__init__, then modify the flag banner accordingly.
 #         pass
 #     def __lt__(self, other):
 #         return True

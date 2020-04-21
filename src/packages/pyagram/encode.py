@@ -36,6 +36,7 @@ class Encoder:
         :param memory_state:
         :return:
         """
+        state = memory_state.state # TODO: I guess this should be the param, not memory_state.
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
@@ -64,6 +65,7 @@ class Encoder:
                 })
             encoding = 'function'
             snapshot = {
+                'is_gen_func': inspect.isgeneratorfunction(object),
                 'name': object.__name__,
                 'lambda_id':
                     {
@@ -114,11 +116,28 @@ class Encoder:
         elif object_type in pyagram_types.GENERATOR_TYPES:
             encoding = 'generator'
             snapshot = {
-                'TODO': repr(object), # TODO
+                'name': object.__name__,
+                'parents': [repr(memory_state.function_parents[memory_state.generator_functs[object]])],
+                'bindings': {
+                    key: self.reference_snapshot(value, memory_state)
+                    for key, value in inspect.getgeneratorlocals(object).items()
+                },
+                'flags': [],
             }
-            # TODO: Use of `gi_frame` in the `inspect` module.
-            # TODO: Use `gi_running` to see if it's the curr_element too.
-            # TODO: Make sure to track() the bindings in the frame, and also the `gi_yieldfrom` if it's not None.
+            if object in memory_state.generator_frames:
+                frame = memory_state.generator_frames[object]
+                snapshot.update({
+                    'is_curr_element': frame is state.program_state.curr_element,
+                    'return_value':
+                        self.reference_snapshot(frame.return_value, memory_state)
+                        if frame.has_returned
+                        else None,
+                })
+            else:
+                snapshot.update({
+                    'is_curr_element': False,
+                    'return_value': None,
+                })
         elif object_type is pyagram_element.PyagramClassFrame:
             encoding = 'class_frame'
             snapshot = {

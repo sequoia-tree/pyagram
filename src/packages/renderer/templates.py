@@ -84,16 +84,17 @@ FLAG_TEMPLATE = """
 """
 
 FRAME_TEMPLATE = """
-{% set is_object_frame = frame_type == 'class' or frame_type == 'instance' %}
-<div class="pyagram-frame {% if is_object_frame %} mr-3 {% else %} mx-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">
+<div class="pyagram-frame {% if frame_type == 'function' %} mx-3 {% else %} mr-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">
   <div class="pyagram-frame-name">
     {% if frame_type == 'function' %}
       {{ name }}
+    {% elif frame_type == 'generator' %}
+      generator <span class="font-family-monospace">{{ name }}</span>
     {% elif frame_type == 'class' %}
       class <span class="font-family-monospace">{{ name }}</span>
     {% elif frame_type == 'instance' %}
       <span class="font-family-monospace">{{ name }}</span> instance
-    {% endif %} {{ get_parent_frame_html(parents, monospace=is_object_frame) }}
+    {% endif %} {{ get_parent_frame_html(parents, monospace=(frame_type == 'class' or frame_type == 'instance')) }}
   </div>
   <table class="ml-auto mr-0 font-family-monospace">
     {% for key, value in bindings.items() %}
@@ -104,7 +105,13 @@ FRAME_TEMPLATE = """
     {% endfor %}
     {% if return_value is not none %}
       <tr>
-        <td class="text-right font-family-sans-serif">Return value</td>
+        <td class="text-right font-family-sans-serif">
+        {% if frame_type == 'generator' %}
+          Yield value
+        {% else %}
+          Return value
+        {% endif %}
+        </td>
         <td class="pyagram-value pyagram-frame-value text-left">{{ get_reference_html(return_value) }}</td>
       </tr>
     {% endif %}
@@ -140,7 +147,11 @@ OBJECT_TEMPLATE = """
 """
 
 FUNCTION_TEMPLATE = """
-function
+{% if is_gen_func %}
+  generator function
+{% else %}
+  function
+{% endif %}
 <span class="ml-2 font-family-monospace">
   {% if lambda_id is none %}
     {{ name }}
@@ -235,10 +246,6 @@ MAPPING_TEMPLATE = """
 
 ITERATOR_TEMPLATE = """
 TODO
-"""
-
-GENERATOR_TEMPLATE = """
-{{ TODO }}
 """
 
 # TODO: Reconsider how you display these.
