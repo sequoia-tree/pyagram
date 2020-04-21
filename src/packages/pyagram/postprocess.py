@@ -1,5 +1,8 @@
 from . import encode
+from . import exception
 from . import utils
+
+HIDDEN_FLAG_CODE = -1
 
 UNKNOWN_VALUE_CLASS = 'unknown'
 UNKNOWN_VALUE_ENCODING = '<?>'
@@ -12,22 +15,27 @@ class Postprocessor:
         self.state = state
 
     def postprocess(self):
-        self.hide_hidden_snapshots()
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots()
 
     def postprocess_snapshots(self):
-        for snapshot in self.state.snapshots:
-            if snapshot is not None:
+        for i, snapshot in enumerate(self.state.snapshots):
+            try:
                 self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
                 self.postprocess_memory_snapshot(snapshot['memory_state'])
+            except exception.HiddenSnapshotException:
+                self.state.snapshots[i] = None
 
     def postprocess_element_snapshot(self, element_snapshot):
         """
         """
-        for flag_snapshot in element_snapshot['flags']:
-            self.postprocess_flag_snapshot(flag_snapshot)
+        i, flags = 0, element_snapshot['flags']
+        while i < len(flags):
+            if self.postprocess_flag_snapshot(flags[i]) == HIDDEN_FLAG_CODE:
+                flags[i : i + 1] = flags[i]['flags']
+            else:
+                i += 1
 
     def postprocess_flag_snapshot(self, flag_snapshot):
         """
@@ -36,7 +44,13 @@ class Postprocessor:
         :param flag_snapshot:
         :return:
         """
-        self.interpolate_flag_banner(flag_snapshot)
+        pyagram_flag = flag_snapshot.pop('pyagram_flag')
+        if pyagram_flag.is_hidden:
+            if flag_snapshot['is_curr_element']:
+                raise exception.HiddenSnapshotException()
+            else:
+                return HIDDEN_FLAG_CODE
+        self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:
             self.postprocess_frame_snapshot(frame_snapshot)
@@ -63,13 +77,6 @@ class Postprocessor:
                     parents = [parent.__name__ for parent in class_frame.parents]
                 snapshot['parents'] = parents
 
-    def hide_hidden_snapshots(self):
-        for hidden_flag in self.state.hidden_flags:
-            start_index = hidden_flag.start_index
-            close_index = hidden_flag.close_index
-            for i in range(start_index, close_index + 1):
-                self.state.snapshots[i] = None
-
     def kill_hidden_snapshots(self):
         i = 0
         while i < len(self.state.snapshots):
@@ -92,7 +99,7 @@ class Postprocessor:
             latter_snapshot['program_state']['curr_line_no'] = latter_line_no
             i -= 1
 
-    def interpolate_flag_banner(self, flag_snapshot):
+    def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):
         """
         <summary>
 
@@ -101,7 +108,6 @@ class Postprocessor:
         """
         # TODO: Clean up this function a bit.
 
-        pyagram_flag = flag_snapshot.pop('pyagram_flag')
         pyagram_frame = pyagram_flag.frame
 
         has_frame = pyagram_frame is not None

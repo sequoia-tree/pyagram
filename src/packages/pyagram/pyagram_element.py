@@ -65,6 +65,7 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_flag = True
+        self.is_hidden = False
         banner_elements, banner_bindings = banner
         utils.concatenate_adjacent_strings(banner_elements)
         self.has_processed_subflag_since_prev_eval = False
@@ -72,8 +73,8 @@ class PyagramFlag(PyagramElement):
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
         self.positional_arg_index = 0
-        self.start_index = len(self.state.snapshots)
-        self.close_index = None
+        # self.start_index = len(self.state.snapshots)
+        # self.close_index = None
         self.frame = None
 
     @property
@@ -156,7 +157,6 @@ class PyagramFlag(PyagramElement):
             'flags': [
                 flag.snapshot()
                 for flag in self.flags
-                if flag not in self.state.hidden_flags
             ],
         }
 
@@ -216,8 +216,8 @@ class PyagramFlag(PyagramElement):
         :return:
         """
         if self.frame is None:
-            self.state.hidden_flags.append(self)
-        self.close_index = len(self.state.snapshots)
+            self.is_hidden = True
+        # self.close_index = len(self.state.snapshots)
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
@@ -339,7 +339,6 @@ class PyagramFrame(PyagramElement):
             'flags': [
                 flag.snapshot()
                 for flag in self.flags
-                if flag not in self.state.hidden_flags
             ],
         }
 

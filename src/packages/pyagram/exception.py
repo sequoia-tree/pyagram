@@ -1,3 +1,9 @@
+class HiddenSnapshotException(Exception):
+    """
+    """
+
+    pass
+
 class UserException(Exception):
     """
     """

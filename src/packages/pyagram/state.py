@@ -23,7 +23,6 @@ class State:
         self.program_state = ProgramState(self, global_frame)
         self.memory_state = MemoryState(self)
         self.print_output = stdout
-        self.hidden_flags = []
         self.encoder = encoder
         self.snapshots = []
 
@@ -373,13 +372,9 @@ class MemoryState:
 # You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
 # Snapshot on line 129?
 
-# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that?
-# class A:
-#     pass
-# a = A()
-# a.__dict__ = {a: 1}
-
 # TODO: Generators
+# TODO: Basically we don't want a flag or frame for it. Instead we want to display the frame as an object frame, even though it isn't really.
+# TODO: (1) If a flag is in hidden_flags, hide it -- but NOT its subflags! (2) Make the generator flag hidden.
 # def fib():
 #     prev, cur = 0, 1
 #     while True:
@@ -387,6 +382,12 @@ class MemoryState:
 #         prev, cur = cur, prev + cur
 # f = fib()
 # a = next(f)
+
+# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that? Also, depending, make sure to track() the right stuff!
+# class A:
+#     pass
+# a = A()
+# a.__dict__ = {a: 1}
 
 # TODO: Make magic methods display nice. Both flags are wrong here ...
 # class A:

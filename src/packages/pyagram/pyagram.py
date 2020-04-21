@@ -3,10 +3,10 @@ import sys
 import traceback
 
 from . import encode
+from . import exception
 from . import postprocess
 from . import preprocess
 from . import trace
-from . import user_exception
 
 class Pyagram:
     """
@@ -44,7 +44,7 @@ class Pyagram:
                         globals=global_bindings,
                         locals=global_bindings,
                     )
-                except user_exception.UserException as e:
+                except exception.UserException as e:
                     tracer.state.program_state.exception_snapshot = {
                         'type': e.type.__name__,
                         'value': str(e.value),
