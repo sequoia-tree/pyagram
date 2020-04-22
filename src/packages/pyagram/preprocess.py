@@ -83,11 +83,12 @@ class CodeWrapper(ast.NodeTransformer):
             func=inner_lambda,
             args=[],
             keywords=[],
-            lineno=utils.pair_naturals(
-                node.lineno,
-                configs.INNER_CALL_LINENO,
-                max_x=self.preprocessor.num_lines,
-            )
+            lineno=configs.INNER_CALL_LINENO, # TODO: Replace with commented-out snippet.
+            # lineno=utils.pair_naturals(
+            #     node.lineno,
+            #     configs.INNER_CALL_LINENO,
+            #     max_x=self.preprocessor.num_lines,
+            # ),
         )
         outer_call = ast.Call(
             func=outer_lambda,
@@ -96,11 +97,12 @@ class CodeWrapper(ast.NodeTransformer):
                 node,
             ],
             keywords=[],
-            lineno=utils.pair_naturals(
-                node.lineno,
-                configs.OUTER_CALL_LINENO,
-                max_x=self.preprocessor.num_lines,
-            )
+            lineno=configs.OUTER_CALL_LINENO, # TODO: Replace with commented-out snippet.
+            # lineno=utils.pair_naturals(
+            #     node.lineno,
+            #     configs.OUTER_CALL_LINENO,
+            #     max_x=self.preprocessor.num_lines,
+            # ),
         )
         self.generic_visit(node)
         return outer_call
@@ -108,11 +110,12 @@ class CodeWrapper(ast.NodeTransformer):
     def visit_ClassDef(self, node):
         """
         """
-        node.lineno = utils.pair_naturals(
-            node.lineno,
-            configs.CLASS_DEFN_LINENO,
-            max_x=self.preprocessor.num_lines,
-        )
+        node.lineno=configs.CLASS_DEFN_LINENO # TODO: Replace with commented-out snippet.
+        # node.lineno = utils.pair_naturals(
+        #     node.lineno,
+        #     configs.CLASS_DEFN_LINENO,
+        #     max_x=self.preprocessor.num_lines,
+        # )
         self.generic_visit(node)
         return node
 

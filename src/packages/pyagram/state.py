@@ -25,7 +25,6 @@ class State:
         self.memory_state = MemoryState(self)
         self.print_output = stdout
         self.encoder = encoder
-        self.num_lines = encoder.num_lines
         self.snapshots = []
 
     def step(self, frame, is_frame_open=None, is_frame_close=None, return_value=None):
@@ -112,8 +111,6 @@ class ProgramState:
         :param return_value: As in state.State.step.
         :return: None.
         """
-        if frame.f_lineno > self.state.num_lines:
-            frame.f_lineno = utils.unpair_naturals(frame.f_lineno, max_x=self.state.num_lines)[0]
         if frame is not None:
             if frame not in self.frame_types:
                 # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
