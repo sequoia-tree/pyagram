@@ -1,33 +1,29 @@
 import bdb
 
 from . import enum
-from . import state
 
 class Tracer(bdb.Bdb):
     """
-    <summary>
     """
 
-    def __init__(self, encoder, stdout):
+    def __init__(self, state):
         super().__init__()
-        self.encoder = encoder
-        self.stdout = stdout
-        self.state = None
+        self.state = state
 
     def user_call(self, frame, args):
         """
         """
-        self.step(frame, trace_type=enum.TraceTypes.USER_CALL)
+        self.state.step(frame, trace_type=enum.TraceTypes.USER_CALL)
 
     def user_line(self, frame):
         """
         """
-        self.step(frame, trace_type=enum.TraceTypes.USER_LINE)
+        self.state.step(frame, trace_type=enum.TraceTypes.USER_LINE)
 
     def user_return(self, frame, return_value):
         """
         """
-        self.step(frame, return_value, trace_type=enum.TraceTypes.USER_RETURN)
+        self.state.step(frame, return_value, trace_type=enum.TraceTypes.USER_RETURN)
 
     def user_exception(self, frame, exception_info):
         """
@@ -45,10 +41,3 @@ class Tracer(bdb.Bdb):
         # TODO: ... the desired behavior is what it would do without the following line.
         #raise exception.UserException(*exception_info)
         pass # TODO
-
-    def step(self, frame, *step_info, trace_type):
-        """
-        """
-        if self.state is None:
-            self.state = state.State(frame, self.encoder, self.stdout) # TODO: init state in pyagram.py
-        self.state.step(frame, *step_info, trace_type=trace_type)

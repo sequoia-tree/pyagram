@@ -8,20 +8,11 @@ from . import utils
 
 class State:
     """
-    The instantaneous state of the pyagram at a particular step during the execution of the input
-    code.
-
-    The state consists of the following:
-    * The state of the program.
-    * The state of the memory.
-    * The sequence of strings printed by the input code in the current step and all previous.
-
-    :param global_frame:
     """
 
-    def __init__(self, global_frame, encoder, stdout):
+    def __init__(self, encoder, stdout):
         self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
-        self.program_state = ProgramState(self, global_frame)
+        self.program_state = None
         self.memory_state = MemoryState(self)
         self.print_output = stdout
         self.encoder = encoder
@@ -30,6 +21,10 @@ class State:
     def step(self, frame, *step_info, trace_type):
         """
         """
+        if self.program_state is None:
+            global_frame = frame
+            self.program_state = ProgramState(self, global_frame)
+
         is_frame_open=False
         is_frame_close=False
         return_value=None

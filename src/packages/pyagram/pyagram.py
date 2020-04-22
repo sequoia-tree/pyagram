@@ -1,9 +1,10 @@
-import io # TODO: Delete.
-import sys # TODO: Delete.
+import io
+import sys
 
 from . import encode
 from . import postprocess
 from . import preprocess
+from . import pyagram_state
 from . import trace
 
 class Pyagram:
@@ -11,8 +12,8 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
-        old_stdout = sys.stdout # TODO: Change stdout in trace.py.
-        new_stdout = io.StringIO() # TODO: Change stdout in trace.py.
+        old_stdout = sys.stdout
+        new_stdout = io.StringIO()
         try:
             try:
                 preprocessor = preprocess.Preprocessor(code)
@@ -22,23 +23,29 @@ class Pyagram:
                 self.data = 'TODO' # TODO
             else:
                 bindings = {}
-                encoder = encode.Encoder(preprocessor)
-                tracer = trace.Tracer(encoder, new_stdout)
-                sys.stdout = new_stdout # TODO: Change stdout in trace.py.
+                state = pyagram_state.State(
+                    encode.Encoder(preprocessor),
+                    new_stdout,
+                )
+                tracer = trace.Tracer(state)
+                sys.stdout = new_stdout
                 tracer.run(
                     preprocessor.ast,
                     globals=bindings,
                     locals=bindings,
                 )
-                sys.stdout = old_stdout # TODO: Change stdout in trace.py.
-                postprocessor = postprocess.Postprocessor(tracer.state)
+                sys.stdout = old_stdout
+                postprocessor = postprocess.Postprocessor(state)
                 postprocessor.postprocess()
                 self.encoding = 'pyagram'
-                self.data = tracer.state.snapshots
+                self.data = state.snapshots
         except Exception as exception:
+            sys.stdout = old_stdout
+            if debug:
+                print(new_stdout.getvalue())
+                raise exception
             self.encoding = 'pyagram_error'
             self.data = 'TODO' # TODO
-        sys.stdout = old_stdout # TODO: Change stdout in trace.py.
 
     def serialize(self):
         """
