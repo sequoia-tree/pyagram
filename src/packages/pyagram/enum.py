@@ -1,9 +1,15 @@
 from . import configs
-from . import utils
 
-class TraceTypes:
+class Enum:
     """
-    <summary> # basically this is like an Enum class
+    """
+
+    @staticmethod
+    def illegal_enum(illegal_enum):
+        return ValueError(f'object {illegal_enum} is not an enumeral')
+
+class TraceTypes(Enum):
+    """
     """
 
     USER_CALL = object()
@@ -11,35 +17,14 @@ class TraceTypes:
     USER_RETURN = object()
     USER_EXCEPTION = object()
 
-    @staticmethod
-    def illegal_trace_type(trace_type):
-        """
-        <summary>
-
-        :param trace_type:
-        :return:
-        """
-        return ValueError(f'object {trace_type} is not a TraceTypes enumeral')
-
-class FrameTypes:
+class FrameTypes(Enum):
     """
-    <summary> # basically this is like an Enum class
     """
 
     SRC_CALL_PRECURSOR = object()
     SRC_CALL = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
-
-    @staticmethod
-    def illegal_frame_type(frame_type):
-        """
-        <summary>
-
-        :param frame_type:
-        :return:
-        """
-        return ValueError(f'object {frame_type} is not a FrameTypes enumeral')
 
     @staticmethod
     def identify_frame_type(frame):

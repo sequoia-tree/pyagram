@@ -378,7 +378,7 @@ class PyagramFrame(PyagramElement):
         if not self.is_global_frame:
             self.return_value = return_value
             self.has_returned = True
-        self.state.step(None)
+        self.state.step(None, trace_type=None)
         self.state.snapshot()
         return self.opened_by
 

@@ -1,10 +1,7 @@
 import bdb
 
-from . import configs
-from . import enums
-from . import exception
+from . import enum
 from . import state
-from . import utils
 
 class Tracer(bdb.Bdb):
     """
@@ -19,48 +16,26 @@ class Tracer(bdb.Bdb):
 
     def user_call(self, frame, args):
         """
-        <summary>
-
-        :param frame: the frame that gets opened
-        :param args: the arguments to the function call (pretty sure this is deprecated tho)
-        :return:
         """
-        self.step(frame, is_frame_open=True)
-        self.snapshot(enums.TraceTypes.USER_CALL)
+        self.step(frame, trace_type=enum.TraceTypes.USER_CALL)
 
     def user_line(self, frame):
         """
-        <summary>
-
-        :param frame:
-        :return:
         """
-        self.step(frame)
-        self.snapshot(enums.TraceTypes.USER_LINE)
+        self.step(frame, trace_type=enum.TraceTypes.USER_LINE)
 
     def user_return(self, frame, return_value):
         """
-        <summary>
-
-        :param frame:
-        :param return_value:
-        :return:
         """
-        self.step(frame, is_frame_close=True, return_value=return_value)
-        self.snapshot(enums.TraceTypes.USER_RETURN)
+        self.step(frame, return_value, trace_type=enum.TraceTypes.USER_RETURN)
 
     def user_exception(self, frame, exception_info):
         """
-        <summary>
-
-        :param frame:
-        :param exception_info:
-        :return:
         """
         # TODO: Figure out how you want to address exceptions.
         # TODO: If there is an error, then don't do any of the flag banner nonsense.
         # TODO: Your code relies on a program that works; therefore if the code doesn't work, your code will throw some error that is different from the one thrown by the input code. If there's an error, perhaps run the student's code plain-out and scrape its error message?
-        self.snapshot(enums.TraceTypes.USER_EXCEPTION)
+        #self.snapshot(enum.TraceTypes.USER_EXCEPTION)
         # TODO: We only want to raise a UserException if the user doesn't catch their exception! For something like this ...
         # l = [1, 2, 3]
         # try:
@@ -68,42 +43,12 @@ class Tracer(bdb.Bdb):
         # except IndexError:
         #     print('hi')
         # TODO: ... the desired behavior is what it would do without the following line.
-        raise exception.UserException(*exception_info)
+        #raise exception.UserException(*exception_info)
+        pass # TODO
 
-    def step(self, frame, *, is_frame_open=False, is_frame_close=False, return_value=None):
+    def step(self, frame, *step_info, trace_type):
         """
-        <summary>
-
-        :param frame:
-        :param is_frame_open:
-        :param is_frame_close:
-        :param return_value:
-        :return:
         """
         if self.state is None:
-            self.state = state.State(frame, self.encoder, self.stdout)
-        self.state.step(frame, is_frame_open, is_frame_close, return_value)
-
-    def snapshot(self, trace_type):
-        """
-        <summary>
-
-        :return:
-        """
-        if self.state.program_state.curr_element is None:
-            take_snapshot = False
-        elif trace_type is enums.TraceTypes.USER_CALL:
-            take_snapshot = False
-        elif trace_type is enums.TraceTypes.USER_LINE:
-            take_snapshot = self.state.program_state.prev_line_no != configs.INNER_CALL_LINENO \
-                        and self.state.program_state.prev_line_no != configs.OUTER_CALL_LINENO \
-                        and not self.state.program_state.is_complete_flag
-        elif trace_type is enums.TraceTypes.USER_RETURN:
-            take_snapshot = not self.state.program_state.is_complete_flag
-        elif trace_type is enums.TraceTypes.USER_EXCEPTION:
-            take_snapshot = False
-        else:
-            raise enums.TraceTypes.illegal_trace_type(trace_type)
-        # TODO: This still isn't quite perfect. You take duplicate snapshots in some cases, which get pruned out during postprocessing, but it'd be much more efficient if you could get this right.
-        if take_snapshot:
-            self.state.snapshot()
+            self.state = state.State(frame, self.encoder, self.stdout) # TODO: init state in pyagram.py
+        self.state.step(frame, *step_info, trace_type=trace_type)

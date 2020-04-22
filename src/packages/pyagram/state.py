@@ -1,7 +1,7 @@
 import gc
 import inspect
 
-from . import enums
+from . import enum
 from . import pyagram_element
 from . import pyagram_types
 from . import utils
@@ -27,18 +27,21 @@ class State:
         self.encoder = encoder
         self.snapshots = []
 
-    def step(self, frame, is_frame_open=None, is_frame_close=None, return_value=None):
+    def step(self, frame, *step_info, trace_type):
         """
-        <summary> # may also pass in frame=None, eg in PyagramFrame.close
+        """
+        is_frame_open=False
+        is_frame_close=False
+        return_value=None
+        if trace_type is enum.TraceTypes.USER_CALL:
+            is_frame_open=True
+        if trace_type is enum.TraceTypes.USER_RETURN:
+            is_frame_close=True
+            return_value,=step_info
 
-        :param frame: As in trace.Tracer.step.
-        :param is_frame_open: As in trace.Tracer.step.
-        :param is_frame_close: As in trace.Tracer.step.
-        :param return_value: As in trace.Tracer.step.
-        :return: None.
-        """
         self.program_state.step(frame, is_frame_open, is_frame_close, return_value)
         self.memory_state.step()
+        self.snapshot() # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others.
 
     def snapshot(self):
         """
@@ -114,7 +117,7 @@ class ProgramState:
         if frame is not None:
             if frame not in self.frame_types:
                 # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
-                self.frame_types[frame] = enums.FrameTypes.identify_frame_type(frame)
+                self.frame_types[frame] = enum.FrameTypes.identify_frame_type(frame)
             frame_type = self.frame_types[frame]
             self.prev_line_no = self.curr_line_no
             self.curr_line_no = frame.f_lineno
@@ -150,21 +153,21 @@ class ProgramState:
         :param frame_type:
         :return:
         """
-        if frame_type is enums.FrameTypes.SRC_CALL:
+        if frame_type is enum.FrameTypes.SRC_CALL:
 
             is_implicit = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
             if is_implicit:
                 self.open_pyagram_flag(banner=None) # TODO: what is the appropriate banner for an implicit call?
             self.open_pyagram_frame(frame, is_implicit)
 
-        elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
-        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             self.close_pyagram_flag()
-        elif frame_type is enums.FrameTypes.CLASS_DEFINITION:
+        elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         else:
-            raise enums.FrameTypes.illegal_frame_type(frame_type)
+            pass#raise enum.FrameTypes.illegal_frame_type(frame_type)
 
     def process_frame_close(self, frame, frame_type, return_value):
         """
@@ -175,16 +178,16 @@ class ProgramState:
         :param return_value:
         :return:
         """
-        if frame_type is enums.FrameTypes.SRC_CALL:
+        if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(return_value)
-        elif frame_type is enums.FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(return_value)
-        elif frame_type is enums.FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
-        elif frame_type is enums.FrameTypes.CLASS_DEFINITION:
+        elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
         else:
-            raise enums.FrameTypes.illegal_frame_type(frame_type)
+            pass#raise enum.FrameTypes.illegal_frame_type(frame_type)
 
     def open_pyagram_flag(self, banner):
         """
