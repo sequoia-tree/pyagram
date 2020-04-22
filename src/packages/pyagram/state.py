@@ -284,7 +284,8 @@ class MemoryState:
                     elif object_type in pyagram_types.MAPPING_TYPES:
                         referents = gc.get_referents(object)
                     elif object_type in pyagram_types.ITERATOR_TYPES:
-                        referents = [pyagram_types.get_iterable(object)]
+                        iterable = pyagram_types.get_iterable(object)
+                        referents = [] if iterable is None else [iterable]
                     elif object_type in pyagram_types.GENERATOR_TYPES:
                         referents = list(inspect.getgeneratorlocals(object).values())
                         if object.gi_yieldfrom is not None:
@@ -389,7 +390,7 @@ class MemoryState:
 #     x = 4
 # You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
 # Snapshot on line 129?
-# TODO: Also you may be taking too many snapshots with iterators, possibly generators too.
+# TODO: Also you're taking too many snapshots with iterators. Possibly generators too.
 
 # TODO: Generators
 # TODO: Basically we don't want a flag or frame for it. Instead we want to display the frame as an object frame, even though it isn't really.
@@ -418,8 +419,6 @@ class MemoryState:
 # ls2 = [6, 7, 8]
 # while True:
 #     x = next(a)
-# TODO: Make sure to track() the bindings in the frame, and also the `gi_yieldfrom` if it's not None.
-# TODO: Maybe when yielding from, it should say "Yield value from" or "Yield from", instead of "Yield value"
 
 # TODO: In class instance frames, write "[parent = class A]".
 

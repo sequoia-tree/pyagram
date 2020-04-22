@@ -100,19 +100,22 @@ FRAME_TEMPLATE = """
     {% for key, value in bindings.items() %}
       <tr>
         <td class="text-right">{{ key }}</td>
-        <td class="pyagram-value pyagram-frame-value text-left">{{ get_reference_html(value) }}</td>
+        <td class="pyagram-value text-left">{{ get_reference_html(value) }}</td>
       </tr>
     {% endfor %}
     {% if return_value is not none %}
-      <tr>
-        <td class="text-right font-family-sans-serif">
+      <tr class="font-family-sans-serif">
+        <td class="text-right">
         {% if frame_type == 'generator' %}
           Yield value
         {% else %}
           Return value
         {% endif %}
         </td>
-        <td class="pyagram-value pyagram-frame-value text-left">{{ get_reference_html(return_value) }}</td>
+        <td class="text-left">
+          <span class="pyagram-value">{{ get_reference_html(return_value) }}</span>
+          {% if frame_type == 'generator' and from is not none %} from <span class="pyagram-value">{{ get_reference_html(from) }}</span>{% endif %}
+        </td>
       </tr>
     {% endif %}
   </table>
@@ -245,11 +248,15 @@ MAPPING_TEMPLATE = """
 """
 
 ITERATOR_TEMPLATE = """
-iterator over <span class="pyagram-value">{{ get_reference_html(object) }}</span>
-{% if annotation is not none %}
-  <span> {{ annotation }}</span>
+{% if object is none %}
+  empty iterator
+{% else %}
+  iterator over <span class="pyagram-value">{{ get_reference_html(object) }}</span>
+  {% if annotation is not none %}
+    <span> {{ annotation }}</span>
+  {% endif %}
+  <div>[next index: {{ index }}]</div>
 {% endif %}
-<div>[next index: {{ index }}]</div>
 """
 
 # TODO: Reconsider how you display these.

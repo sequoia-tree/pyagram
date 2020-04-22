@@ -114,6 +114,8 @@ class Encoder:
             encoding = 'iterator'
             iterable = pyagram_types.get_iterable(object)
             snapshot = {
+                'object': None,
+            } if iterable is None else {
                 'object': self.reference_snapshot(iterable, memory_state),
                 'index': len(iterable) - object.__length_hint__(),
                 'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
@@ -137,11 +139,13 @@ class Encoder:
                         self.reference_snapshot(frame.return_value, memory_state)
                         if frame.has_returned
                         else None,
+                    'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom, memory_state),
                 })
             else:
                 snapshot.update({
                     'is_curr_element': False,
                     'return_value': None,
+                    'from': None,
                 })
         elif object_type is pyagram_element.PyagramClassFrame:
             encoding = 'class_frame'
