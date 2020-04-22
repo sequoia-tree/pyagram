@@ -11,39 +11,29 @@ class State:
     """
 
     def __init__(self, encoder, stdout):
-        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
         self.program_state = None
         self.memory_state = MemoryState(self)
         self.print_output = stdout
         self.encoder = encoder
         self.snapshots = []
+        # ------------------------------------------------------------------------------------------
+        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
 
     def step(self, frame, *step_info, trace_type):
         """
         """
         if self.program_state is None:
-            global_frame = frame
-            self.program_state = ProgramState(self, global_frame)
-
-        is_frame_open=False
-        is_frame_close=False
-        return_value=None
-        if trace_type is enum.TraceTypes.USER_CALL:
-            is_frame_open=True
-        if trace_type is enum.TraceTypes.USER_RETURN:
-            is_frame_close=True
-            return_value,=step_info
-
-        self.program_state.step(frame, is_frame_open, is_frame_close, return_value)
+            self.program_state = ProgramState(self, frame)
+        self.program_state.step(frame, *step_info, trace_type=trace_type)
         self.memory_state.step()
+        # ------------------------------------------------------------------------------------------
         self.snapshot() # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others.
 
     def snapshot(self):
         """
-        <summary> # Represents the state at a particular step in time.
-
-        :return:
         """
+        # TODO: Rearrange the snapshots for better congruency with the `render` module.
+        # TODO: Also, consider serializing like `snapshot = [x, y, z]` instead of `snapshot = {'x': x, 'y': y, 'z': z}`. It would be more space-efficient and it'd be really nice to be able to write `x, y, z = snapshot`.
         snapshot = {
             'program_state': self.program_state.snapshot(),
             'memory_state': self.memory_state.snapshot(),
@@ -53,11 +43,6 @@ class State:
 
 class ProgramState:
     """
-    The instantaneous state of the program at a particular step during the execution of the input
-    code. It includes all flags, frames, and bindings in the pyagram.
-
-    :param state:
-    :param global_frame:
     """
 
     def __init__(self, state, global_frame):
@@ -99,7 +84,7 @@ class ProgramState:
         is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.has_returned
 
-    def step(self, frame, is_frame_open, is_frame_close, return_value):
+    def step(self, frame, *step_info, trace_type):
         """
         <summary>
 
@@ -109,6 +94,17 @@ class ProgramState:
         :param return_value: As in state.State.step.
         :return: None.
         """
+        is_frame_open=False
+        is_frame_close=False
+        return_value=None
+        if trace_type is enum.TraceTypes.USER_CALL:
+            is_frame_open=True
+        if trace_type is enum.TraceTypes.USER_RETURN:
+            is_frame_close=True
+            return_value,=step_info
+
+
+
         if frame is not None:
             if frame not in self.frame_types:
                 # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.

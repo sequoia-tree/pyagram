@@ -148,6 +148,7 @@ class PyagramFlag(PyagramElement):
 
         :return:
         """
+        # TODO: Move to encode.py for consistency
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'pyagram_flag': self,
@@ -322,6 +323,7 @@ class PyagramFrame(PyagramElement):
 
         :return:
         """
+        # TODO: Move to encode.py for consistency
         bindings = {
             key: self.state.encoder.reference_snapshot(value, self.state.memory_state)
             for key, value in self.bindings.items()
