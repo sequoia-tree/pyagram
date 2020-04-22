@@ -16,7 +16,7 @@ var snapshots;
 export function drawPyagram(slider, pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
-            snapshots = pyagram.data.snapshots;
+            snapshots = pyagram.data;
             slider.min = 0;
             slider.max = snapshots.length - 1;
             Slider.reset(slider);

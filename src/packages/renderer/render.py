@@ -9,8 +9,8 @@ def render_components(pyagram):
     :param pyagram:
     :return:
     """
-    snapshots = pyagram.pop('snapshots')
-    exception = pyagram.pop('exception')
+    snapshots = pyagram#pyagram.pop('snapshots')
+    exception = False#pyagram.pop('exception')
     has_exception = exception is not None
     if has_exception:
         exception_snapshot = copy.deepcopy(snapshots[-1])
@@ -27,7 +27,7 @@ def render_components(pyagram):
         }
         for snapshot in snapshots
     ]
-    if has_exception:
-        exception_snapshot = snapshots[-1]
-        exception_snapshot['exception'] = get_html.get_exception_html(**exception)
-    pyagram['snapshots'] = snapshots
+    # if has_exception:
+    #     exception_snapshot = snapshots[-1]
+    #     exception_snapshot['exception'] = get_html.get_exception_html(**exception)
+    pyagram[:]=snapshots#pyagram['snapshots'] = snapshots

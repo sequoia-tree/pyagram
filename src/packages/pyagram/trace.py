@@ -1,5 +1,6 @@
 import bdb
 
+from . import configs
 from . import enums
 from . import exception
 from . import state
@@ -94,8 +95,8 @@ class Tracer(bdb.Bdb):
         elif trace_type is enums.TraceTypes.USER_CALL:
             take_snapshot = False
         elif trace_type is enums.TraceTypes.USER_LINE:
-            take_snapshot = self.state.program_state.prev_line_no != utils.INNER_CALL_LINENO \
-                        and self.state.program_state.prev_line_no != utils.OUTER_CALL_LINENO \
+            take_snapshot = self.state.program_state.prev_line_no != configs.INNER_CALL_LINENO \
+                        and self.state.program_state.prev_line_no != configs.OUTER_CALL_LINENO \
                         and not self.state.program_state.is_complete_flag
         elif trace_type is enums.TraceTypes.USER_RETURN:
             take_snapshot = not self.state.program_state.is_complete_flag

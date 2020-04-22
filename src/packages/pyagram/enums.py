@@ -1,3 +1,4 @@
+from . import configs
 from . import utils
 
 class TraceTypes:
@@ -52,11 +53,11 @@ class FrameTypes:
         # If the frame is a SRC_CALL_PRECURSOR, it's the frame for one of the "fake" inner_lambda functions we created in wrap.py. If it's a SRC_CALL_SUCCESSOR, it's the frame for one of the "fake" outer_lambda functions we created in wrap.py.
 
         lineno = frame.f_lineno
-        if lineno == utils.INNER_CALL_LINENO:
+        if lineno == configs.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
-        if lineno == utils.OUTER_CALL_LINENO:
+        if lineno == configs.OUTER_CALL_LINENO:
             return FrameTypes.SRC_CALL_SUCCESSOR
-        if lineno == utils.CLASS_DEFN_LINENO:
+        if lineno == configs.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
         assert 0 < lineno
         return FrameTypes.SRC_CALL
