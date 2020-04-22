@@ -284,7 +284,7 @@ class MemoryState:
                     elif object_type in pyagram_types.MAPPING_TYPES:
                         referents = gc.get_referents(object)
                     elif object_type in pyagram_types.ITERATOR_TYPES:
-                        referents = []
+                        referents = [pyagram_types.get_iterable(object)]
                     elif object_type in pyagram_types.GENERATOR_TYPES:
                         referents = list(inspect.getgeneratorlocals(object).values())
                         if object.gi_yieldfrom is not None:
@@ -389,6 +389,7 @@ class MemoryState:
 #     x = 4
 # You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
 # Snapshot on line 129?
+# TODO: Also you may be taking too many snapshots with iterators, possibly generators too.
 
 # TODO: Generators
 # TODO: Basically we don't want a flag or frame for it. Instead we want to display the frame as an object frame, even though it isn't really.
@@ -468,6 +469,8 @@ class MemoryState:
 # x = object
 # y = IndexError
 
-# TODO: Iterators
+# TODO: Try / except statements
 
 # TODO: Comprehensions (list comp, dict comp, genexp, etc.)
+
+# TODO: When snapshotting a PyagramFlag, check if .is_hidden. If so, the snapshot should only include the .flags and nothing else. (It's especially important to not snapshot the .frame, since that could cascade and take a long time.)

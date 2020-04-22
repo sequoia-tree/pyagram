@@ -255,7 +255,7 @@ class PyagramFrame(PyagramElement):
             self.state.memory_state.record_parent(self, self.function)
             if inspect.isgeneratorfunction(self.function):
                 self.opened_by.is_hidden = True
-                self.generator = self.state.memory_state.record_generator_frame(self)
+                self.state.memory_state.record_generator_frame(self)
             else:
                 var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
                 self.var_positional_index = var_positional_index

@@ -135,7 +135,7 @@ PLAINTEXT_TEMPLATE = """
 """
 
 POINTER_TEMPLATE = """
-<span class="pyagram-placeholder pyagram-reference reference-{{ id }}">
+<span class="pyagram-placeholder pyagram-reference font-family-monospace reference-{{ id }}">
   -
 </span>
 """
@@ -245,7 +245,11 @@ MAPPING_TEMPLATE = """
 """
 
 ITERATOR_TEMPLATE = """
-TODO
+iterator over <span class="pyagram-value">{{ get_reference_html(object) }}</span>
+{% if annotation is not none %}
+  <span> {{ annotation }}</span>
+{% endif %}
+<div>[next index: {{ index }}]</div>
 """
 
 # TODO: Reconsider how you display these.

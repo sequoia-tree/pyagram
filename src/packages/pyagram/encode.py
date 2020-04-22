@@ -112,7 +112,12 @@ class Encoder:
             }
         elif object_type in pyagram_types.ITERATOR_TYPES:
             encoding = 'iterator'
-            snapshot = NotImplemented # TODO
+            iterable = pyagram_types.get_iterable(object)
+            snapshot = {
+                'object': self.reference_snapshot(iterable, memory_state),
+                'index': len(iterable) - object.__length_hint__(),
+                'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
+            }
         elif object_type in pyagram_types.GENERATOR_TYPES:
             encoding = 'generator'
             snapshot = {
