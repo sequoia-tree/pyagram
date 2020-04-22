@@ -380,6 +380,14 @@ class MemoryState:
                 parent = frame
             self.function_parents[function] = parent
 
+# TODO: This doesn't work ...
+# l_half = [0, 1, 2]
+# r_half = [3, 4, 5]
+# lst = min(l_half, r_half, key=lambda lst: lst[0])
+# TODO: ... because of the nested flags in the hidden flag. I think we should actually omit subflags of hidden flags, except in the case of generators which are handled specially.
+
+# TODO: REALLY GOOD NEWS! It takes a long time to run a query -- but not inherently. It appears most of the time is actually coming from the call to render_components in app.py, so you can speed it up a LOT by rendering on-the-fly instead!
+
 # TODO: In this code ...
 # class A:
 #     x = 1
@@ -419,10 +427,9 @@ class MemoryState:
 # ls2 = [6, 7, 8]
 # while True:
 #     x = next(a)
+# TODO: Right now it looks like it yields None right before StopIteration. Fix that.
 
-# TODO: In class instance frames, write "[parent = class A]".
-
-# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that? Also, depending, make sure to track() the right stuff!
+# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that? Also, depending, make sure to track() the right stuff! Or do we just not support this behavior?
 # class A:
 #     pass
 # a = A()
@@ -471,5 +478,3 @@ class MemoryState:
 # TODO: Try / except statements
 
 # TODO: Comprehensions (list comp, dict comp, genexp, etc.)
-
-# TODO: When snapshotting a PyagramFlag, check if .is_hidden. If so, the snapshot should only include the .flags and nothing else. (It's especially important to not snapshot the .frame, since that could cascade and take a long time.)

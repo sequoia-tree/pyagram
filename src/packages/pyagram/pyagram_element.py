@@ -153,7 +153,7 @@ class PyagramFlag(PyagramElement):
             'pyagram_flag': self,
             'banner_binding_index': self.banner_binding_index,
             'snapshot_index': len(self.state.snapshots),
-            'frame': None if self.frame is None else self.frame.snapshot(),
+            'frame': None if self.frame is None or self.is_hidden else self.frame.snapshot(),
             'flags': [
                 flag.snapshot()
                 for flag in self.flags

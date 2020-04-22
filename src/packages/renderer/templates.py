@@ -112,9 +112,14 @@ FRAME_TEMPLATE = """
           Return value
         {% endif %}
         </td>
-        <td class="text-left">
-          <span class="pyagram-value">{{ get_reference_html(return_value) }}</span>
-          {% if frame_type == 'generator' and from is not none %} from <span class="pyagram-value">{{ get_reference_html(from) }}</span>{% endif %}
+        <td class="pyagram-value text-left">
+          {% if frame_type == 'generator' and from is not none %}
+            {{ get_reference_html(return_value) }}
+            <span class="font-family-sans-serif"> from </span>
+            {{ get_reference_html(from) }}
+          {% else %}
+            {{ get_reference_html(return_value) }}
+          {% endif %}
         </td>
       </tr>
     {% endif %}
