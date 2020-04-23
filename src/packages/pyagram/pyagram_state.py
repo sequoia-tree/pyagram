@@ -83,25 +83,25 @@ class ProgramState:
     def step(self, frame, *step_info, trace_type):
         """
         """
-        # if frame.f_lineno > self.state.encoder.num_lines:
-        #     line_no, step_code = utils.unpair_naturals(
-        #         frame.f_lineno,
-        #         max_x=self.state.encoder.num_lines
-        #     )
-        # else:
-        #     line_no, step_code = frame.f_lineno, configs.UNMODIFIED_LINENO
-        # self.curr_line_no = line_no
-        # if frame not in self.frame_types:
-        #     self.frame_types[frame] = enum.FrameTypes.identify_frame_type(step_code)
-        # frame_type = self.frame_types[frame]
-        # # ------------------------------------------------------------------------------------------
-        # # TODO: Do this a different way?
-        # if self.expected_class_binding is not None:
-        #     frame_object = self.expected_class_binding
-        #     class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
-        #     self.state.memory_state.record_class_frame(frame_object, class_object)
-        #     self.expected_class_binding = None
-        # # ------------------------------------------------------------------------------------------
+        if self.state.encoder.num_lines < frame.f_lineno or frame.f_lineno < 0:
+            line_no, step_code, is_lambda = utils.decode_lineno(
+                frame.f_lineno,
+                max_lineno=self.state.encoder.num_lines,
+            )
+        else:
+            line_no, step_code, is_lambda = frame.f_lineno, configs.UNMODIFIED_LINENO, False
+        self.curr_line_no = line_no
+        if frame not in self.frame_types:
+            self.frame_types[frame] = enum.FrameTypes.identify_frame_type(step_code)
+        frame_type = self.frame_types[frame]
+        # ------------------------------------------------------------------------------------------
+        # TODO: Do this a different way?
+        if self.expected_class_binding is not None:
+            frame_object = self.expected_class_binding
+            class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
+            self.state.memory_state.record_class_frame(frame_object, class_object)
+            self.expected_class_binding = None
+        # ------------------------------------------------------------------------------------------
         # if trace_type is enum.TraceTypes.USER_CALL:
         #     self.process_frame_open(frame, frame_type)
         # elif trace_type is enum.TraceTypes.USER_LINE:
@@ -123,18 +123,6 @@ class ProgramState:
             is_frame_close=True
             return_value,=step_info
 
-        if frame not in self.frame_types:
-            # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
-            self.frame_types[frame] = enum.FrameTypes.identify_frame_type(frame)
-        frame_type = self.frame_types[frame]
-        self.curr_line_no = frame.f_lineno
-        if self.expected_class_binding is not None:
-
-            frame_object = self.expected_class_binding
-            class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
-            self.state.memory_state.record_class_frame(frame_object, class_object)
-
-            self.expected_class_binding = None
         if is_frame_open:
             self.process_frame_open(frame, frame_type)
         if is_frame_close:

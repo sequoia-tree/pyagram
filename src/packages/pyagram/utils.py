@@ -10,6 +10,18 @@ def unpair_naturals(pair, *, max_x):
     max_magnitude = 10 ** max(1, math.ceil(math.log10(max_x)))
     return pair % max_magnitude, pair // max_magnitude
 
+def encode_lineno(lineno, natural, is_lambda, *, max_lineno):
+    """
+    """
+    pair = pair_naturals(lineno, natural, max_x=max_lineno)
+    return -pair if is_lambda else pair
+
+def decode_lineno(lineno, *, max_lineno):
+    is_lambda = lineno < 0
+    if is_lambda:
+        lineno = -lineno
+    lineno, natural = unpair_naturals(lineno, max_x=max_lineno)
+    return lineno, natural, is_lambda
 
 
 

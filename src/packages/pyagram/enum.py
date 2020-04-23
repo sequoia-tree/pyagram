@@ -30,24 +30,24 @@ class FrameTypes(Enum):
     def identify_frame_type(step_code):
         """
         """
-        # if step_code == configs.UNMODIFIED_LINENO:
-        #     return FrameTypes.SRC_CALL
-        # elif step_code == configs.INNER_CALL_LINENO:
-        #     return FrameTypes.SRC_CALL_PRECURSOR
-        # elif step_code == configs.OUTER_CALL_LINENO:
-        #     return FrameTypes.SRC_CALL_SUCCESSOR
-        # elif step_code == configs.CLASS_DEFN_LINENO:
-        #     return FrameTypes.CLASS_DEFINITION
-        # else:
-        #     raise FrameTypes.illegal_enum(step_code)
-
-        frame = step_code
-        lineno = frame.f_lineno
-        if lineno == configs.INNER_CALL_LINENO:
+        if step_code == configs.UNMODIFIED_LINENO:
+            return FrameTypes.SRC_CALL
+        elif step_code == configs.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
-        if lineno == configs.OUTER_CALL_LINENO:
+        elif step_code == configs.OUTER_CALL_LINENO:
             return FrameTypes.SRC_CALL_SUCCESSOR
-        if lineno == configs.CLASS_DEFN_LINENO:
+        elif step_code == configs.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
-        assert 0 < lineno
-        return FrameTypes.SRC_CALL
+        else:
+            raise FrameTypes.illegal_enum(step_code)
+
+        # frame = step_code
+        # lineno = frame.f_lineno
+        # if lineno == configs.INNER_CALL_LINENO:
+        #     return FrameTypes.SRC_CALL_PRECURSOR
+        # if lineno == configs.OUTER_CALL_LINENO:
+        #     return FrameTypes.SRC_CALL_SUCCESSOR
+        # if lineno == configs.CLASS_DEFN_LINENO:
+        #     return FrameTypes.CLASS_DEFINITION
+        # assert 0 < lineno
+        # return FrameTypes.SRC_CALL

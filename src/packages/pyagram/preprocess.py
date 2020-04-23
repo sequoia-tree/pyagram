@@ -29,10 +29,11 @@ class Preprocessor:
         for lineno in self.lambdas_by_line:
             sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
             for i, node in enumerate(sorted_lambdas):
-                node.lineno = utils.pair_naturals(
+                node.lineno = utils.encode_lineno(
                     node.lineno,
                     i + 1,
-                    max_x=self.num_lines
+                    True,
+                    max_lineno=self.num_lines,
                 )
 
 class CodeWrapper(ast.NodeTransformer):
@@ -83,12 +84,12 @@ class CodeWrapper(ast.NodeTransformer):
             func=inner_lambda,
             args=[],
             keywords=[],
-            lineno=configs.INNER_CALL_LINENO, # TODO: Replace with commented-out snippet.
-            # lineno=utils.pair_naturals(
-            #     node.lineno,
-            #     configs.INNER_CALL_LINENO,
-            #     max_x=self.preprocessor.num_lines,
-            # ),
+            lineno=utils.encode_lineno(
+                node.lineno,
+                configs.INNER_CALL_LINENO,
+                False,
+                max_lineno=self.preprocessor.num_lines,
+            ),
         )
         outer_call = ast.Call(
             func=outer_lambda,
@@ -97,12 +98,12 @@ class CodeWrapper(ast.NodeTransformer):
                 node,
             ],
             keywords=[],
-            lineno=configs.OUTER_CALL_LINENO, # TODO: Replace with commented-out snippet.
-            # lineno=utils.pair_naturals(
-            #     node.lineno,
-            #     configs.OUTER_CALL_LINENO,
-            #     max_x=self.preprocessor.num_lines,
-            # ),
+            lineno=utils.encode_lineno(
+                node.lineno,
+                configs.OUTER_CALL_LINENO,
+                False,
+                max_lineno=self.preprocessor.num_lines,
+            ),
         )
         self.generic_visit(node)
         return outer_call
@@ -110,12 +111,12 @@ class CodeWrapper(ast.NodeTransformer):
     def visit_ClassDef(self, node):
         """
         """
-        node.lineno=configs.CLASS_DEFN_LINENO # TODO: Replace with commented-out snippet.
-        # node.lineno = utils.pair_naturals(
-        #     node.lineno,
-        #     configs.CLASS_DEFN_LINENO,
-        #     max_x=self.preprocessor.num_lines,
-        # )
+        node.lineno = utils.encode_lineno(
+            node.lineno,
+            configs.CLASS_DEFN_LINENO,
+            False,
+            max_lineno=self.preprocessor.num_lines,
+        )
         self.generic_visit(node)
         return node
 

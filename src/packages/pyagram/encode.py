@@ -41,7 +41,8 @@ class Encoder:
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
             if is_lambda:
-                lineno, number = utils.unpair_naturals(object.__code__.co_firstlineno, max_x=self.num_lines)
+                lineno, number, is_lambda = utils.decode_lineno(object.__code__.co_firstlineno, max_lineno=self.num_lines)
+                assert is_lambda
             parameters, slash_arg_index, has_star_arg = [], None, False
             for i, parameter in enumerate(inspect.signature(object).parameters.values()):
                 if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
