@@ -33,6 +33,7 @@ class State:
         self.snapshot()
         # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others. Perhaps do `self.take_snapshot = False` in State.__init__ and at the top of State.step, and then if it's True by this point, take a snapshot.
         # TODO: When you figure out how you want to do snapshots, rewrite this function accordingly. If things no longer invoke State.step (which they really oughtn't), then there's no need for the second `if` statement (since frame will never be None) and you could probably move `self.program_state.global_frame.step()` into `ProgramState.step`. Right now, the only place that invokes State.step "improperly" is PyagramFrame.close.
+        # TODO: Also, right now it takes an eternity to run because you're taking a million snapshots and then filtering out duplicates in postprocess.py.
 
     def snapshot(self):
         """
@@ -83,13 +84,10 @@ class ProgramState:
     def step(self, frame, *step_info, trace_type):
         """
         """
-        if self.state.encoder.num_lines < frame.f_lineno or frame.f_lineno < 0:
-            line_no, step_code, is_lambda = utils.decode_lineno(
-                frame.f_lineno,
-                max_lineno=self.state.encoder.num_lines,
-            )
-        else:
-            line_no, step_code, is_lambda = frame.f_lineno, configs.UNMODIFIED_LINENO, False
+        line_no, step_code, lambda_number = utils.decode_lineno(
+            frame.f_lineno,
+            max_lineno=self.state.encoder.num_lines,
+        )
         self.curr_line_no = line_no
         if frame not in self.frame_types:
             self.frame_types[frame] = enum.FrameTypes.identify_frame_type(step_code)
@@ -102,31 +100,15 @@ class ProgramState:
             self.state.memory_state.record_class_frame(frame_object, class_object)
             self.expected_class_binding = None
         # ------------------------------------------------------------------------------------------
-        # if trace_type is enum.TraceTypes.USER_CALL:
-        #     self.process_frame_open(frame, frame_type)
-        # elif trace_type is enum.TraceTypes.USER_LINE:
-        #     pass
-        # elif trace_type is enum.TraceTypes.USER_RETURN:
-        #     return_value, = step_info
-        #     self.process_frame_close(frame, frame_type, return_value)
-        # elif trace_type is enum.TraceTypes.USER_EXCEPTION:
-        #     pass
-
-        # ------------------------------------------------------------------------------------------
-
-        is_frame_open=False
-        is_frame_close=False
-        return_value=None
         if trace_type is enum.TraceTypes.USER_CALL:
-            is_frame_open=True
-        if trace_type is enum.TraceTypes.USER_RETURN:
-            is_frame_close=True
-            return_value,=step_info
-
-        if is_frame_open:
             self.process_frame_open(frame, frame_type)
-        if is_frame_close:
+        elif trace_type is enum.TraceTypes.USER_LINE:
+            pass
+        elif trace_type is enum.TraceTypes.USER_RETURN:
+            return_value, = step_info
             self.process_frame_close(frame, frame_type, return_value)
+        elif trace_type is enum.TraceTypes.USER_EXCEPTION:
+            pass
 
     def snapshot(self):
         """

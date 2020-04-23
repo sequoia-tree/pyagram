@@ -1,3 +1,5 @@
+from . import configs
+
 def pair_naturals(x, y, *, max_x):
     """
     """
@@ -14,15 +16,16 @@ def encode_lineno(lineno, natural, is_lambda, *, max_lineno):
     """
     """
     pair = pair_naturals(lineno, natural, max_x=max_lineno)
-    return -pair if is_lambda else pair
+    return pair if is_lambda else -pair
 
 def decode_lineno(lineno, *, max_lineno):
-    is_lambda = lineno < 0
-    if is_lambda:
-        lineno = -lineno
-    lineno, natural = unpair_naturals(lineno, max_x=max_lineno)
-    return lineno, natural, is_lambda
-
+    if lineno < 0:
+        (lineno, step_code), lambda_number = unpair_naturals(-lineno, max_x=max_lineno), 0
+    elif max_lineno < lineno:
+        (lineno, lambda_number), step_code = unpair_naturals(lineno, max_x=max_lineno), configs.UNMODIFIED_LINENO
+    else:
+        lineno, step_code, lambda_number = lineno, configs.UNMODIFIED_LINENO, 0
+    return lineno, step_code, lambda_number
 
 
 
