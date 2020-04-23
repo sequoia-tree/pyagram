@@ -56,7 +56,7 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state) # TODO: Change signature?
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.finish_prev_step = None
@@ -165,7 +165,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        class_frame = pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state) # TODO: Change signature?
+        class_frame = pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
         self.state.memory_state.track(class_frame)
 
     def close_pyagram_flag(self):
@@ -173,10 +173,11 @@ class ProgramState:
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
-
+            # --------------------------------------------------------------------------------------
+            # TODO: What should you do here -- if anything?
             # If we call a built-in function, we open a flag but bdb never gives us a frame to open, so we are forced to close the flag without having a frame!
-            pass # TODO: ?
-
+            pass
+            # --------------------------------------------------------------------------------------
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):
