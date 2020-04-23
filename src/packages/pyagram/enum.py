@@ -6,7 +6,7 @@ class Enum:
 
     @staticmethod
     def illegal_enum(illegal_enum):
-        return ValueError(f'object {illegal_enum} is not an enumeral')
+        return ValueError(f'not an enumeral: {illegal_enum}')
 
 class TraceTypes(Enum):
     """
@@ -27,16 +27,21 @@ class FrameTypes(Enum):
     CLASS_DEFINITION = object()
 
     @staticmethod
-    def identify_frame_type(frame):
+    def identify_frame_type(step_code):
         """
-        <summary>
-
-        :param frame:
-        :return:
         """
+        # if step_code == configs.UNMODIFIED_LINENO:
+        #     return FrameTypes.SRC_CALL
+        # elif step_code == configs.INNER_CALL_LINENO:
+        #     return FrameTypes.SRC_CALL_PRECURSOR
+        # elif step_code == configs.OUTER_CALL_LINENO:
+        #     return FrameTypes.SRC_CALL_SUCCESSOR
+        # elif step_code == configs.CLASS_DEFN_LINENO:
+        #     return FrameTypes.CLASS_DEFINITION
+        # else:
+        #     raise FrameTypes.illegal_enum(step_code)
 
-        # If the frame is a SRC_CALL_PRECURSOR, it's the frame for one of the "fake" inner_lambda functions we created in wrap.py. If it's a SRC_CALL_SUCCESSOR, it's the frame for one of the "fake" outer_lambda functions we created in wrap.py.
-
+        frame = step_code
         lineno = frame.f_lineno
         if lineno == configs.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR

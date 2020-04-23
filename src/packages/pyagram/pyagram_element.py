@@ -384,7 +384,7 @@ class PyagramFrame(PyagramElement):
         self.state.snapshot()
         return self.opened_by
 
-class PyagramClassFrame:
+class PyagramClassFrame: # TODO: Put this in a different file and make it subclass something like PyagramWrappedObject. Then any subclass of PyagramWrappedObject can have that behavior where you use some wrapped object's ID as its own.
     """
     """
 

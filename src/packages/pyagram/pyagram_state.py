@@ -1,6 +1,7 @@
 import gc
 import inspect
 
+from . import configs
 from . import enum
 from . import pyagram_element
 from . import pyagram_types
@@ -17,17 +18,21 @@ class State:
         self.encoder = encoder
         self.snapshots = []
         # ------------------------------------------------------------------------------------------
-        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
+        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0 # TODO: This will become incorrect when you have hidden flags and frames.
 
     def step(self, frame, *step_info, trace_type):
         """
         """
         if self.program_state is None:
             self.program_state = ProgramState(self, frame)
-        self.program_state.step(frame, *step_info, trace_type=trace_type)
+        if frame is not None:
+            self.program_state.step(frame, *step_info, trace_type=trace_type)
+        self.program_state.global_frame.step()
         self.memory_state.step()
         # ------------------------------------------------------------------------------------------
-        self.snapshot() # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others.
+        self.snapshot()
+        # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others. Perhaps do `self.take_snapshot = False` in State.__init__ and at the top of State.step, and then if it's True by this point, take a snapshot.
+        # TODO: When you figure out how you want to do snapshots, rewrite this function accordingly. If things no longer invoke State.step (which they really oughtn't), then there's no need for the second `if` statement (since frame will never be None) and you could probably move `self.program_state.global_frame.step()` into `ProgramState.step`. Right now, the only place that invokes State.step "improperly" is PyagramFrame.close.
 
     def snapshot(self):
         """
@@ -47,19 +52,16 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.frame_types = {}
-        self.prev_line_no = 0
-        self.curr_line_no = 0
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state) # TODO: Revisit PyagramFrame signature.
         self.curr_element = self.global_frame
+        self.curr_line_no = 0
+        # ------------------------------------------------------------------------------------------
+        self.frame_types = {}
         self.expected_class_binding = None
 
     @property
     def is_ongoing_flag_sans_frame(self):
         """
-        <summary>
-
-        :return:
         """
         is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.frame is None
@@ -67,9 +69,6 @@ class ProgramState:
     @property
     def is_ongoing_frame(self):
         """
-        <summary>
-
-        :return:
         """
         is_frame = isinstance(self.curr_element, pyagram_element.PyagramFrame)
         return is_frame and not self.curr_element.has_returned
@@ -77,23 +76,44 @@ class ProgramState:
     @property
     def is_complete_flag(self):
         """
-        <summary>
-
-        :return:
         """
         is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
         return is_flag and self.curr_element.has_returned
 
     def step(self, frame, *step_info, trace_type):
         """
-        <summary>
-
-        :param frame: As in state.State.step.
-        :param is_frame_open: As in state.State.step.
-        :param is_frame_close: As in state.State.step.
-        :param return_value: As in state.State.step.
-        :return: None.
         """
+        # if frame.f_lineno > self.state.encoder.num_lines:
+        #     line_no, step_code = utils.unpair_naturals(
+        #         frame.f_lineno,
+        #         max_x=self.state.encoder.num_lines
+        #     )
+        # else:
+        #     line_no, step_code = frame.f_lineno, configs.UNMODIFIED_LINENO
+        # self.curr_line_no = line_no
+        # if frame not in self.frame_types:
+        #     self.frame_types[frame] = enum.FrameTypes.identify_frame_type(step_code)
+        # frame_type = self.frame_types[frame]
+        # # ------------------------------------------------------------------------------------------
+        # # TODO: Do this a different way?
+        # if self.expected_class_binding is not None:
+        #     frame_object = self.expected_class_binding
+        #     class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
+        #     self.state.memory_state.record_class_frame(frame_object, class_object)
+        #     self.expected_class_binding = None
+        # # ------------------------------------------------------------------------------------------
+        # if trace_type is enum.TraceTypes.USER_CALL:
+        #     self.process_frame_open(frame, frame_type)
+        # elif trace_type is enum.TraceTypes.USER_LINE:
+        #     pass
+        # elif trace_type is enum.TraceTypes.USER_RETURN:
+        #     return_value, = step_info
+        #     self.process_frame_close(frame, frame_type, return_value)
+        # elif trace_type is enum.TraceTypes.USER_EXCEPTION:
+        #     pass
+
+        # ------------------------------------------------------------------------------------------
+
         is_frame_open=False
         is_frame_close=False
         return_value=None
@@ -103,27 +123,22 @@ class ProgramState:
             is_frame_close=True
             return_value,=step_info
 
+        if frame not in self.frame_types:
+            # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
+            self.frame_types[frame] = enum.FrameTypes.identify_frame_type(frame)
+        frame_type = self.frame_types[frame]
+        self.curr_line_no = frame.f_lineno
+        if self.expected_class_binding is not None:
 
+            frame_object = self.expected_class_binding
+            class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
+            self.state.memory_state.record_class_frame(frame_object, class_object)
 
-        if frame is not None:
-            if frame not in self.frame_types:
-                # TODO: A frame's f_lineno changes over time. Either (A) verify that when you insert the frame into self.frame_types, the f_lineno is definitely correct (I'm not sure if this preprocess.py alone guarantees this), or (B) find a new way to identify whether a frame is a SRC_CALL, SRC_CALL_PRECURSOR, or SRC_CALL_SUCCESSOR frame.
-                self.frame_types[frame] = enum.FrameTypes.identify_frame_type(frame)
-            frame_type = self.frame_types[frame]
-            self.prev_line_no = self.curr_line_no
-            self.curr_line_no = frame.f_lineno
-            if self.expected_class_binding is not None:
-
-                frame_object = self.expected_class_binding
-                class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
-                self.state.memory_state.record_class_frame(frame_object, class_object)
-
-                self.expected_class_binding = None
-            if is_frame_open:
-                self.process_frame_open(frame, frame_type)
-            if is_frame_close:
-                self.process_frame_close(frame, frame_type, return_value)
-        self.global_frame.step()
+            self.expected_class_binding = None
+        if is_frame_open:
+            self.process_frame_open(frame, frame_type)
+        if is_frame_close:
+            self.process_frame_close(frame, frame_type, return_value)
 
     def snapshot(self):
         """

@@ -10,7 +10,7 @@ class Encoder:
 
     def __init__(self, preprocessor):
         self.num_lines = preprocessor.num_lines
-        self.lambdas_by_line = preprocessor.lambdas_by_line
+        self.lambdas_by_line = preprocessor.lambdas_by_line # TODO: Map `len` onto this actually.
 
     def reference_snapshot(self, object, memory_state, **kwargs):
         """
