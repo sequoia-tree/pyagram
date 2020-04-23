@@ -1,11 +1,11 @@
 import gc
 import inspect
 
-from . import configs
 from . import encode
 from . import enum
 from . import pyagram_element
 from . import pyagram_types
+from . import pyagram_wrapped_object
 from . import utils
 
 class State:
@@ -57,11 +57,10 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state) # TODO: Change signature?
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.finish_prev_step = None
-        # ------------------------------------------------------------------------------------------
         self.frame_types = {}
 
     @property
@@ -166,7 +165,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        class_frame = pyagram_element.PyagramClassFrame(frame, state=self.state)
+        class_frame = pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state) # TODO: Change signature?
         self.state.memory_state.track(class_frame)
 
     def close_pyagram_flag(self):
@@ -174,8 +173,10 @@ class ProgramState:
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
+
             # If we call a built-in function, we open a flag but bdb never gives us a frame to open, so we are forced to close the flag without having a frame!
             pass # TODO: ?
+
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):
@@ -244,11 +245,11 @@ class MemoryState:
                         referents = list(inspect.getgeneratorlocals(object).values())
                         if object.gi_yieldfrom is not None:
                             referents.append(object.gi_yieldfrom)
-                    elif object_type is pyagram_element.PyagramClassFrame:
+                    elif object_type is pyagram_wrapped_object.PyagramClassFrame:
                         referents = [
                             value
                             for key, value in object.bindings.items()
-                            if key not in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
+                            if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
                         ]
                     elif hasattr(object, '__dict__'):
                         referents = object.__dict__.values()
@@ -267,7 +268,7 @@ class MemoryState:
         """
         return [
             {
-                'id': object.id if isinstance(object, pyagram_element.PyagramClassFrame) else id(object),
+                'id': object.id if isinstance(object, pyagram_wrapped_object.PyagramClassFrame) else id(object),
                 'object': self.state.encoder.object_snapshot(object, self),
             }
             for object in self.objects

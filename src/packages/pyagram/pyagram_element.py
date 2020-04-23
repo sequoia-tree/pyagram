@@ -21,18 +21,12 @@ class PyagramElement:
 
     def step(self):
         """
-        <summary>
-
-        :return:
         """
         for flag in self.flags:
             flag.step()
 
     def add_flag(self, banner):
         """
-        <summary>
-
-        :return:
         """
         flag = PyagramFlag(self, banner)
         self.flags.append(flag)
@@ -40,24 +34,6 @@ class PyagramElement:
 
 class PyagramFlag(PyagramElement):
     """
-    An element of a pyagram which represents the application of a not-yet-evaluated function to a
-    set of not-yet-evaluated arguments.
-
-    Upon opening a flag, the following occurs:
-    1. The flag's banner is made to bear the code corresponding to the function call in question.
-    2. The function is evaluated, and its value written on the banner beneath the code
-       corresponding to the function of the function call.
-    3. The arguments are evaluated, one at a time, and their values written on the banner beneath
-       the code corresponding to the arguments of the function call.
-    4. A frame is opened, for the application of the now-evaluated function to the now-evaluated
-       arguments. The completion of the frame marks the completion of the flag as well.
-    If a new function call is encountered before the banner is complete, a new flag is opened
-    within the flag in question. The new flag corresponds to the new function call, and until it is
-    completed, progress on the flag in question comes to a stand-still.
-
-    :param opened_by: The PyagramElement which opened the flag, i.e. the
-      :state.program_state.curr_element: in the step immediately preceding that in which the flag
-      is instantiated.
     """
 
     def __init__(self, opened_by, banner, *, state=None):
@@ -78,44 +54,29 @@ class PyagramFlag(PyagramElement):
     @property
     def banner_is_complete(self):
         """
-        <summary>
-
-        :return:
         """
         return self.banner_binding_index == len(self.banner_bindings)
 
     @property
     def has_returned(self):
         """
-        <summary>
-
-        :return:
         """
         return self.frame and self.frame.has_returned
 
     @property
     def return_value(self):
         """
-        <summary>
-
-        :return:
         """
         assert self.has_returned
         return self.frame.return_value
 
     def __repr__(self):
         """
-        <summary>
-
-        :return:
         """
         return f'Flag {self.id}'
 
     def step(self):
         """
-        <summary>
-
-        :return:
         """
         # Fill in all banner bindings up until the next one that's a call.
 
@@ -142,9 +103,6 @@ class PyagramFlag(PyagramElement):
 
     def snapshot(self):
         """
-        <summary>
-
-        :return:
         """
         # TODO: Move to encode.py for consistency
         return {
@@ -161,9 +119,6 @@ class PyagramFlag(PyagramElement):
 
     def evaluate_next_banner_binding(self, expect_call):
         """
-        <summary>
-
-        :return:
         """
         # Examine the next binding.
         # If it turns out to be a call: (1) DON'T evaluate it. (2) Return False.
@@ -198,10 +153,6 @@ class PyagramFlag(PyagramElement):
 
     def add_frame(self, frame, is_implicit):
         """
-        <summary>
-
-        :param frame:
-        :return:
         """
         assert self.banner_is_complete
         frame = PyagramFrame(self, frame, is_implicit=is_implicit)
@@ -210,9 +161,6 @@ class PyagramFlag(PyagramElement):
 
     def close(self):
         """
-        <summary>
-
-        :return:
         """
         if self.frame is None:
             self.is_hidden = True
@@ -221,24 +169,6 @@ class PyagramFlag(PyagramElement):
 
 class PyagramFrame(PyagramElement):
     """
-    An element of a pyagram which represents the application of an already-evaluated function to a
-    set of already-evaluated arguments.
-
-    Upon opening a frame, the following occurs:
-    1. The function's parameters are bound to their respective arguments inside the frame.
-    2. The function's code is executed one step at a time, and the frame's bindings are
-       correspondingly updated.
-    3. The function's execution terminates, and the return value is written in the frame, thereby
-       completing the frame.
-    If a new function call is encountered before the frame is complete, a new flag is opened
-    beneath the frame in question. The new flag corresponds to the new function call, and until it
-    is completed, progress on the frame in question comes to a stand-still.
-
-    :param opened_by: The PyagramElement which opened the frame, i.e. the
-      :state.program_state.curr_element: in the step immediately preceding that in which the frame
-      is instantiated.
-    :param frame: The built-in :frame: object wherein live the variable bindings for the function
-      call in question.
     """
 
     def __init__(self, opened_by, frame, *, state=None, is_implicit=False):
@@ -272,34 +202,22 @@ class PyagramFrame(PyagramElement):
     @property
     def is_global_frame(self):
         """
-        <summary>
-
-        :return:
         """
         return self.opened_by is None
 
     @property
     def parent(self):
         """
-        <summary>
-
-        :return:
         """
         return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
 
     def __repr__(self):
         """
-        <summary>
-
-        :return:
         """
         return 'Global Frame' if self.is_global_frame else f'Frame {self.id}'
 
     def step(self):
         """
-        <summary>
-
-        :return:
         """
         # Two goals -- originally here but now mostly migrated to MemoryState.step:
         # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
@@ -317,9 +235,6 @@ class PyagramFrame(PyagramElement):
 
     def snapshot(self):
         """
-        <summary>
-
-        :return:
         """
         # TODO: Move to encode.py for consistency
         bindings = {
@@ -348,9 +263,6 @@ class PyagramFrame(PyagramElement):
 
     def get_bindings(self):
         """
-        <summary>
-
-        :return:
         """
         sorted_binding_names = [] if self.is_global_frame else list(inspect.signature(self.function).parameters.keys())
         for key, value in self.frame.f_locals.items():
@@ -370,33 +282,8 @@ class PyagramFrame(PyagramElement):
 
     def close(self, return_value):
         """
-        <summary>
-
-        :param return_value:
-        :return:
         """
         if not self.is_global_frame:
             self.return_value = return_value
             self.has_returned = True
         return self.opened_by
-
-class PyagramClassFrame: # TODO: Put this in a different file and make it subclass something like PyagramWrappedObject. Then any subclass of PyagramWrappedObject can have that behavior where you use some wrapped object's ID as its own.
-    """
-    """
-
-    HIDDEN_BINDINGS = {
-        '__dict__',
-        '__doc__',
-        '__module__',
-        '__qualname__',
-        '__weakref__',
-        # TODO: Are there any more that should be added add here? This should ideally include every "magic" attribute that is not a magic method -- in other words, every non-callable attribute with double-underscores on either side. Look for a complete list online.
-    }
-
-    def __init__(self, frame, *, state):
-        self.id = id(self)
-        self.state = state
-        self.frame = frame
-        self.parents = None
-        self.bindings = frame.f_locals
-        self.state.memory_state.class_frames_by_frame[frame] = self

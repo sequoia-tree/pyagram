@@ -2,6 +2,7 @@ import inspect
 
 from . import pyagram_element
 from . import pyagram_types
+from . import pyagram_wrapped_object
 from . import utils
 
 class Encoder:
@@ -140,7 +141,7 @@ class Encoder:
                     'return_value': None,
                     'from': None,
                 })
-        elif object_type is pyagram_element.PyagramClassFrame:
+        elif object_type is pyagram_wrapped_object.PyagramClassFrame:
             encoding = 'class_frame'
             snapshot = {
                 'is_curr_element': False,
@@ -149,7 +150,7 @@ class Encoder:
                 'bindings': {
                     key: self.reference_snapshot(value)
                     for key, value in object.bindings.items()
-                    if key not in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
+                    if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
                 },
                 'return_value': None,
                 'flags': [],

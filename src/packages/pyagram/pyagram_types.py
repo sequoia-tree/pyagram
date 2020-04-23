@@ -2,6 +2,8 @@ import gc
 import numbers
 import types
 
+# TODO: This file is unnecessary. It should be an Enum in enum.py.
+
 # Primitive types: Compare with `==`.
 PRIMITIVE_TYPES = (numbers.Number, str)
 # Referent types: Compare with `is`.
