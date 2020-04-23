@@ -14,6 +14,13 @@ class Preprocessor:
         self.ast = ast.parse(code)
         self.lambdas_by_line = {}
 
+    @property
+    def summary(self):
+        return (
+            self.num_lines,
+            {line: len(lambdas) for line, lambdas in self.lambdas_by_line.items()},
+        )
+
     def preprocess(self):
         code_wrapper = CodeWrapper(self)
         self.ast = code_wrapper.visit(self.ast)

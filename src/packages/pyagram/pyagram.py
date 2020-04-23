@@ -1,7 +1,6 @@
 import io
 import sys
 
-from . import encode
 from . import postprocess
 from . import preprocess
 from . import pyagram_state
@@ -24,7 +23,7 @@ class Pyagram:
             else:
                 bindings = {}
                 state = pyagram_state.State(
-                    encode.Encoder(preprocessor),
+                    preprocessor.summary,
                     new_stdout,
                 )
                 tracer = trace.Tracer(state)

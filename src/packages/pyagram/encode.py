@@ -8,19 +8,15 @@ class Encoder:
     """
     """
 
-    def __init__(self, preprocessor):
-        self.num_lines = preprocessor.num_lines
-        self.lambdas_by_line = preprocessor.lambdas_by_line # TODO: Map `len` onto this actually.
+    def __init__(self, state, preprocessor_summary):
+        self.state = state
+        num_lines, num_lambdas_per_line = preprocessor_summary
+        self.num_lines = num_lines
+        self.num_lambdas_per_line = num_lambdas_per_line
 
-    def reference_snapshot(self, object, memory_state, **kwargs):
+    def reference_snapshot(self, object, **kwargs):
         """
-        <summary> # snapshot a reference to a value (may be a primitive or referent type)
-
-        :param object:
-        :param memory_state:
-        :return:
         """
-        # TODO: memory_state is not used in this function, so it shouldn't be a param.
         if 0 < len(kwargs):
             return kwargs
         elif pyagram_types.is_primitive_type(object):
@@ -30,13 +26,8 @@ class Encoder:
 
     def object_snapshot(self, object, memory_state):
         """
-        <summary> # snapshot a value (may be a referent type only)
-
-        :param object:
-        :param memory_state:
-        :return:
         """
-        state = memory_state.state # TODO: I guess this should be the param, not memory_state.
+        state = memory_state.state # TODO: Don't need this or the memory_state param. Use self.state instead.
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
@@ -58,7 +49,7 @@ class Encoder:
                     has_star_arg = True
                 parameters.append({
                     'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                    'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default, memory_state),
+                    'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default),
                 })
             if slash_arg_index is not None:
                 parameters.insert(slash_arg_index, {
@@ -73,7 +64,7 @@ class Encoder:
                     {
                         'lineno': lineno,
                         'number': number,
-                        'single': len(self.lambdas_by_line[lineno]) <= 1,
+                        'single': self.num_lambdas_per_line[lineno] <= 1,
                     }
                     if is_lambda
                     else None,
@@ -90,7 +81,7 @@ class Encoder:
             snapshot = {
                 'type': object_type.__name__,
                 'elements': [
-                    self.reference_snapshot(item, memory_state)
+                    self.reference_snapshot(item)
                     for item in object
                 ],
             }
@@ -99,7 +90,7 @@ class Encoder:
             snapshot = {
                 'type': object_type.__name__,
                 'elements': [
-                    self.reference_snapshot(item, memory_state)
+                    self.reference_snapshot(item)
                     for item in object
                 ],
             }
@@ -108,7 +99,7 @@ class Encoder:
             snapshot =  {
                 'type': object_type.__name__,
                 'items': [
-                    [self.reference_snapshot(key, memory_state), self.reference_snapshot(value, memory_state)]
+                    [self.reference_snapshot(key), self.reference_snapshot(value)]
                     for key, value in object.items()
                 ],
             }
@@ -118,7 +109,7 @@ class Encoder:
             snapshot = {
                 'object': None,
             } if iterable is None else {
-                'object': self.reference_snapshot(iterable, memory_state),
+                'object': self.reference_snapshot(iterable),
                 'index': len(iterable) - object.__length_hint__(),
                 'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
             }
@@ -128,7 +119,7 @@ class Encoder:
                 'name': object.__name__,
                 'parents': [repr(memory_state.function_parents[memory_state.generator_functs[object]])],
                 'bindings': {
-                    key: self.reference_snapshot(value, memory_state)
+                    key: self.reference_snapshot(value)
                     for key, value in inspect.getgeneratorlocals(object).items()
                 },
                 'flags': [],
@@ -138,10 +129,10 @@ class Encoder:
                 snapshot.update({
                     'is_curr_element': frame is state.program_state.curr_element,
                     'return_value':
-                        self.reference_snapshot(frame.return_value, memory_state)
+                        self.reference_snapshot(frame.return_value)
                         if frame.has_returned
                         else None,
-                    'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom, memory_state),
+                    'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
                 })
             else:
                 snapshot.update({
@@ -156,7 +147,7 @@ class Encoder:
                 'name': object.frame.f_code.co_name,
                 'parents': object,
                 'bindings': {
-                    key: self.reference_snapshot(value, memory_state)
+                    key: self.reference_snapshot(value)
                     for key, value in object.bindings.items()
                     if key not in pyagram_element.PyagramClassFrame.HIDDEN_BINDINGS
                 },
@@ -170,7 +161,7 @@ class Encoder:
                 'name': type(object).__name__,
                 'parents': [],
                 'bindings': {
-                    key: self.reference_snapshot(value, memory_state)
+                    key: self.reference_snapshot(value)
                     for key, value in object.__dict__.items()
                 },
                 'return_value': None,

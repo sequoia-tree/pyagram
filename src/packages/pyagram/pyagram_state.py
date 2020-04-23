@@ -2,6 +2,7 @@ import gc
 import inspect
 
 from . import configs
+from . import encode
 from . import enum
 from . import pyagram_element
 from . import pyagram_types
@@ -11,11 +12,11 @@ class State:
     """
     """
 
-    def __init__(self, encoder, stdout):
+    def __init__(self, preprocessor_summary, stdout):
         self.program_state = None
         self.memory_state = MemoryState(self)
         self.print_output = stdout
-        self.encoder = encoder
+        self.encoder = encode.Encoder(self, preprocessor_summary)
         self.snapshots = []
         # ------------------------------------------------------------------------------------------
         self.num_pyagram_flags, self.num_pyagram_frames = 0, 0 # TODO: This will become incorrect when you have hidden flags and frames.
@@ -112,13 +113,11 @@ class ProgramState:
 
     def snapshot(self):
         """
-        <summary>
-
-        :return:
         """
+        # TODO: The lineno should be in the State's snapshot. The ProgramState's snapshot should just `return self.global_frame.snapshot()`.
         return {
             'global_frame': self.global_frame.snapshot(),
-            'curr_line_no': self.curr_line_no, # TODO: This is either: (*) accurate, (*) utils.INNER_CALL_LINENO, (*) utils.OUTER_CALL_LINENO, or (*) greater than the total number of lines in the program. If you observe the lattermost case, then we are in fact executing a lambda function, and you can extract the appropriate line number using utils.unpair_naturals. See encode.py for an example.
+            'curr_line_no': self.curr_line_no,
         }
 
     def process_frame_open(self, frame, frame_type):

@@ -72,7 +72,7 @@ class Postprocessor:
             if encoding == 'class_frame':
                 class_frame = snapshot['parents']
                 if class_frame.parents is None:
-                    parents = [self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
+                    parents = [self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
                 else:
                     parents = [parent.__name__ for parent in class_frame.parents]
                 snapshot['parents'] = parents
@@ -138,7 +138,7 @@ class Postprocessor:
                             binding_id = banner_bindings[binding_index]
                             is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                             if is_unsupported_binding:
-                                binding = self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)
+                                binding = self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)
                             else:
                                 if isinstance(binding_id, str):
 
@@ -152,7 +152,7 @@ class Postprocessor:
                                 else:
                                     assert isinstance(binding_id, int)
                                     if binding_id == utils.BANNER_FUNCTION_CODE:
-                                        binding = self.state.encoder.reference_snapshot(pyagram_frame.function, pyagram_flag.state.memory_state)
+                                        binding = self.state.encoder.reference_snapshot(pyagram_frame.function)
                                     else:
 
                                         # See if there's a *args param. If so, let it be param #i. Then if you encounter a numerical binding_id >= i, look not in the frame bindings but at args[binding_id - i].
@@ -168,7 +168,7 @@ class Postprocessor:
                         if type(binding) is int: # This means the binding refers to an object in memory.
                             self.enforce_early_debut(binding, snapshot_index)
                 else:
-                    bindings = [self.state.encoder.reference_snapshot(None, None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
+                    bindings = [self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
                 banner.append([code, bindings])
         flag_snapshot['banner'] = banner
 

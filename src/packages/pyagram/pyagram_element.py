@@ -261,11 +261,11 @@ class PyagramFrame(PyagramElement):
                 var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
                 self.var_positional_index = var_positional_index
                 self.initial_var_pos_args = None if var_positional_name is None else [
-                    self.state.encoder.reference_snapshot(positional_argument, self.state.memory_state)
+                    self.state.encoder.reference_snapshot(positional_argument)
                     for positional_argument in self.frame.f_locals[var_positional_name]
                 ]
                 self.initial_var_keyword_args = None if var_keyword_name is None else {
-                    key: self.state.encoder.reference_snapshot(value, self.state.memory_state)
+                    key: self.state.encoder.reference_snapshot(value)
                     for key, value in self.frame.f_locals[var_keyword_name].items()
                 }
         self.has_returned = False
@@ -325,7 +325,7 @@ class PyagramFrame(PyagramElement):
         """
         # TODO: Move to encode.py for consistency
         bindings = {
-            key: self.state.encoder.reference_snapshot(value, self.state.memory_state)
+            key: self.state.encoder.reference_snapshot(value)
             for key, value in self.bindings.items()
         }
         if self.initial_bindings is None:
@@ -339,7 +339,7 @@ class PyagramFrame(PyagramElement):
                 else [repr(self.parent)],
             'bindings': bindings,
             'return_value':
-                self.state.encoder.reference_snapshot(self.return_value, self.state.memory_state)
+                self.state.encoder.reference_snapshot(self.return_value)
                 if self.has_returned
                 else None,
             'flags': [
