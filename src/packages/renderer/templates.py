@@ -32,6 +32,7 @@ ELEMENT_TEMPLATE = """
 {% endfor %}
 """
 
+# TODO: On a call like `f(*'ab', 'c')`, make sure to put a comma between the boxes for 'a' and 'b'.
 FLAG_TEMPLATE = """
 <div class="pyagram-flag m-3">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">

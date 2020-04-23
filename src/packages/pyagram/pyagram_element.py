@@ -4,8 +4,6 @@ from . import utils
 
 class PyagramElement:
     """
-    An element of a pyagram, during the completion of which, it is possible to encounter multiple
-    function calls -- and which may thus cause the instantiation of multiple flags.
     """
 
     def __init__(self, opened_by, state):
@@ -380,8 +378,6 @@ class PyagramFrame(PyagramElement):
         if not self.is_global_frame:
             self.return_value = return_value
             self.has_returned = True
-        self.state.step(None, trace_type=None)
-        self.state.snapshot()
         return self.opened_by
 
 class PyagramClassFrame: # TODO: Put this in a different file and make it subclass something like PyagramWrappedObject. Then any subclass of PyagramWrappedObject can have that behavior where you use some wrapped object's ID as its own.

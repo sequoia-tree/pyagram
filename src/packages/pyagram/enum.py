@@ -40,14 +40,3 @@ class FrameTypes(Enum):
             return FrameTypes.CLASS_DEFINITION
         else:
             raise FrameTypes.illegal_enum(step_code)
-
-        # frame = step_code
-        # lineno = frame.f_lineno
-        # if lineno == configs.INNER_CALL_LINENO:
-        #     return FrameTypes.SRC_CALL_PRECURSOR
-        # if lineno == configs.OUTER_CALL_LINENO:
-        #     return FrameTypes.SRC_CALL_SUCCESSOR
-        # if lineno == configs.CLASS_DEFN_LINENO:
-        #     return FrameTypes.CLASS_DEFINITION
-        # assert 0 < lineno
-        # return FrameTypes.SRC_CALL

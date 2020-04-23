@@ -24,23 +24,26 @@ class State:
     def step(self, frame, *step_info, trace_type):
         """
         """
+        self.take_snapshot = False
         if self.program_state is None:
             self.program_state = ProgramState(self, frame)
-        if frame is not None:
-            self.program_state.step(frame, *step_info, trace_type=trace_type)
-        self.program_state.global_frame.step()
+        self.program_state.step(frame, *step_info, trace_type=trace_type)
         self.memory_state.step()
         # ------------------------------------------------------------------------------------------
-        self.snapshot()
-        # TODO: Only take a snapshot where appropriate! Elsewhere in this file and maybe others. Perhaps do `self.take_snapshot = False` in State.__init__ and at the top of State.step, and then if it's True by this point, take a snapshot.
-        # TODO: When you figure out how you want to do snapshots, rewrite this function accordingly. If things no longer invoke State.step (which they really oughtn't), then there's no need for the second `if` statement (since frame will never be None) and you could probably move `self.program_state.global_frame.step()` into `ProgramState.step`. Right now, the only place that invokes State.step "improperly" is PyagramFrame.close.
-        # TODO: Also, right now it takes an eternity to run because you're taking a million snapshots and then filtering out duplicates in postprocess.py.
+        # TODO: Only take a snapshot when appropriate!
+        # (*) Delete the next line.
+        # (*) Set `self.take_snapshot = True` elsewhere in this file (and maybe others).
+        # (*) PS: Right now it takes an eternity to run, since you're taking a million snapshots and then filtering out duplicates in postprocess.py.
+        self.take_snapshot = True
+        if self.take_snapshot:
+            self.snapshot()
 
     def snapshot(self):
         """
         """
         # TODO: Rearrange the snapshots for better congruency with the `render` module.
-        # TODO: Also, consider serializing like `snapshot = [x, y, z]` instead of `snapshot = {'x': x, 'y': y, 'z': z}`. It would be more space-efficient and it'd be really nice to be able to write `x, y, z = snapshot`.
+        # TODO: Also, consider serializing like `snapshot = [x, y, z]` instead of `snapshot = {'x': x, 'y': y, 'z': z}`. It would be more space-efficient and it'd be really nice to be able to write `x, y, z = snapshot` (or, in JS, `var [x, y, z] = snapshot`).
+        # TODO: The curr_line_no should be in the State's snapshot, while the ProgramState's snapshot should just `return self.global_frame.snapshot()`.
         snapshot = {
             'program_state': self.program_state.snapshot(),
             'memory_state': self.memory_state.snapshot(),
@@ -54,12 +57,12 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state) # TODO: Revisit PyagramFrame signature.
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
+        self.finish_prev_step = None
         # ------------------------------------------------------------------------------------------
         self.frame_types = {}
-        self.expected_class_binding = None
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -85,6 +88,9 @@ class ProgramState:
     def step(self, frame, *step_info, trace_type):
         """
         """
+        if self.finish_prev_step is not None:
+            self.finish_prev_step()
+            self.finish_prev_step = None
         line_no, step_code, lambda_number = utils.decode_lineno(
             frame.f_lineno,
             max_lineno=self.state.encoder.num_lines,
@@ -93,14 +99,6 @@ class ProgramState:
         if frame not in self.frame_types:
             self.frame_types[frame] = enum.FrameTypes.identify_frame_type(step_code)
         frame_type = self.frame_types[frame]
-        # ------------------------------------------------------------------------------------------
-        # TODO: Do this a different way?
-        if self.expected_class_binding is not None:
-            frame_object = self.expected_class_binding
-            class_object = frame_object.f_back.f_locals[frame_object.f_code.co_name]
-            self.state.memory_state.record_class_frame(frame_object, class_object)
-            self.expected_class_binding = None
-        # ------------------------------------------------------------------------------------------
         if trace_type is enum.TraceTypes.USER_CALL:
             self.process_frame_open(frame, frame_type)
         elif trace_type is enum.TraceTypes.USER_LINE:
@@ -110,11 +108,11 @@ class ProgramState:
             self.process_frame_close(frame, frame_type, return_value)
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             pass
+        self.global_frame.step()
 
     def snapshot(self):
         """
         """
-        # TODO: The lineno should be in the State's snapshot. The ProgramState's snapshot should just `return self.global_frame.snapshot()`.
         return {
             'global_frame': self.global_frame.snapshot(),
             'curr_line_no': self.curr_line_no,
@@ -122,19 +120,13 @@ class ProgramState:
 
     def process_frame_open(self, frame, frame_type):
         """
-        <summary>
-
-        :param frame:
-        :param frame_type:
-        :return:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-
-            is_implicit = self.is_ongoing_frame # An "implicit call" is when the user didn't invoke the function directly. eg the user instantiates a class, and __init__ gets called implicitly.
+            is_implicit = self.is_ongoing_frame
             if is_implicit:
-                self.open_pyagram_flag(banner=None) # TODO: what is the appropriate banner for an implicit call?
+                banner = None # TODO: Add support for implicit calls (e.g. calls to magic methods).
+                self.open_pyagram_flag(banner)
             self.open_pyagram_frame(frame, is_implicit)
-
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
@@ -142,16 +134,10 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         else:
-            pass#raise enum.FrameTypes.illegal_frame_type(frame_type)
+            raise enum.FrameTypes.illegal_enum(frame_type)
 
     def process_frame_close(self, frame, frame_type, return_value):
         """
-        <summary>
-
-        :param frame:
-        :param frame_type:
-        :param return_value:
-        :return:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(return_value)
@@ -162,69 +148,59 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
         else:
-            pass#raise enum.FrameTypes.illegal_frame_type(frame_type)
+            raise enum.FrameTypes.illegal_enum(frame_type)
 
     def open_pyagram_flag(self, banner):
         """
-        <summary>
-
-        :param banner:
-        :return:
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.curr_element = self.curr_element.add_flag(banner)
 
     def open_pyagram_frame(self, frame, is_implicit):
         """
-        <summary>
-
-        :param frame:
-        :param is_implicit:
-        :return:
         """
         assert self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.add_frame(frame, is_implicit)
 
     def open_class_frame(self, frame):
+        """
+        """
         assert self.is_ongoing_frame
         class_frame = pyagram_element.PyagramClassFrame(frame, state=self.state)
         self.state.memory_state.track(class_frame)
 
     def close_pyagram_flag(self):
         """
-        <summary>
-
-        :return:
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         if self.is_ongoing_flag_sans_frame:
             # If we call a built-in function, we open a flag but bdb never gives us a frame to open, so we are forced to close the flag without having a frame!
-            pass
-            # TODO: Add a 'fake' frame that displays the return value.
-            # TODO: To get the return value, you don't actually need the frame! (Which is good, since BDB doesn't give us access to the frame.) You can get it upon the closing of the frame for the outer-lambda wrapper (see `wrap.py`) instead, as its return value is the same!
+            pass # TODO: ?
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):
         """
-        <summary>
-
-        :param return_value:
-        :return:
         """
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
-        self.curr_element = self.curr_element.close(return_value)
-        if is_implicit:
-            self.curr_element = self.curr_element.close()
+        pyagram_flag = self.curr_element.close(return_value)
+        def finish_prev_step():
+            self.curr_element = pyagram_flag
+            if is_implicit:
+                self.curr_element = self.curr_element.close()
+        self.finish_prev_step = finish_prev_step
 
     def close_class_frame(self, frame):
+        """
+        """
         assert self.is_ongoing_frame
-        self.expected_class_binding = frame
+        def finish_prev_step():
+            class_object = frame.f_back.f_locals[frame.f_code.co_name]
+            self.state.memory_state.record_class_frame(frame, class_object)
+        self.finish_prev_step = finish_prev_step
 
 class MemoryState:
     """
-    The instantaneous state of the memory at a particular step during the execution of the input
-    code. It includes all referent objects in the pyagram.
     """
 
     def __init__(self, state):
