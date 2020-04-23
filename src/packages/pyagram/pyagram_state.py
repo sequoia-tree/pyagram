@@ -18,10 +18,6 @@ class State:
         self.print_output = stdout
         self.encoder = encode.Encoder(self, preprocessor_summary)
         self.snapshots = []
-        # ------------------------------------------------------------------------------------------
-        # TODO: Do this differently? Might be incorrect w generators, classes, built-ins, or hidden frames ...
-        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
-        # ------------------------------------------------------------------------------------------
 
     def step(self, frame, *step_info, trace_type):
         """
@@ -65,6 +61,7 @@ class ProgramState:
         self.curr_line_no = 0
         self.finish_prev_step = None
         self.frame_types = {}
+        self.frame_count = 1
 
     @property
     def is_ongoing_flag_sans_frame(self):
@@ -219,9 +216,6 @@ class MemoryState:
 
     def step(self):
         """
-        <summary>
-
-        :return:
         """
         if isinstance(self.state.program_state.curr_element, pyagram_element.PyagramFrame):
             curr_frame = self.state.program_state.curr_element
@@ -265,9 +259,6 @@ class MemoryState:
 
     def snapshot(self):
         """
-        <summary>
-
-        :return:
         """
         return [
             {
@@ -279,9 +270,6 @@ class MemoryState:
 
     def track(self, object):
         """
-        <summary>
-
-        :return:
         """
         is_object = not pyagram_types.is_primitive_type(object)
         is_unseen = not self.is_tracked(object)
@@ -295,14 +283,12 @@ class MemoryState:
 
     def is_tracked(self, object):
         """
-        <summary>
-
-        :param object:
-        :return:
         """
         return id(object) in self.object_debuts
 
     def record_class_frame(self, frame_object, class_object):
+        """
+        """
         class_frame = self.class_frames_by_frame[frame_object]
         self.class_frames_by_class[class_object] = class_frame
         class_frame.id = id(class_object)
@@ -310,33 +296,48 @@ class MemoryState:
         class_frame.bindings = class_object.__dict__
 
     def record_generator_frame(self, pyagram_frame):
+        """
+        """
         generator = None
         for object in gc.get_referrers(pyagram_frame.frame):
             if inspect.isgenerator(object):
                 assert generator is None, f'multiple generators refer to frame object {pyagram_frame.frame}'
                 generator = object
+        assert generator is not None
         if generator in self.generator_frames:
             assert self.generator_frames[generator].frame is pyagram_frame.frame
         self.generator_frames[generator] = pyagram_frame
         self.track(generator)
 
-    def record_parent(self, frame, function):
+    def record_parent(self, pyagram_frame, function):
         """
-        <summary>
-
-        :param frame:
-        :param function:
-        :return:
         """
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if not frame.is_global_frame and frame.is_new_frame:
-                parent = frame.opened_by
+            if not pyagram_frame.is_global_frame and pyagram_frame.is_new_frame:
+                parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by
             else:
-                parent = frame
+                parent = pyagram_frame
             self.function_parents[function] = parent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # TODO: This doesn't work ...
 # l_half = [0, 1, 2]

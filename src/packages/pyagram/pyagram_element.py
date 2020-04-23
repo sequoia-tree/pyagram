@@ -9,17 +9,6 @@ class PyagramElement:
     def __init__(self, opened_by, state):
         self.opened_by = opened_by
         self.state = opened_by.state if state is None else state
-        # ------------------------------------------------------------------------------------------
-        # TODO: Do this differently?
-        if isinstance(self, PyagramFlag):
-            self.id = self.state.num_pyagram_flags
-            self.state.num_pyagram_flags += 1
-        elif isinstance(self, PyagramFrame):
-            self.id = self.state.num_pyagram_frames
-            self.state.num_pyagram_frames += 1
-        else:
-            raise TypeError()
-        # ------------------------------------------------------------------------------------------
         self.flags = []
 
     def step(self):
@@ -70,11 +59,6 @@ class PyagramFlag(PyagramElement):
         """
         assert self.has_returned
         return self.frame.return_value
-
-    def __repr__(self):
-        """
-        """
-        return f'Flag {self.id}'
 
     def step(self):
         """
@@ -184,7 +168,8 @@ class PyagramFrame(PyagramElement):
         else:
             self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
-            if inspect.isgeneratorfunction(self.function):
+            if utils.is_generator_frame(self):
+                # TODO: Possibly you should only set the self.id here, since generator frames shouldn't have one. Revist this once you figure out the .id in pyagram_state.py.
                 self.opened_by.is_hidden = True
                 self.state.memory_state.record_generator_frame(self)
             else:
@@ -198,9 +183,10 @@ class PyagramFrame(PyagramElement):
                     key: self.state.encoder.reference_snapshot(value)
                     for key, value in self.frame.f_locals[var_keyword_name].items()
                 }
+                self.frame_number = self.state.program_state.frame_count
+                self.state.program_state.frame_count += 1
         self.has_returned = False
         self.return_value = None
-        # TODO: In this function, see if it is_object_frame (which for now is synonymous with being a generator frame). If so, mark as hidden (and possibly change the ID, depending how you handle that.)
 
     @property
     def is_global_frame(self):
@@ -217,23 +203,19 @@ class PyagramFrame(PyagramElement):
     def __repr__(self):
         """
         """
-        return 'Global Frame' if self.is_global_frame else f'Frame {self.id}'
+        return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
 
     def step(self):
         """
         """
-        # Two goals -- originally here but now mostly migrated to MemoryState.step:
-        # (1) Identify all functions floating around in memory, and enforce no two point to the same code object.
-        # (2) Obtain a reference to all objects floating around in memory; store said references in the MemoryState.
-        # It is desirable that once we draw an object in one step, we will draw that object in every future step even if we lose all references to it. (This is a common confusion with using environment diagrams to understand HOFs; pyagrams will not suffer the same issue.)
         self.bindings = self.get_bindings()
-        objects = list(self.bindings.values())
+        referents = list(self.bindings.values())
         if not self.is_global_frame:
-            objects.append(self.function)
+            referents.append(self.function)
         if self.has_returned:
-            objects.append(self.return_value)
-        for object in objects:
-            self.state.memory_state.track(object)
+            referents.append(self.return_value)
+        for referent in referents:
+            self.state.memory_state.track(referent)
         super().step()
 
     def snapshot(self):
@@ -245,6 +227,8 @@ class PyagramFrame(PyagramElement):
         }
         if self.initial_bindings is None:
             self.initial_bindings = bindings
+        # TODO: Still need to refactor this. Double-check / reconsider what you need.
+        # TODO: First you'll have to re-think how postprocess.py works.
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'name': repr(self),
@@ -266,30 +250,28 @@ class PyagramFrame(PyagramElement):
     def get_bindings(self):
         """
         """
-        sorted_binding_names = [] if self.is_global_frame else list(inspect.signature(self.function).parameters.keys())
-        for key, value in self.frame.f_locals.items():
+        sorted_binding_names = [] if self.is_global_frame else list(
+            inspect.signature(self.function).parameters.keys(),
+        )
+        for variable, value in self.frame.f_locals.items():
             is_in_parent_frame = False
             next_frame_to_scan = self.parent
             while next_frame_to_scan is not None:
-                if key in next_frame_to_scan.frame.f_locals and next_frame_to_scan.frame.f_locals[key] == value:
+                if variable in next_frame_to_scan.frame.f_locals and next_frame_to_scan.frame.f_locals[variable] == value:
                     is_in_parent_frame = True
                     break
                 next_frame_to_scan = next_frame_to_scan.parent
-            if key in self.frame.f_code.co_varnames or not is_in_parent_frame:
-                sorted_binding_names.append(key)
+            if variable in self.frame.f_code.co_varnames or not is_in_parent_frame:
+                sorted_binding_names.append(variable)
         return {
-            key: self.frame.f_locals[key]
-            for key in sorted_binding_names
+            variable: self.frame.f_locals[variable]
+            for variable in sorted_binding_names
         }
 
     def close(self, return_value):
         """
         """
         if not self.is_global_frame:
-            self.return_value = return_value
             self.has_returned = True
+            self.return_value = return_value
         return self.opened_by
-
-# TODO: Refactor PyagramFrame, then mark pyagram_element.py done
-# TODO: Refactor MemoryState, then mark pyagram_state.py done
-# TODO: Then figure out the .id stuff (see todos in py_element and py_state)
