@@ -27,6 +27,18 @@ def decode_lineno(lineno, *, max_lineno):
         lineno, step_code, lambda_number = lineno, configs.UNMODIFIED_LINENO, 0
     return lineno, step_code, lambda_number
 
+def concatenate_adjacent_strings(elements):
+    """
+    """
+    i = 0
+    while i < len(elements) - 1:
+        curr_elem = elements[i]
+        next_elem = elements[i + 1]
+        if isinstance(curr_elem, str) and isinstance(next_elem, str):
+            elements[i] = ''.join((curr_elem, next_elem))
+            del elements[i + 1]
+        else:
+            i += 1
 
 
 
@@ -121,20 +133,3 @@ def get_variable_params(function):
             var_keyword_name = name
         i += 1
     return var_positional_index, var_positional_name, var_keyword_name
-
-def concatenate_adjacent_strings(elements):
-    """
-    <summary>
-
-    :param elements:
-    """
-    # TODO: A decent practice problem to include in your texbtook, with a little modification.
-    i = 0
-    while i < len(elements) - 1:
-        curr_elem = elements[i]
-        next_elem = elements[i + 1]
-        if isinstance(curr_elem, str) and isinstance(next_elem, str):
-            elements[i] = ''.join((curr_elem, next_elem))
-            del elements[i + 1]
-        else:
-            i += 1

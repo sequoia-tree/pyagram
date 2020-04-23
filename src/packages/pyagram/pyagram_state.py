@@ -19,7 +19,9 @@ class State:
         self.encoder = encode.Encoder(self, preprocessor_summary)
         self.snapshots = []
         # ------------------------------------------------------------------------------------------
-        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0 # TODO: This will become incorrect when you have hidden flags and frames.
+        # TODO: Do this differently? Might be incorrect w generators, classes, built-ins, or hidden frames ...
+        self.num_pyagram_flags, self.num_pyagram_frames = 0, 0
+        # ------------------------------------------------------------------------------------------
 
     def step(self, frame, *step_info, trace_type):
         """
@@ -35,6 +37,7 @@ class State:
         # (*) Set `self.take_snapshot = True` elsewhere in this file (and maybe others).
         # (*) PS: Right now it takes an eternity to run, since you're taking a million snapshots and then filtering out duplicates in postprocess.py.
         self.take_snapshot = True
+        # ------------------------------------------------------------------------------------------
         if self.take_snapshot:
             self.snapshot()
 

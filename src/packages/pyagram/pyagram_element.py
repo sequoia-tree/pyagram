@@ -8,7 +8,9 @@ class PyagramElement:
 
     def __init__(self, opened_by, state):
         self.opened_by = opened_by
-        self.state = self.opened_by.state if state is None else state
+        self.state = opened_by.state if state is None else state
+        # ------------------------------------------------------------------------------------------
+        # TODO: Do this differently?
         if isinstance(self, PyagramFlag):
             self.id = self.state.num_pyagram_flags
             self.state.num_pyagram_flags += 1
@@ -17,6 +19,7 @@ class PyagramElement:
             self.state.num_pyagram_frames += 1
         else:
             raise TypeError()
+        # ------------------------------------------------------------------------------------------
         self.flags = []
 
     def step(self):
@@ -47,8 +50,6 @@ class PyagramFlag(PyagramElement):
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
         self.positional_arg_index = 0
-        # self.start_index = len(self.state.snapshots)
-        # self.close_index = None
         self.frame = None
 
     @property
@@ -61,7 +62,7 @@ class PyagramFlag(PyagramElement):
     def has_returned(self):
         """
         """
-        return self.frame and self.frame.has_returned
+        return self.frame is not None and self.frame.has_returned
 
     @property
     def return_value(self):
@@ -78,25 +79,21 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-        # Fill in all banner bindings up until the next one that's a call.
+
+        # Fill in every banner binding up to the next one that is obtained through a function call.
 
         if not self.banner_is_complete:
-
             if self is self.state.program_state.curr_element:
                 if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
-
                     if not self.is_new_flag:
                         self.evaluate_next_banner_binding(True)
                     next_binding_might_not_be_call = True
                     while next_binding_might_not_be_call and not self.banner_is_complete:
                         next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
-
                 self.has_processed_subflag_since_prev_eval = False
             else:
                 self.has_processed_subflag_since_prev_eval = True
-
-
-        if self.frame:
+        if self.frame is not None:
             self.frame.step()
         self.is_new_flag = False
         super().step()
@@ -104,7 +101,8 @@ class PyagramFlag(PyagramElement):
     def snapshot(self):
         """
         """
-        # TODO: Move to encode.py for consistency
+        # TODO: Still need to refactor this. Double-check / reconsider what you need.
+        # TODO: First you'll have to re-think how postprocess.py works.
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'pyagram_flag': self,
@@ -120,10 +118,15 @@ class PyagramFlag(PyagramElement):
     def evaluate_next_banner_binding(self, expect_call):
         """
         """
+
         # Examine the next binding.
-        # If it turns out to be a call: (1) DON'T evaluate it. (2) Return False.
-        # Else: (1) Evaluate the binding. (2) Return True.
-        # Also return False if the banner gets completed.
+        # If it turns out to be a call:
+        # (*) DON'T evaluate it.
+        # (*) Return False.
+        # Else:
+        # (*) Evaluate the binding.
+        # (*) Return True.
+        # Return False if the banner gets completed.
 
         binding = self.banner_bindings[self.banner_binding_index]
         is_unsupported_binding = binding is None
@@ -155,7 +158,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         assert self.banner_is_complete
-        frame = PyagramFrame(self, frame, is_implicit=is_implicit)
+        frame = PyagramFrame(self, frame, is_implicit)
         self.frame = frame
         return frame
 
@@ -164,14 +167,13 @@ class PyagramFlag(PyagramElement):
         """
         if self.frame is None:
             self.is_hidden = True
-        # self.close_index = len(self.state.snapshots)
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, *, state=None, is_implicit=False):
+    def __init__(self, opened_by, frame, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_frame = True
         self.is_implicit = is_implicit
@@ -198,6 +200,7 @@ class PyagramFrame(PyagramElement):
                 }
         self.has_returned = False
         self.return_value = None
+        # TODO: In this function, see if it is_object_frame (which for now is synonymous with being a generator frame). If so, mark as hidden (and possibly change the ID, depending how you handle that.)
 
     @property
     def is_global_frame(self):
@@ -236,7 +239,6 @@ class PyagramFrame(PyagramElement):
     def snapshot(self):
         """
         """
-        # TODO: Move to encode.py for consistency
         bindings = {
             key: self.state.encoder.reference_snapshot(value)
             for key, value in self.bindings.items()
@@ -287,3 +289,7 @@ class PyagramFrame(PyagramElement):
             self.return_value = return_value
             self.has_returned = True
         return self.opened_by
+
+# TODO: Refactor PyagramFrame, then mark pyagram_element.py done
+# TODO: Refactor MemoryState, then mark pyagram_state.py done
+# TODO: Then figure out the .id stuff (see todos in py_element and py_state)
