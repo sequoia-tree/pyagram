@@ -139,12 +139,11 @@ class Postprocessor:
                             else:
                                 if isinstance(binding_id, str):
 
-                                    # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the frame and then in the **kwargs dictionary.
-                                    if binding_id in frame_bindings:
-                                        binding = frame_bindings[binding_id]
-                                    else:
-                                        assert pyagram_frame.initial_var_keyword_args is not None
+                                    # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the **kwargs dictionary and then in the frame.
+                                    if pyagram_frame.initial_var_keyword_args is not None and binding_id in pyagram_frame.initial_var_keyword_args:
                                         binding = pyagram_frame.initial_var_keyword_args[binding_id]
+                                    else:
+                                        binding = frame_bindings[binding_id]
 
                                 else:
                                     assert isinstance(binding_id, int)

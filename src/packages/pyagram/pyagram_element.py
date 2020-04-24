@@ -99,6 +99,7 @@ class PyagramFlag(PyagramElement):
                 for flag in self.flags
             ],
         }
+        # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)".
 
     def evaluate_next_banner_binding(self, expect_call):
         """
