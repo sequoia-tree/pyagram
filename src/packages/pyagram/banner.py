@@ -8,9 +8,6 @@ COMMA = ast.Str(', ')
 
 class Banner:
     """
-    <summary>
-
-    :param node:
     """
 
     def __init__(self, code, node):
@@ -21,15 +18,15 @@ class Banner:
         self.add_func_info(node.func)
         self.elements.append(OPEN_PARENTHESIS)
         self.add_args_info(node.args)
-        self.add_kwds_info(node.keywords)
+        self.add_kwds_info([
+            (None if keyword.arg is None else ast.Str(keyword.arg), keyword.value)
+            for keyword in node.keywords
+        ])
         self.elements.append(CLOSE_PARENTHESIS)
 
     @property
     def banner(self):
         """
-        <summary>
-
-        :return:
         """
         return ast.Tuple(
             elts=[
@@ -41,19 +38,14 @@ class Banner:
 
     def add_func_info(self, func):
         """
-        <summary>
-
-        :param func:
-        :return:
         """
-        self.add_bindings(func)
+        if isinstance(func, ast.Lambda):
+            self.add_bindings(func, code_prefix='(', code_suffix=')')
+        else:
+            self.add_bindings(func)
 
     def add_args_info(self, args):
         """
-        <summary>
-
-        :param args:
-        :return:
         """
         for arg in args:
             if self.has_prev_input:
@@ -81,12 +73,7 @@ class Banner:
 
     def add_kwds_info(self, kwds):
         """
-        <summary>
-
-        :param kwds:
-        :return:
         """
-        kwds = list(zip(kwds.keys, kwds.values)) if isinstance(kwds, ast.Dict) else [(None if kwd.arg is None else ast.Str(kwd.arg), kwd.value) for kwd in kwds]
         for param, arg in kwds:
             if self.has_prev_input:
                 self.elements.append(COMMA)
@@ -94,7 +81,7 @@ class Banner:
                 if isinstance(arg, ast.Dict):
                     self.elements.append(OPEN_KEYWORD_DICT)
                     self.has_prev_input = False
-                    self.add_kwds_info(arg)
+                    self.add_kwds_info(list(zip(arg.keys, arg.values)))
                     self.elements.append(CLOSE_KEYWORD_DICT)
                 else:
                     self.add_bindings(arg, (), ())
@@ -103,24 +90,23 @@ class Banner:
                 self.add_bindings(arg, (arg,), (param,))
             self.has_prev_input = True
 
-    def add_bindings(self, node, values=None, params=None):
+    def add_bindings(self, node, values=None, params=None, *, code_prefix=None, code_suffix=None):
         """
-        <summary>
-
-        :param node:
-        :param values:
-        :param params:
-        :return:
         """
         is_unsupported_binding = values == () and params == ()
         if values is None and params is None:
             values = (node,)
             params = (None,)
         assert len(values) == len(params)
-        code = ast.Str(ast.get_source_segment(self.code, node).strip('\n'))
+        code = ast.get_source_segment(self.code, node).strip('\n')
+        if code_prefix is not None:
+            code = ''.join((code_prefix, code))
+        if code_suffix is not None:
+            code = ''.join((code, code_suffix))
+        code = ast.Str(code)
         bindings = []
         if is_unsupported_binding:
-            binding = ast.NameConstant(None) # TODO: When binding_info is None, the binding is unsupported -- ie it's a `*args` or `**kwargs` expression where `args` is not a list, tuple, or string / `kwargs` is not a dict. In such cases render the binding as a question mark. If you click on the question mark, you should be brought to the Pyagram GitHub Issues page, where there should be an issue describing the fact that this behaviour is not currently supported.
+            binding = ast.NameConstant(None)
             bindings.append(binding)
         else:
             for value, param in zip(values, params):

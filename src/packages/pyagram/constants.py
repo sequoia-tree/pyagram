@@ -6,7 +6,10 @@ INNER_CALL_LINENO = 1
 OUTER_CALL_LINENO = 2
 CLASS_DEFN_LINENO = 3
 
-PRIMITIVE_TYPES = { # Primitives are values which should be compared with `==` instead of `is`.
+HIDDEN_FLAG_CODE = -1
+
+PRIMITIVE_TYPES = {
+    # Primitives are values which should be compared with `==` instead of `is`.
     int,
     float,
     complex,

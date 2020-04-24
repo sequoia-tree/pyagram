@@ -95,7 +95,7 @@ class Encoder:
             })
         return {
             'encoding': 'function',
-            'snapshot': {
+            'object': {
                 'is_gen_func': inspect.isgeneratorfunction(object),
                 'name': object.__name__,
                 'lambda_id':
@@ -117,7 +117,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'builtin_function',
-            'snapshot': {
+            'object': {
                 'name': object.__name__,
             },
         }
@@ -128,7 +128,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'ordered_collection',
-            'snapshot': {
+            'object': {
                 'type': type(object).__name__,
                 'elements': [
                     self.reference_snapshot(item)
@@ -143,7 +143,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'unordered_collection',
-            'snapshot': {
+            'object': {
                 'type': type(object).__name__,
                 'elements': [
                     self.reference_snapshot(item)
@@ -158,7 +158,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'mapping',
-            'snapshot':  {
+            'object':  {
                 'type': type(object).__name__,
                 'items': [
                     [self.reference_snapshot(key), self.reference_snapshot(value)]
@@ -174,7 +174,7 @@ class Encoder:
         iterable = pyagram_types.get_iterable(object)
         return {
             'encoding': 'iterator',
-            'snapshot': {
+            'object': {
                 'object': None,
             } if iterable is None else {
                 'object': self.reference_snapshot(iterable),
@@ -215,7 +215,7 @@ class Encoder:
             })
         return {
             'encoding': 'generator',
-            'snapshot': snapshot,
+            'object': snapshot,
         }
 
     def encode_obj_class(self, object):
@@ -224,7 +224,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'class_frame',
-            'snapshot': {
+            'object': {
                 'is_curr_element': False,
                 'name': object.frame.f_code.co_name,
                 'parents': object,
@@ -244,7 +244,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'object_dict',
-            'snapshot': {
+            'object': {
                 'is_curr_element': False,
                 'name': type(object).__name__,
                 'parents': [],
@@ -267,7 +267,7 @@ class Encoder:
         # TODO: Refactor this func
         return {
             'encoding': 'object_repr',
-            'snapshot': {
+            'object': {
                 'repr': repr(object),
             },
         }

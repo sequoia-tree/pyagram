@@ -1,9 +1,8 @@
+from . import constants
 from . import encode
 from . import enum
 from . import exception
 from . import utils
-
-HIDDEN_FLAG_CODE = -1
 
 class Postprocessor:
     """
@@ -30,7 +29,7 @@ class Postprocessor:
         """
         i, flags = 0, element_snapshot['flags']
         while i < len(flags):
-            if self.postprocess_flag_snapshot(flags[i]) == HIDDEN_FLAG_CODE:
+            if self.postprocess_flag_snapshot(flags[i]) == constants.HIDDEN_FLAG_CODE:
                 flags[i : i + 1] = flags[i]['flags']
             else:
                 i += 1
@@ -47,7 +46,7 @@ class Postprocessor:
             if flag_snapshot['is_curr_element']:
                 raise exception.HiddenSnapshotException()
             else:
-                return HIDDEN_FLAG_CODE
+                return constants.HIDDEN_FLAG_CODE
         self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:

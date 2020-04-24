@@ -32,14 +32,13 @@ ELEMENT_TEMPLATE = """
 {% endfor %}
 """
 
-# TODO: On a call like `f(*'ab', 'c')`, make sure to put a comma between the boxes for 'a' and 'b'.
 FLAG_TEMPLATE = """
 <div class="pyagram-flag m-3">
   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
     <table class="text-center font-family-monospace">
       <tr>
         {% for label, bindings in banner %}
-          <td {% if bindings|length > 0 %} colspan="{{ bindings|length }}" {% endif %}>
+          <td {% if bindings|length > 0 %} colspan="{{ 2 * bindings|length - 1 }}" {% endif %}>
             {{ label }}
           </td>
         {% endfor %}
@@ -61,7 +60,8 @@ FLAG_TEMPLATE = """
               <td class="text-left">,</td>
             {% endif %}
           {% else %}
-            {% for binding in bindings %}
+            {% for j in range(bindings|length) %}
+              {% set binding = bindings[j] %}
               <td class="pyagram-value {% if binding is none %} pyagram-placeholder {% endif %}">
                 {% if binding is none %}
                   -
@@ -69,6 +69,9 @@ FLAG_TEMPLATE = """
                   {{ get_reference_html(binding) }}
                 {% endif %}
               </td>
+              {% if j < bindings|length - 1 %}
+                <td>, </td>
+              {% endif %}
             {% endfor %}
           {% endif %}
         {% endfor %}
