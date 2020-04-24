@@ -1,6 +1,3 @@
-import numbers
-import types
-
 from . import constants
 from . import pyagram_wrapped_object
 
@@ -47,47 +44,7 @@ class FrameTypes(Enum):
 
 class ObjectTypes(Enum):
     """
-
-    # Primitives are values which should be compared with `==` instead of `is`.
-
     """
-
-    PRIMITIVE_TYPES = (
-        numbers.Number,
-        str,
-    )
-    FUNCTION_TYPES = (
-        types.FunctionType,
-        types.MethodType,
-    )
-    BUILTIN_TYPES = (
-        types.BuiltinFunctionType,
-        types.BuiltinMethodType,
-    )
-    ORDERED_COLLECTION_TYPES = (
-        list,
-        tuple,
-        str,
-    )
-    UNORDERED_COLLECTION_TYPES = (
-        set,
-        frozenset,
-    )
-    MAPPING_TYPES = (
-        dict,
-    )
-    ITERATOR_TYPES = (
-        type(iter([])),
-        type(iter(())),
-        type(iter('')),
-        type(iter(set())),
-        type(iter({}.keys())),
-        type(iter({}.values())),
-        type(iter({}.items())),
-    )
-    GENERATOR_TYPES = (
-        types.GeneratorType,
-    )
 
     PRIMITIVE = object()
     FUNCTION = object()
@@ -103,38 +60,28 @@ class ObjectTypes(Enum):
 
     UNKNOWN = object()
 
-    # TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
-    # TODO:     odict, odict_keys, ordereddict, etc.
-    # TODO:     types.MappingProxyType
-    # TODO:     OrderedDict
-    # TODO:     Counter
-    # TODO:     What about namedtuple classes / instances?
-    # TODO:     collections.*
-    # TODO:     map (the output of a call to `map`)
-    # TODO:     range
-    # TODO:     Various built-in Exceptions
-
     @staticmethod
     def identify_object_type(object):
         """
         """
-        if isinstance(object, ObjectTypes.PRIMITIVE_TYPES):
+        object_type = type(object)
+        if object_type in constants.PRIMITIVE_TYPES:
             return ObjectTypes.PRIMITIVE
-        elif isinstance(object, ObjectTypes.FUNCTION_TYPES):
+        elif object_type in constants.FUNCTION_TYPES:
             return ObjectTypes.FUNCTION
-        elif isinstance(object, ObjectTypes.BUILTIN_TYPES):
+        elif object_type in constants.BUILTIN_TYPES:
             return ObjectTypes.BUILTIN
-        elif isinstance(object, ObjectTypes.ORDERED_COLLECTION_TYPES):
+        elif object_type in constants.ORDERED_COLLECTION_TYPES:
             return ObjectTypes.ORDERED_COLLECTION
-        elif isinstance(object, ObjectTypes.UNORDERED_COLLECTION_TYPES):
+        elif object_type in constants.UNORDERED_COLLECTION_TYPES:
             return ObjectTypes.UNORDERED_COLLECTION
-        elif isinstance(object, ObjectTypes.MAPPING_TYPES):
+        elif object_type in constants.MAPPING_TYPES:
             return ObjectTypes.MAPPING
-        elif isinstance(object, ObjectTypes.ITERATOR_TYPES):
+        elif object_type in constants.ITERATOR_TYPES:
             return ObjectTypes.ITERATOR
-        elif isinstance(object, ObjectTypes.GENERATOR_TYPES):
+        elif object_type in constants.GENERATOR_TYPES:
             return ObjectTypes.GENERATOR
-        elif isinstance(object, pyagram_wrapped_object.PyagramClassFrame):
+        elif object_type is pyagram_wrapped_object.PyagramClassFrame:
             return ObjectTypes.OBJ_CLASS
         elif hasattr(object, '__dict__'):
             return ObjectTypes.OBJ_INST

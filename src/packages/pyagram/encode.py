@@ -16,11 +16,12 @@ class Encoder:
         self.num_lines = num_lines
         self.lambdas_per_line = lambdas_per_line
 
-    def reference_snapshot(self, object, **kwargs):
+    def reference_snapshot(self, object):
         """
         """
+        # TODO: Refactor this func
         if object is enum.ObjectTypes.UNKNOWN:
-            return {'cls': 'unknown', 'text': '<?>'}
+            return {'cls': 'unknown', 'text': '<?>'} # TODO: Messy
         elif pyagram_types.is_primitive_type(object):
             return repr(object) if isinstance(object, str) else str(object)
         else:
@@ -29,6 +30,7 @@ class Encoder:
     def object_snapshot(self, object):
         """
         """
+        # TODO: Refactor this func
         state = self.state
         memory_state = state.memory_state
         object_type = type(object)
