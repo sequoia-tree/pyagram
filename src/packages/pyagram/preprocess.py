@@ -1,7 +1,7 @@
 import ast
 
 from . import banner
-from . import configs
+from . import constants
 from . import utils
 
 class Preprocessor:
@@ -93,7 +93,7 @@ class CodeWrapper(ast.NodeTransformer):
             keywords=[],
             lineno=utils.encode_lineno(
                 node.lineno,
-                configs.INNER_CALL_LINENO,
+                constants.INNER_CALL_LINENO,
                 False,
                 max_lineno=self.preprocessor.num_lines,
             ),
@@ -107,7 +107,7 @@ class CodeWrapper(ast.NodeTransformer):
             keywords=[],
             lineno=utils.encode_lineno(
                 node.lineno,
-                configs.OUTER_CALL_LINENO,
+                constants.OUTER_CALL_LINENO,
                 False,
                 max_lineno=self.preprocessor.num_lines,
             ),
@@ -120,7 +120,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
         node.lineno = utils.encode_lineno(
             node.lineno,
-            configs.CLASS_DEFN_LINENO,
+            constants.CLASS_DEFN_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )

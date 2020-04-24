@@ -2,7 +2,7 @@ import gc
 import inspect
 import math
 
-from . import configs
+from . import constants
 from . import pyagram_types
 
 def pair_naturals(x, y, *, max_x):
@@ -29,9 +29,9 @@ def decode_lineno(lineno, *, max_lineno):
     if lineno < 0:
         (lineno, step_code), lambda_number = unpair_naturals(-lineno, max_x=max_lineno), 0
     elif max_lineno < lineno:
-        (lineno, lambda_number), step_code = unpair_naturals(lineno, max_x=max_lineno), configs.UNMODIFIED_LINENO
+        (lineno, lambda_number), step_code = unpair_naturals(lineno, max_x=max_lineno), constants.UNMODIFIED_LINENO
     else:
-        lineno, step_code, lambda_number = lineno, configs.UNMODIFIED_LINENO, 0
+        lineno, step_code, lambda_number = lineno, constants.UNMODIFIED_LINENO, 0
     return lineno, step_code, lambda_number
 
 def get_function(frame):

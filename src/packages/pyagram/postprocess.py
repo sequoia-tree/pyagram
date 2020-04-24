@@ -1,11 +1,9 @@
 from . import encode
+from . import enum
 from . import exception
 from . import utils
 
 HIDDEN_FLAG_CODE = -1
-
-UNKNOWN_VALUE_CLASS = 'unknown'
-UNKNOWN_VALUE_ENCODING = '<?>'
 
 class Postprocessor:
     """
@@ -72,7 +70,7 @@ class Postprocessor:
             if encoding == 'class_frame':
                 class_frame = snapshot['parents']
                 if class_frame.parents is None:
-                    parents = [self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
+                    parents = [self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)]
                 else:
                     parents = [parent.__name__ for parent in class_frame.parents]
                 snapshot['parents'] = parents
@@ -138,7 +136,7 @@ class Postprocessor:
                             binding_id = banner_bindings[binding_index]
                             is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
                             if is_unsupported_binding:
-                                binding = self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)
+                                binding = self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)
                             else:
                                 if isinstance(binding_id, str):
 
@@ -168,7 +166,7 @@ class Postprocessor:
                         if type(binding) is int: # This means the binding refers to an object in memory.
                             self.enforce_early_debut(binding, snapshot_index)
                 else:
-                    bindings = [self.state.encoder.reference_snapshot(None, cls=UNKNOWN_VALUE_CLASS, text=UNKNOWN_VALUE_ENCODING)]
+                    bindings = [self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)]
                 banner.append([code, bindings])
         flag_snapshot['banner'] = banner
 

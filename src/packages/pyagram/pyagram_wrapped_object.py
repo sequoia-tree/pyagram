@@ -9,9 +9,8 @@ class PyagramWrappedObject:
     def wrap_object(self, object):
         """
         """
-        pass # TODO: Take on the id of the object
-
-# TODO: Make it so any subclass of PyagramWrappedObject can have that behavior where you use some wrapped object's ID as its own.
+        self.state.memory_state.masked_objects.append(object)
+        self.id = id(object)
 
 class PyagramClassFrame(PyagramWrappedObject):
     """
@@ -28,7 +27,7 @@ class PyagramClassFrame(PyagramWrappedObject):
 
     def __init__(self, frame, *, state):
         super().__init__(state)
+        state.memory_state.class_frames_by_frame[frame] = self
         self.frame = frame
-        self.parents = None
         self.bindings = frame.f_locals
-        self.state.memory_state.class_frames_by_frame[frame] = self
+        self.parents = None

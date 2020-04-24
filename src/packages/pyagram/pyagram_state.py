@@ -216,6 +216,7 @@ class MemoryState:
         self.generator_frames = {}
         self.generator_functs = {}
         self.function_parents = {}
+        self.masked_objects = []
         # ------------------------------------------------------------------------------------------
 
     def step(self):
@@ -272,7 +273,7 @@ class MemoryState:
                     object.id
                     if isinstance(object, pyagram_wrapped_object.PyagramWrappedObject)
                     else id(object),
-                'object': self.state.encoder.object_snapshot(object, self),
+                'object': self.state.encoder.object_snapshot(object),
             }
             for object in self.objects
         ]
@@ -285,12 +286,12 @@ class MemoryState:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
         is_unseen = not self.is_tracked(object)
-        is_masked = isinstance(object, type) and object in self.class_frames_by_class # TODO: This should be more like pyagram_wrapped_object.PyagramWrappedObject.is_wrapped(object).
+        is_masked = object in self.masked_objects
         if is_object and is_unseen and not is_masked:
             debut_index = len(self.state.snapshots)
             self.objects.append(object)
             self.object_debuts[id(object)] = debut_index
-            if inspect.isgenerator(object):
+            if object_type is enum.ObjectTypes.GENERATOR:
                 self.generator_functs[object] = utils.get_function(object.gi_frame)
 
     def is_tracked(self, object):
@@ -302,12 +303,11 @@ class MemoryState:
     def record_class_frame(self, frame_object, class_object):
         """
         """
-        # TODO: Refactor this func
-        class_frame = self.class_frames_by_frame[frame_object]
-        self.class_frames_by_class[class_object] = class_frame
-        class_frame.id = id(class_object)
-        class_frame.parents = class_object.__bases__
-        class_frame.bindings = class_object.__dict__
+        pyagram_class_frame = self.class_frames_by_frame[frame_object]
+        self.class_frames_by_class[class_object] = pyagram_class_frame
+        pyagram_class_frame.wrap_object(class_object)
+        pyagram_class_frame.bindings = class_object.__dict__
+        pyagram_class_frame.parents = class_object.__bases__
 
     def record_generator_frame(self, pyagram_frame):
         """

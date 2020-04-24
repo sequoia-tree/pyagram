@@ -1,7 +1,7 @@
 import numbers
 import types
 
-from . import configs
+from . import constants
 from . import pyagram_wrapped_object
 
 class Enum:
@@ -34,13 +34,13 @@ class FrameTypes(Enum):
     def identify_frame_type(step_code):
         """
         """
-        if step_code == configs.UNMODIFIED_LINENO:
+        if step_code == constants.UNMODIFIED_LINENO:
             return FrameTypes.SRC_CALL
-        elif step_code == configs.INNER_CALL_LINENO:
+        elif step_code == constants.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
-        elif step_code == configs.OUTER_CALL_LINENO:
+        elif step_code == constants.OUTER_CALL_LINENO:
             return FrameTypes.SRC_CALL_SUCCESSOR
-        elif step_code == configs.CLASS_DEFN_LINENO:
+        elif step_code == constants.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
         else:
             raise FrameTypes.illegal_enum(step_code)
@@ -100,6 +100,8 @@ class ObjectTypes(Enum):
     OBJ_CLASS = object()
     OBJ_INST = object()
     OTHER = object()
+
+    UNKNOWN = object()
 
     # TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
     # TODO:     odict, odict_keys, ordereddict, etc.

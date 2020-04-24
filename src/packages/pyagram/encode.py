@@ -1,5 +1,6 @@
 import inspect
 
+from . import enum
 from . import pyagram_element
 from . import pyagram_types
 from . import pyagram_wrapped_object
@@ -11,24 +12,25 @@ class Encoder:
 
     def __init__(self, state, preprocessor_summary):
         self.state = state
-        num_lines, num_lambdas_per_line = preprocessor_summary
+        num_lines, lambdas_per_line = preprocessor_summary
         self.num_lines = num_lines
-        self.num_lambdas_per_line = num_lambdas_per_line
+        self.lambdas_per_line = lambdas_per_line
 
     def reference_snapshot(self, object, **kwargs):
         """
         """
-        if 0 < len(kwargs):
-            return kwargs
+        if object is enum.ObjectTypes.UNKNOWN:
+            return {'cls': 'unknown', 'text': '<?>'}
         elif pyagram_types.is_primitive_type(object):
             return repr(object) if isinstance(object, str) else str(object)
         else:
             return id(object)
 
-    def object_snapshot(self, object, memory_state):
+    def object_snapshot(self, object):
         """
         """
-        state = memory_state.state # TODO: Don't need this or the memory_state param. Use self.state instead.
+        state = self.state
+        memory_state = state.memory_state
         object_type = type(object)
         if object_type in pyagram_types.FUNCTION_TYPES:
             is_lambda = object.__name__ == '<lambda>'
@@ -65,7 +67,7 @@ class Encoder:
                     {
                         'lineno': lineno,
                         'number': number,
-                        'single': self.num_lambdas_per_line[lineno] <= 1,
+                        'single': self.lambdas_per_line[lineno] <= 1,
                     }
                     if is_lambda
                     else None,
