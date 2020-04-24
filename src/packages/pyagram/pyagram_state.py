@@ -165,8 +165,8 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        class_frame = pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
-        self.state.memory_state.track(class_frame)
+        pyagram_class_frame = pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
+        self.state.memory_state.track(pyagram_class_frame, enum.ObjectTypes.OBJ_CLASS)
 
     def close_pyagram_flag(self):
         """
@@ -260,7 +260,7 @@ class MemoryState:
                 else:
                     raise enum.ObjectTypes.illegal_enum(object_type)
                 for referent in referents:
-                    self.track(referent, object_type)
+                    self.track(referent)
             curr_frame.is_new_frame = False
 
     def snapshot(self):
@@ -322,7 +322,7 @@ class MemoryState:
         if generator in self.generator_frames:
             assert self.generator_frames[generator].frame is pyagram_frame.frame
         self.generator_frames[generator] = pyagram_frame
-        self.track(generator)
+        self.track(generator, enum.ObjectTypes.GENERATOR)
 
     def record_parent(self, pyagram_frame, function):
         """

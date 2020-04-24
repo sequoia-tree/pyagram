@@ -52,42 +52,42 @@ class ObjectTypes(Enum):
 
     """
 
-    PRIMITIVE_TYPES = {
+    PRIMITIVE_TYPES = (
         numbers.Number,
         str,
-    }
-    FUNCTION_TYPES = {
+    )
+    FUNCTION_TYPES = (
         types.FunctionType,
         types.MethodType,
-    }
-    BUILTIN_TYPES = {
+    )
+    BUILTIN_TYPES = (
         types.BuiltinFunctionType,
         types.BuiltinMethodType,
-    }
-    ORDERED_COLLECTION_TYPES = {
+    )
+    ORDERED_COLLECTION_TYPES = (
         list,
         tuple,
         str,
-    }
-    UNORDERED_COLLECTION_TYPES = {
+    )
+    UNORDERED_COLLECTION_TYPES = (
         set,
         frozenset,
-    }
-    MAPPING_TYPES = {
+    )
+    MAPPING_TYPES = (
         dict,
-    }
-    ITERATOR_TYPES = {
-        type(iter([])): (list, None),
-        type(iter(())): (tuple, None),
-        type(iter('')): (str, None),
-        type(iter(set())): (set, None),
-        type(iter({}.keys())): (dict, 'keys'),
-        type(iter({}.values())): (dict, 'values'),
-        type(iter({}.items())): (dict, 'items'),
-    }
-    GENERATOR_TYPES = {
+    )
+    ITERATOR_TYPES = (
+        type(iter([])),
+        type(iter(())),
+        type(iter('')),
+        type(iter(set())),
+        type(iter({}.keys())),
+        type(iter({}.values())),
+        type(iter({}.items())),
+    )
+    GENERATOR_TYPES = (
         types.GeneratorType,
-    }
+    )
 
     PRIMITIVE = object()
     FUNCTION = object()
@@ -116,24 +116,23 @@ class ObjectTypes(Enum):
     def identify_object_type(object):
         """
         """
-        object_type = type(object)
-        if object_type in ObjectTypes.PRIMITIVE_TYPES:
+        if isinstance(object, ObjectTypes.PRIMITIVE_TYPES):
             return ObjectTypes.PRIMITIVE
-        elif object_type in ObjectTypes.FUNCTION_TYPES:
+        elif isinstance(object, ObjectTypes.FUNCTION_TYPES):
             return ObjectTypes.FUNCTION
-        elif object_type in ObjectTypes.BUILTIN_TYPES:
+        elif isinstance(object, ObjectTypes.BUILTIN_TYPES):
             return ObjectTypes.BUILTIN
-        elif object_type in ObjectTypes.ORDERED_COLLECTION_TYPES:
+        elif isinstance(object, ObjectTypes.ORDERED_COLLECTION_TYPES):
             return ObjectTypes.ORDERED_COLLECTION
-        elif object_type in ObjectTypes.UNORDERED_COLLECTION_TYPES:
+        elif isinstance(object, ObjectTypes.UNORDERED_COLLECTION_TYPES):
             return ObjectTypes.UNORDERED_COLLECTION
-        elif object_type in ObjectTypes.MAPPING_TYPES:
+        elif isinstance(object, ObjectTypes.MAPPING_TYPES):
             return ObjectTypes.MAPPING
-        elif object_type in ObjectTypes.ITERATOR_TYPES:
+        elif isinstance(object, ObjectTypes.ITERATOR_TYPES):
             return ObjectTypes.ITERATOR
-        elif object_type in ObjectTypes.GENERATOR_TYPES:
+        elif isinstance(object, ObjectTypes.GENERATOR_TYPES):
             return ObjectTypes.GENERATOR
-        elif object_type is pyagram_wrapped_object.PyagramClassFrame:
+        elif isinstance(object, pyagram_wrapped_object.PyagramClassFrame):
             return ObjectTypes.OBJ_CLASS
         elif hasattr(object, '__dict__'):
             return ObjectTypes.OBJ_INST
