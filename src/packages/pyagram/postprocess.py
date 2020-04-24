@@ -12,11 +12,15 @@ class Postprocessor:
         self.state = state
 
     def postprocess(self):
+        """
+        """
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots()
 
     def postprocess_snapshots(self):
+        """
+        """
         for i, snapshot in enumerate(self.state.snapshots):
             try:
                 self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
@@ -36,10 +40,6 @@ class Postprocessor:
 
     def postprocess_flag_snapshot(self, flag_snapshot):
         """
-        <summary>
-
-        :param flag_snapshot:
-        :return:
         """
         pyagram_flag = flag_snapshot.pop('pyagram_flag')
         if pyagram_flag.is_hidden:
@@ -55,10 +55,6 @@ class Postprocessor:
 
     def postprocess_frame_snapshot(self, frame_snapshot):
         """
-        <summary>
-
-        :frame_snapshot:
-        :return:
         """
         self.postprocess_element_snapshot(frame_snapshot)
 
