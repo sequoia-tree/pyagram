@@ -71,7 +71,7 @@ class Banner:
                 self.add_bindings(arg)
             self.has_prev_input = True
 
-    def add_kwds_info(self, kwds):
+    def add_kwds_info(self, kwds, *, is_keyword_dict=False):
         """
         """
         for param, arg in kwds:
@@ -81,12 +81,19 @@ class Banner:
                 if isinstance(arg, ast.Dict):
                     self.elements.append(OPEN_KEYWORD_DICT)
                     self.has_prev_input = False
-                    self.add_kwds_info(list(zip(arg.keys, arg.values)))
+                    self.add_kwds_info(
+                        list(zip(arg.keys, arg.values)),
+                        is_keyword_dict=True,
+                    )
                     self.elements.append(CLOSE_KEYWORD_DICT)
                 else:
                     self.add_bindings(arg, (), ())
             else:
-                self.elements.append(ast.Str(f'{param.s}='))
+                self.elements.append(ast.Str(
+                    f'{ast.get_source_segment(self.code, param)}:'
+                    if is_keyword_dict
+                    else f'{param.s}='
+                ))
                 self.add_bindings(arg, (arg,), (param,))
             self.has_prev_input = True
 

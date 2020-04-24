@@ -12,11 +12,15 @@ class Postprocessor:
         self.state = state
 
     def postprocess(self):
+        """
+        """
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots()
 
     def postprocess_snapshots(self):
+        """
+        """
         for i, snapshot in enumerate(self.state.snapshots):
             try:
                 self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
@@ -36,10 +40,6 @@ class Postprocessor:
 
     def postprocess_flag_snapshot(self, flag_snapshot):
         """
-        <summary>
-
-        :param flag_snapshot:
-        :return:
         """
         pyagram_flag = flag_snapshot.pop('pyagram_flag')
         if pyagram_flag.is_hidden:
@@ -55,10 +55,6 @@ class Postprocessor:
 
     def postprocess_frame_snapshot(self, frame_snapshot):
         """
-        <summary>
-
-        :frame_snapshot:
-        :return:
         """
         self.postprocess_element_snapshot(frame_snapshot)
 
@@ -139,12 +135,11 @@ class Postprocessor:
                             else:
                                 if isinstance(binding_id, str):
 
-                                    # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the frame and then in the **kwargs dictionary.
-                                    if binding_id in frame_bindings:
-                                        binding = frame_bindings[binding_id]
-                                    else:
-                                        assert pyagram_frame.initial_var_keyword_args is not None
+                                    # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the **kwargs dictionary and then in the frame.
+                                    if pyagram_frame.initial_var_keyword_args is not None and binding_id in pyagram_frame.initial_var_keyword_args:
                                         binding = pyagram_frame.initial_var_keyword_args[binding_id]
+                                    else:
+                                        binding = frame_bindings[binding_id]
 
                                 else:
                                     assert isinstance(binding_id, int)
