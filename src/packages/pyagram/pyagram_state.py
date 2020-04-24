@@ -90,7 +90,7 @@ class ProgramState:
         if self.finish_prev_step is not None:
             self.finish_prev_step()
             self.finish_prev_step = None
-        line_no, step_code, lambda_number = utils.decode_lineno(
+        line_no, step_code, _ = utils.decode_lineno(
             frame.f_lineno,
             max_lineno=self.state.encoder.num_lines,
         )
@@ -206,6 +206,7 @@ class MemoryState:
     """
 
     def __init__(self, state):
+        # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
         self.object_debuts = {}
@@ -221,41 +222,42 @@ class MemoryState:
         if isinstance(self.state.program_state.curr_element, pyagram_element.PyagramFrame):
             curr_frame = self.state.program_state.curr_element
             for object in self.objects:
-                if not pyagram_types.is_builtin_type(object):
-
-                    object_type = type(object)
-                    if object_type in pyagram_types.FUNCTION_TYPES:
-                        self.record_parent(curr_frame, object)
-                        referents = utils.get_defaults(object)
-                    elif object_type in pyagram_types.BUILTIN_FUNCTION_TYPES:
-                        referents = []
-                    elif object_type in pyagram_types.ORDERED_COLLECTION_TYPES:
-                        # TODO: Here where you use gc, you don't actually need it. For ORDERED_COLLECTION_TYPES you can just do something like `iter(object)`, or maybe just `object`. Similar for UNORDERED_COLLECTION_TYPES. For MAPPING_TYPES it's a bit more complex, but not by much -- you just have to get all the keys and values in the mapping.
-                        referents = gc.get_referents(object)
-                    elif object_type in pyagram_types.UNORDERED_COLLECTION_TYPES:
-                        referents = gc.get_referents(object)
-                    elif object_type in pyagram_types.MAPPING_TYPES:
-                        referents = gc.get_referents(object)
-                    elif object_type in pyagram_types.ITERATOR_TYPES:
-                        iterable = pyagram_types.get_iterable(object)
-                        referents = [] if iterable is None else [iterable]
-                    elif object_type in pyagram_types.GENERATOR_TYPES:
-                        referents = list(inspect.getgeneratorlocals(object).values())
-                        if object.gi_yieldfrom is not None:
-                            referents.append(object.gi_yieldfrom)
-                    elif object_type is pyagram_wrapped_object.PyagramClassFrame:
-                        referents = [
-                            value
-                            for key, value in object.bindings.items()
-                            if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
-                        ]
-                    elif hasattr(object, '__dict__'):
-                        referents = object.__dict__.values()
-                    else:
-                        referents = []
-
-                    for referent in referents:
-                        self.track(referent)
+                object_type = enum.ObjectTypes.identify_object_type(object)
+                if object_type is enum.ObjectTypes.PRIMITIVE:
+                    referents = []
+                elif object_type is enum.ObjectTypes.FUNCTION:
+                    self.record_parent(curr_frame, object)
+                    referents = utils.get_defaults(object)
+                elif object_type is enum.ObjectTypes.BUILTIN:
+                    referents = []
+                elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
+                    # TODO: Here where you use gc, you don't actually need it. For ORDERED_COLLECTION_TYPES you can just do something like `iter(object)`, or maybe just `object`. Similar for UNORDERED_COLLECTION_TYPES. For MAPPING_TYPES it's a bit more complex, but not by much -- you just have to get all the keys and values in the mapping.
+                    referents = gc.get_referents(object)
+                elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
+                    referents = gc.get_referents(object)
+                elif object_type is enum.ObjectTypes.MAPPING:
+                    referents = gc.get_referents(object)
+                elif object_type is enum.ObjectTypes.ITERATOR:
+                    iterable = pyagram_types.get_iterable(object)
+                    referents = [] if iterable is None else [iterable]
+                elif object_type is enum.ObjectTypes.GENERATOR:
+                    referents = list(inspect.getgeneratorlocals(object).values())
+                    if object.gi_yieldfrom is not None:
+                        referents.append(object.gi_yieldfrom)
+                elif object_type is enum.ObjectTypes.OBJ_CLASS:
+                    referents = [
+                        value
+                        for key, value in object.bindings.items()
+                        if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
+                    ]
+                elif object_type is enum.ObjectTypes.OBJ_INST:
+                    referents = object.__dict__.values()
+                elif object_type is enum.ObjectTypes.OTHER:
+                    referents = []
+                else:
+                    raise enum.ObjectTypes.illegal_enum(object_type)
+                for referent in referents:
+                    self.track(referent)
             curr_frame.is_new_frame = False
 
     def snapshot(self):
@@ -425,6 +427,10 @@ class MemoryState:
 # TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
 # Functions, unbound methods, and <slot wrapper>s should display the same way.
 # Bound methods include a <bound method> type, and a <method-wrapper> type.
+# TODO: How about ...
+# types.MethodDescriptorType
+# types.MethodWrapperType
+# types.ClassMethodDescriptorType
 
 # TODO: Make built-in objects display nice.
 # (*) Why do the slot wrappers and method descriptors not show up like other functions? Fix that.

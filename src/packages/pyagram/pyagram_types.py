@@ -24,33 +24,14 @@ ITERATOR_TYPE_MAP = {
 }
 ITERATOR_TYPES = tuple(ITERATOR_TYPE_MAP)
 GENERATOR_TYPES = (types.GeneratorType,)
-# TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
-# TODO:     odict, odict_keys, ordereddict, etc.
-# TODO:     types.MappingProxyType
-# TODO:     OrderedDict
-# TODO:     Counter
-# TODO:     What about namedtuple classes / instances?
-# TODO:     collections.*
-# TODO:     map [the output of a call to `map`]
-# TODO:     range ?
-# TODO:     Various built-in Exceptions
-# TODO: I think https://docs.python.org/3.8/library/types.html is a full list of types.
 
 def is_primitive_type(object):
     """
-    <summary>
-
-    :param object: An arbitrary object.
-    :return: Whether or not :object: is a primitive.
     """
     return isinstance(object, PRIMITIVE_TYPES)
 
 def is_function_type(object):
     """
-    <summary>
-
-    :param object: An arbitrary object.
-    :return: Whether or not :object: is a function.
     """
     return isinstance(object, FUNCTION_TYPES)
 

@@ -169,7 +169,6 @@ class PyagramFrame(PyagramElement):
             self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
             if utils.is_generator_frame(self):
-                # TODO: Possibly you should only set the self.id here, since generator frames shouldn't have one. Revist this once you figure out the .id in pyagram_state.py.
                 self.opened_by.is_hidden = True
                 self.state.memory_state.record_generator_frame(self)
             else:
