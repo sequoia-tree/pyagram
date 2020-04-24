@@ -206,6 +206,7 @@ class MemoryState:
     """
 
     def __init__(self, state):
+        # ------------------------------------------------------------------------------------------
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
@@ -215,6 +216,7 @@ class MemoryState:
         self.generator_frames = {}
         self.generator_functs = {}
         self.function_parents = {}
+        # ------------------------------------------------------------------------------------------
 
     def step(self):
         """
@@ -231,12 +233,13 @@ class MemoryState:
                 elif object_type is enum.ObjectTypes.BUILTIN:
                     referents = []
                 elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
-                    # TODO: Here where you use gc, you don't actually need it. For ORDERED_COLLECTION_TYPES you can just do something like `iter(object)`, or maybe just `object`. Similar for UNORDERED_COLLECTION_TYPES. For MAPPING_TYPES it's a bit more complex, but not by much -- you just have to get all the keys and values in the mapping.
-                    referents = gc.get_referents(object)
+                    referents = list(object)
                 elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
-                    referents = gc.get_referents(object)
+                    referents = list(object)
                 elif object_type is enum.ObjectTypes.MAPPING:
-                    referents = gc.get_referents(object)
+                    keys, values = list(object.keys()), list(object.values())
+                    referents = keys
+                    referents.extend(values)
                 elif object_type is enum.ObjectTypes.ITERATOR:
                     iterable = pyagram_types.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
@@ -257,7 +260,7 @@ class MemoryState:
                 else:
                     raise enum.ObjectTypes.illegal_enum(object_type)
                 for referent in referents:
-                    self.track(referent)
+                    self.track(referent, object_type)
             curr_frame.is_new_frame = False
 
     def snapshot(self):
@@ -265,18 +268,24 @@ class MemoryState:
         """
         return [
             {
-                'id': object.id if isinstance(object, pyagram_wrapped_object.PyagramClassFrame) else id(object),
+                'id':
+                    object.id
+                    if isinstance(object, pyagram_wrapped_object.PyagramWrappedObject)
+                    else id(object),
                 'object': self.state.encoder.object_snapshot(object, self),
             }
             for object in self.objects
         ]
 
-    def track(self, object):
+    def track(self, object, object_type=None):
         """
         """
-        is_object = not pyagram_types.is_primitive_type(object)
+        # TODO: Refactor this func
+        if object_type is None:
+            object_type = enum.ObjectTypes.identify_object_type(object)
+        is_object = object_type is not enum.ObjectTypes.PRIMITIVE
         is_unseen = not self.is_tracked(object)
-        is_masked = isinstance(object, type) and object in self.class_frames_by_class
+        is_masked = isinstance(object, type) and object in self.class_frames_by_class # TODO: This should be more like pyagram_wrapped_object.PyagramWrappedObject.is_wrapped(object).
         if is_object and is_unseen and not is_masked:
             debut_index = len(self.state.snapshots)
             self.objects.append(object)
@@ -287,11 +296,13 @@ class MemoryState:
     def is_tracked(self, object):
         """
         """
+        # TODO: Refactor this func
         return id(object) in self.object_debuts
 
     def record_class_frame(self, frame_object, class_object):
         """
         """
+        # TODO: Refactor this func
         class_frame = self.class_frames_by_frame[frame_object]
         self.class_frames_by_class[class_object] = class_frame
         class_frame.id = id(class_object)
@@ -301,6 +312,7 @@ class MemoryState:
     def record_generator_frame(self, pyagram_frame):
         """
         """
+        # TODO: Refactor this func
         generator = None
         for object in gc.get_referrers(pyagram_frame.frame):
             if inspect.isgenerator(object):
@@ -315,6 +327,7 @@ class MemoryState:
     def record_parent(self, pyagram_frame, function):
         """
         """
+        # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
             if not pyagram_frame.is_global_frame and pyagram_frame.is_new_frame:
@@ -324,125 +337,3 @@ class MemoryState:
             else:
                 parent = pyagram_frame
             self.function_parents[function] = parent
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# TODO: This doesn't work ...
-# l_half = [0, 1, 2]
-# r_half = [3, 4, 5]
-# lst = min(l_half, r_half, key=lambda lst: lst[0])
-# TODO: ... because of the nested flags in the hidden flag. I think we should actually omit subflags of hidden flags, except in the case of generators which are handled specially.
-
-# TODO: REALLY GOOD NEWS! It takes a long time to run a query -- but not inherently. It appears most of the time is actually coming from the call to render_components in app.py, so you can speed it up a LOT by rendering on-the-fly instead!
-
-# TODO: In this code ...
-# class A:
-#     x = 1
-#     class B:
-#         x = 2
-#     class C:
-#         x = 3
-#     x = 4
-# You're skipping the 5th snapshot. There should be one step in which you bind B in A's frame, and a different step in which you start working on Class C.
-# Snapshot on line 129?
-# TODO: Also you're taking too many snapshots with iterators. Possibly generators too.
-
-# TODO: Generators
-# TODO: Basically we don't want a flag or frame for it. Instead we want to display the frame as an object frame, even though it isn't really.
-# TODO: (1) If a flag is in hidden_flags, hide it -- but NOT its subflags! (2) Make the generator flag hidden.
-# def fib():
-#     prev, cur = 0, 1
-#     while True:
-#         yield prev
-#         prev, cur = cur, prev + cur
-# def g(x):
-#     return x
-# f = fib()
-# a = next(f)
-# b = next(f)
-# c = next(fib())
-# d = next(g(f))
-# e = next(g(fib()))
-# TODO: also ...
-# def g(lst):
-#     yield [a]
-#     yield 2
-#     yield from lst
-#     yield from ls2
-#     yield 9
-# a = g([3, 4, 5])
-# ls2 = [6, 7, 8]
-# while True:
-#     x = next(a)
-# TODO: Right now it looks like it yields None right before StopIteration. Fix that.
-
-# TODO: What if you did something like this, where you change the __dict__ but the key isn't a string anymore? How do you want to represent that? Also, depending, make sure to track() the right stuff! Or do we just not support this behavior?
-# class A:
-#     pass
-# a = A()
-# a.__dict__ = {a: 1}
-
-# TODO: Make magic methods display nice. Both flags are wrong here ...
-# class A:
-#     def __init__(self): # TODO: If the frame.function is a class' .__init__, then modify the flag banner accordingly.
-#         pass
-#     def __lt__(self, other):
-#         return True
-# a = A()
-# b = A()
-# c = a < b
-
-# TODO: Bound methods should not be visualized. Instead of a pointer to a particular bound function, you should see a pointer to the function on which it's based (ie its .__func__). This is unfortunate but necessary behavior, since it's impossible to tell, given just the code object, whether you're calling a function or the bound method based on that function. Similar behavior for wrappers, descriptors, etc.
-# def f():
-#     class A:
-#         def f(self):
-#             return 0
-#     return A
-# A = f()
-# a = A()
-# b = A()
-# c = a.f()
-# a.f = b.f
-# xyz = a.f
-# A.f = lambda x: 1
-# d = a.f()
-# e = A.f(a)
-# TODO: Make sure methods and bound methods of classes and instances work fine.
-# TODO: I think inspect.signature may not play well with Methods. Look at all the places you use it. You can't treat functions and methods the same.
-# TODO: FYI, <method>.__self__ is a pointer to the instance to which the method is bound, or None. Might be useful for visually representing bound methods?
-# Functions, unbound methods, and <slot wrapper>s should display the same way.
-# Bound methods include a <bound method> type, and a <method-wrapper> type.
-# TODO: How about ...
-# types.MethodDescriptorType
-# types.MethodWrapperType
-# types.ClassMethodDescriptorType
-
-# TODO: Make built-in objects display nice.
-# (*) Why do the slot wrappers and method descriptors not show up like other functions? Fix that.
-# (*) Maybe if the repr is of the form <CLASS INSTANCE_NAME at 0xHEXADECIMAL> you can instead display it as you display other instances, i.e. a box with "CLASS instance" written inside? Things like None and NotImplemented should still be represented the same way though, as just the word None or NotImplemented according to their repr.
-# (*) This displays horribly! Maybe if the object is an INSTANCE of the `type` class then (1) draw it like one of your PyagramClassFrames; (2) write a `...` somewhere; and (3) omit most of the contents by adding it all to `ignored`.
-# a = object()
-# b = IndexError('Oops.')
-# x = object
-# y = IndexError
-
-# TODO: Try / except statements
-
-# TODO: Comprehensions (list comp, dict comp, genexp, etc.)
-
-# TODO: Why is `__name__` bound to `'builtins'`?

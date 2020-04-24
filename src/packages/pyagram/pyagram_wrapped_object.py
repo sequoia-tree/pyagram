@@ -2,7 +2,14 @@ class PyagramWrappedObject:
     """
     """
 
-    pass
+    def __init__(self, state):
+        self.state = state
+        self.id = id(self)
+
+    def wrap_object(self, object):
+        """
+        """
+        pass # TODO: Take on the id of the object
 
 # TODO: Make it so any subclass of PyagramWrappedObject can have that behavior where you use some wrapped object's ID as its own.
 
@@ -20,8 +27,7 @@ class PyagramClassFrame(PyagramWrappedObject):
     }
 
     def __init__(self, frame, *, state):
-        self.id = id(self)
-        self.state = state
+        super().__init__(state)
         self.frame = frame
         self.parents = None
         self.bindings = frame.f_locals
