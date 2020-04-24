@@ -1,5 +1,6 @@
 import inspect
 
+from . import constants
 from . import utils
 
 class PyagramElement:
@@ -117,7 +118,7 @@ class PyagramFlag(PyagramElement):
         if is_unsupported_binding:
             self.state.snapshot()
             while not self.banner_is_complete:
-                self.banner_bindings[self.banner_binding_index] = utils.BANNER_UNSUPPORTED_CODE
+                self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
                 self.banner_binding_index += 1
             return False
         else:
@@ -129,7 +130,7 @@ class PyagramFlag(PyagramElement):
                 if param_if_known is None:
                     next_binding_is_func = self.banner_binding_index == 0
                     if next_binding_is_func:
-                        self.banner_bindings[self.banner_binding_index] = utils.BANNER_FUNCTION_CODE
+                        self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
                     else:
                         self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
                         self.positional_arg_index += 1

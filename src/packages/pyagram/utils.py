@@ -107,10 +107,6 @@ def is_generator_frame(pyagram_frame):
 
 import types
 
-
-BANNER_FUNCTION_CODE = -1 # TODO: Move to constants.py
-BANNER_UNSUPPORTED_CODE = -2
-
 def assign_unique_code_object(function):
     """
     """

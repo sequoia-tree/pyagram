@@ -133,7 +133,7 @@ class Postprocessor:
                     for binding_index in binding_indices:
                         if binding_index < banner_binding_index:
                             binding_id = banner_bindings[binding_index]
-                            is_unsupported_binding = binding_id == utils.BANNER_UNSUPPORTED_CODE
+                            is_unsupported_binding = binding_id == constants.BANNER_UNSUPPORTED_CODE
                             if is_unsupported_binding:
                                 binding = self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)
                             else:
@@ -148,7 +148,7 @@ class Postprocessor:
 
                                 else:
                                     assert isinstance(binding_id, int)
-                                    if binding_id == utils.BANNER_FUNCTION_CODE:
+                                    if binding_id == constants.BANNER_FUNCTION_CODE:
                                         binding = self.state.encoder.reference_snapshot(pyagram_frame.function)
                                     else:
 
