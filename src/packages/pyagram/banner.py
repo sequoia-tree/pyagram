@@ -12,7 +12,7 @@ class Banner:
 
     def __init__(self, code, node):
         self.code = code
-        self.elements = []
+        self.elements = [] # self.labels and self.bindings?
         self.bindings = []
         self.has_prev_input = False
         self.add_func_info(node.func)
