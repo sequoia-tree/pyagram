@@ -1,6 +1,3 @@
-import ace from 'ace-builds';
-import 'ace-builds/webpack-resolver';
-
 export function editor(id, num_lines) {
     var editor = ace.edit(null, {
         mode: 'ace/mode/python',

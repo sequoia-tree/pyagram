@@ -1,3 +1,4 @@
+import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 
 const POINTERS_SVG_GROUP_ID = 'pointers';
@@ -34,16 +35,17 @@ export function drawPyagram(slider, pyagram) {
 
 export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, SVGCanvasID) {
     var snapshot = snapshots[snapshotIndex];
-    pyagram.innerHTML = snapshot.state;
-    printOutput.innerHTML = snapshot.print_output;
-    if (snapshot.exception !== null) {
-        printOutput.innerHTML += snapshot.exception;
-    }
-    // TODO: Use snapshot.curr_line_no.
-    var stateTable = $('#'.concat(stateTableID));
-    var SVGCanvas = $('#'.concat(SVGCanvasID));
-    drawSVGCanvas(stateTable, SVGCanvas);
-    drawPointers(SVGCanvas);
+    pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot);
+    // TODO
+    // printOutput.innerHTML = snapshot.print_output;
+    // if (snapshot.exception !== null) {
+    //     printOutput.innerHTML += snapshot.exception;
+    // }
+    // // TODO: Use snapshot.curr_line_no.
+    // var stateTable = $('#'.concat(stateTableID));
+    // var SVGCanvas = $('#'.concat(SVGCanvasID));
+    // drawSVGCanvas(stateTable, SVGCanvas);
+    // drawPointers(SVGCanvas);
 }
 
 function drawSVGCanvas(stateTable, SVGCanvas) {
