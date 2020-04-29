@@ -99,7 +99,7 @@ class PyagramFlag(PyagramElement):
                 for flag in self.flags
             ],
         }
-        # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)".
+        # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)". The easiest place to do it might be in postprocess.py, where you append (code, bindings). You could just replace bindings -> (name or None, bindings).
 
     def evaluate_next_banner_binding(self, expect_call):
         """
@@ -237,7 +237,7 @@ class PyagramFrame(PyagramElement):
                 []
                 if self.parent is None
                 else [repr(self.parent)],
-            'bindings': bindings,
+            'bindings': bindings, # TODO: Encode this the same way you encode a dict. Use encode_mapping(self.bindings)['items'].
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value)
                 if self.has_returned
@@ -247,6 +247,7 @@ class PyagramFrame(PyagramElement):
                 for flag in self.flags
             ],
         }
+        # TODO: Make sure this still works when <obj instance>.__dict__ = {not a primitive: primitive}
 
     def get_bindings(self):
         """

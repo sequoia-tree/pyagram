@@ -40,13 +40,10 @@ class State:
     def snapshot(self):
         """
         """
-        # TODO: Rearrange the snapshots for better congruency with the `render` module.
-        # TODO: Also, consider serializing like `snapshot = [x, y, z]` instead of `snapshot = {'x': x, 'y': y, 'z': z}`. It would be more space-efficient and it'd be really nice to be able to write `x, y, z = snapshot` (or, in JS, `var [x, y, z] = snapshot`).
-        # TODO: The curr_line_no should be in the State's snapshot, while the ProgramState's snapshot should just `return self.global_frame.snapshot()`.
         snapshot = {
-            'program_state': self.program_state.snapshot(),
             'memory_state': self.memory_state.snapshot(),
             'print_output': self.print_output.getvalue().split('\n'),
+            **self.program_state.snapshot(),
         }
         self.snapshots.append(snapshot)
 

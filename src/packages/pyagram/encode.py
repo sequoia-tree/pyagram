@@ -19,11 +19,11 @@ class Encoder:
     def reference_snapshot(self, object):
         """
         """
-        # TODO: Refactor this func
         if object is enum.ObjectTypes.UNKNOWN:
-            return {'cls': 'unknown', 'text': '<?>'} # TODO: Messy
-        elif pyagram_types.is_primitive_type(object):
-            return repr(object) if isinstance(object, str) else str(object)
+            return None
+        object_type = enum.ObjectTypes.identify_object_type(object)
+        if object_type is enum.ObjectTypes.PRIMITIVE:
+            return self.encode_primitive(object)
         else:
             return id(object)
 
@@ -32,46 +32,59 @@ class Encoder:
         """
         object_type = enum.ObjectTypes.identify_object_type(object)
         if object_type is enum.ObjectTypes.PRIMITIVE:
-            return self.encode_primitive(object)
+            encoding = 'primitive'
+            data = self.encode_primitive(object)
         elif object_type is enum.ObjectTypes.FUNCTION:
-            return self.encode_function(object)
+            encoding = 'function'
+            data = self.encode_function(object)
         elif object_type is enum.ObjectTypes.BUILTIN:
-            return self.encode_builtin(object)
+            encoding = 'builtin'
+            data = self.encode_builtin(object)
         elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
-            return self.encode_ordered_collection(object)
+            encoding = 'ordered_collection'
+            data = self.encode_collection(object)
         elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
-            return self.encode_unordered_collection(object)
+            encoding = 'unordered_collection'
+            data = self.encode_collection(object)
         elif object_type is enum.ObjectTypes.MAPPING:
-            return self.encode_mapping(object)
+            encoding = 'mapping'
+            data = self.encode_mapping(object)
         elif object_type is enum.ObjectTypes.ITERATOR:
-            return self.encode_iterator(object)
+            encoding = 'iterator'
+            data = self.encode_iterator(object)
         elif object_type is enum.ObjectTypes.GENERATOR:
-            return self.encode_generator(object)
+            encoding = 'generator'
+            data = self.encode_generator(object)
         elif object_type is enum.ObjectTypes.OBJ_CLASS:
-            return self.encode_obj_class(object)
+            encoding = 'obj_class'
+            data = self.encode_obj_class(object)
         elif object_type is enum.ObjectTypes.OBJ_INST:
-            return self.encode_obj_inst(object)
+            encoding = 'obj_inst'
+            data = self.encode_obj_inst(object)
         elif object_type is enum.ObjectTypes.OTHER:
-            return self.encode_other(object)
+            encoding = 'other'
+            data = self.encode_other(object)
         else:
             raise enum.ObjectTypes.illegal_enum(object_type)
+        return {
+            'encoding': encoding,
+            'data': data,
+        }
 
     def encode_primitive(self, object):
         """
         """
-        return # TODO: This isn't used, but you might as well implement it for completeness.
+        return repr(object) if type(object) is str else str(object)
 
     def encode_function(self, object):
         """
         """
-        # TODO: Refactor this func
         is_lambda = object.__name__ == '<lambda>'
         if is_lambda:
             lineno, _, lambda_number = utils.decode_lineno(
                 object.__code__.co_firstlineno,
                 max_lineno=self.num_lines,
             )
-            number = lambda_number
         parameters, slash_arg_index, has_star_arg = [], None, False
         for i, parameter in enumerate(inspect.signature(object).parameters.values()):
             if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
@@ -85,102 +98,74 @@ class Encoder:
                 })
                 has_star_arg = True
             parameters.append({
-                'name': str(parameter) if parameter.default is inspect.Parameter.empty else str(parameter).split('=', 1)[0],
-                'default': None if parameter.default is inspect.Parameter.empty else self.reference_snapshot(parameter.default),
+                'name':
+                    str(parameter)
+                    if parameter.default is inspect.Parameter.empty
+                    else str(parameter).split('=', 1)[0],
+                'default':
+                    None
+                    if parameter.default is inspect.Parameter.empty
+                    else self.reference_snapshot(parameter.default),
             })
         if slash_arg_index is not None:
-            parameters.insert(slash_arg_index, {
+            slash_arg = {
                 'name': '/',
                 'default': None,
-            })
+            }
+            parameters.insert(slash_arg_index, slash_arg)
         return {
-            'encoding': 'function',
-            'object': {
                 'is_gen_func': inspect.isgeneratorfunction(object),
                 'name': object.__name__,
                 'lambda_id':
                     {
                         'lineno': lineno,
-                        'number': number,
-                        'single': self.lambdas_per_line[lineno] <= 1,
+                        'number': lambda_number,
+                        'single': self.lambdas_per_line[lineno] == 1,
                     }
                     if is_lambda
                     else None,
                 'parameters': parameters,
                 'parent': repr(self.state.memory_state.function_parents[object]),
-            },
-        }
+            }
 
     def encode_builtin(self, object):
         """
         """
-        # TODO: Refactor this func
-        return {
-            'encoding': 'builtin_function',
-            'object': {
-                'name': object.__name__,
-            },
-        }
+        return object.__name__
 
-    def encode_ordered_collection(self, object):
+    def encode_collection(self, object):
         """
         """
-        # TODO: Refactor this func
         return {
-            'encoding': 'ordered_collection',
-            'object': {
-                'type': type(object).__name__,
-                'elements': [
-                    self.reference_snapshot(item)
-                    for item in object
-                ],
-            },
-        }
-
-    def encode_unordered_collection(self, object):
-        """
-        """
-        # TODO: Refactor this func
-        return {
-            'encoding': 'unordered_collection',
-            'object': {
-                'type': type(object).__name__,
-                'elements': [
-                    self.reference_snapshot(item)
-                    for item in object
-                ],
-            },
+            'type': type(object).__name__,
+            'elements': [
+                self.reference_snapshot(item)
+                for item in object
+            ],
         }
 
     def encode_mapping(self, object):
         """
         """
-        # TODO: Refactor this func
         return {
-            'encoding': 'mapping',
-            'object':  {
-                'type': type(object).__name__,
-                'items': [
-                    [self.reference_snapshot(key), self.reference_snapshot(value)]
-                    for key, value in object.items()
-                ],
-            },
+            'type': type(object).__name__,
+            'items': [
+                {
+                    'key': self.reference_snapshot(key),
+                    'value': self.reference_snapshot(value),
+                }
+                for key, value in object.items()
+            ],
         }
 
     def encode_iterator(self, object):
         """
         """
-        # TODO: Refactor this func
         iterable = pyagram_types.get_iterable(object)
-        return {
-            'encoding': 'iterator',
-            'object': {
-                'object': None,
-            } if iterable is None else {
-                'object': self.reference_snapshot(iterable),
-                'index': len(iterable) - object.__length_hint__(),
-                'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
-            },
+        return None if iterable is None else {
+            'object': self.reference_snapshot(iterable),
+            'index': len(iterable) - object.__length_hint__(),
+            'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
         }
 
     def encode_generator(self, object):
@@ -213,48 +198,44 @@ class Encoder:
                 'return_value': None,
                 'from': None,
             })
-        return {
-            'encoding': 'generator',
-            'object': snapshot,
-        }
+        return snapshot
 
     def encode_obj_class(self, object):
         """
         """
         # TODO: Refactor this func
         return {
-            'encoding': 'class_frame',
-            'object': {
-                'is_curr_element': False,
-                'name': object.frame.f_code.co_name,
-                'parents': object,
-                'bindings': {
-                    key: self.reference_snapshot(value)
-                    for key, value in object.bindings.items()
-                    if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
-                },
-                'return_value': None,
-                'flags': [],
+            'is_curr_element': False,
+            'name': object.frame.f_code.co_name,
+            'parents': None, # Placeholder.
+            'bindings': {
+                key: self.reference_snapshot(value)
+                for key, value in object.bindings.items()
+                if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
             },
+            'return_value': None,
+            'flags': [],
+            'self': object, # For postprocessing.
         }
+        # TODO: Consider this.
+        # (*) Introduce a new attribute, curr_class, which is initially bound to None. When you open a class frame: (1) set the class frame's opened_by equal to the curr_class; (2) set the curr_class equal to the newly-opened class frame. When you close a class frame, set the curr_class equal to the class frame's opened_by.
+        # (*) If the curr_class is not None, and the curr_elem is the PyagramFrame that you were in when you instantiated the curr_class, then the green background should go behind the class frame -- not the program frame.
+        # (*) Make sure this works for nested classdefs interleaved with function calls.
 
     def encode_obj_inst(self, object):
         """
         """
         # TODO: Refactor this func
         return {
-            'encoding': 'object_dict',
-            'object': {
-                'is_curr_element': False,
-                'name': type(object).__name__,
-                'parents': [],
-                'bindings': {
-                    key: self.reference_snapshot(value)
-                    for key, value in object.__dict__.items()
-                },
-                'return_value': None,
-                'flags': [],
+            'is_curr_element': False,
+            'name': type(object).__name__,
+            'parents': [],
+            'bindings': {
+                key: self.reference_snapshot(value)
+                for key, value in object.__dict__.items()
             },
+            'return_value': None,
+            'flags': [],
         }
         # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...
         # (*) Make it an option [default ON] to render the contents in object frames.
@@ -264,10 +245,4 @@ class Encoder:
     def encode_other(self, object):
         """
         """
-        # TODO: Refactor this func
-        return {
-            'encoding': 'object_repr',
-            'object': {
-                'repr': repr(object),
-            },
-        }
+        return repr(object)

@@ -23,7 +23,7 @@ class Postprocessor:
         """
         for i, snapshot in enumerate(self.state.snapshots):
             try:
-                self.postprocess_frame_snapshot(snapshot['program_state']['global_frame'])
+                self.postprocess_frame_snapshot(snapshot['global_frame'])
                 self.postprocess_memory_snapshot(snapshot['memory_state'])
             except exception.HiddenSnapshotException:
                 self.state.snapshots[i] = None
@@ -59,11 +59,13 @@ class Postprocessor:
         self.postprocess_element_snapshot(frame_snapshot)
 
     def postprocess_memory_snapshot(self, memory_snapshot):
+        """
+        """
         for object_snapshot in memory_snapshot:
             encoding = object_snapshot['object']['encoding']
-            snapshot = object_snapshot['object']['object']
-            if encoding == 'class_frame':
-                class_frame = snapshot['parents']
+            snapshot = object_snapshot['object']['data']
+            if encoding == 'obj_class':
+                class_frame = snapshot.pop('self')
                 if class_frame.parents is None:
                     parents = [self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)]
                 else:
@@ -71,6 +73,8 @@ class Postprocessor:
                 snapshot['parents'] = parents
 
     def kill_hidden_snapshots(self):
+        """
+        """
         i = 0
         while i < len(self.state.snapshots):
             if self.state.snapshots[i] is None:
@@ -79,6 +83,8 @@ class Postprocessor:
                 i += 1
 
     def kill_static_snapshots(self):
+        """
+        """
         i = len(self.state.snapshots) - 1
         while 0 < i:
             former_snapshot = self.state.snapshots[i - 1]
@@ -94,10 +100,6 @@ class Postprocessor:
 
     def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):
         """
-        <summary>
-
-        :flag_snapshot:
-        :return:
         """
         # TODO: Clean up this function a bit.
 

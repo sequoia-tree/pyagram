@@ -2,7 +2,7 @@ import gc
 import numbers
 import types
 
-# TODO: This file is unnecessary. It should be an Enum in enum.py.
+# TODO: Delete this file once everything uses enum.ObjectTypes
 
 # Primitive types: Compare with `==`.
 PRIMITIVE_TYPES = (numbers.Number, str)
