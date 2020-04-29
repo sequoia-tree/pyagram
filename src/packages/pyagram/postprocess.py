@@ -41,7 +41,7 @@ class Postprocessor:
     def postprocess_flag_snapshot(self, flag_snapshot):
         """
         """
-        pyagram_flag = flag_snapshot.pop('pyagram_flag')
+        pyagram_flag = flag_snapshot.pop('self')
         if pyagram_flag.is_hidden:
             if flag_snapshot['is_curr_element']:
                 raise exception.HiddenSnapshotException()
@@ -86,16 +86,16 @@ class Postprocessor:
         """
         """
         i = len(self.state.snapshots) - 1
-        while 0 < i:
+        while 0 < i: # TODO: If you keep this function, make it count up from 0, not down from len.
             former_snapshot = self.state.snapshots[i - 1]
             latter_snapshot = self.state.snapshots[i]
             # TODO: We temporarily remove the lineno because that's the only part of the snapshot we don't want to compare. If you never end up using the lineno at all in the visualization, then you shouldn't even include it from the program_state snapshot.
-            former_line_no = former_snapshot['program_state'].pop('curr_line_no')
-            latter_line_no = latter_snapshot['program_state'].pop('curr_line_no')
+            former_line_no = former_snapshot.pop('curr_line_no')
+            latter_line_no = latter_snapshot.pop('curr_line_no')
             if former_snapshot == latter_snapshot:
                 del self.state.snapshots[i]
-            former_snapshot['program_state']['curr_line_no'] = former_line_no
-            latter_snapshot['program_state']['curr_line_no'] = latter_line_no
+            former_snapshot['curr_line_no'] = former_line_no
+            latter_snapshot['curr_line_no'] = latter_line_no
             i -= 1
 
     def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):

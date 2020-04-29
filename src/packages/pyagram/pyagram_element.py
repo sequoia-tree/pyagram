@@ -86,18 +86,20 @@ class PyagramFlag(PyagramElement):
     def snapshot(self):
         """
         """
-        # TODO: Still need to refactor this. Double-check / reconsider what you need.
-        # TODO: First you'll have to re-think how postprocess.py works.
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
-            'pyagram_flag': self,
-            'banner_binding_index': self.banner_binding_index,
-            'snapshot_index': len(self.state.snapshots),
-            'frame': None if self.frame is None or self.is_hidden else self.frame.snapshot(),
+            'banner': None, # Placeholder.
+            'frame':
+                None
+                if self.frame is None or self.is_hidden
+                else self.frame.snapshot(),
             'flags': [
                 flag.snapshot()
                 for flag in self.flags
             ],
+            'self': self, # For postprocessing.
+            'banner_binding_index': self.banner_binding_index, # For postprocessing.
+            'snapshot_index': len(self.state.snapshots), # For postprocessing.
         }
         # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)". The easiest place to do it might be in postprocess.py, where you append (code, bindings). You could just replace bindings -> (name or None, bindings).
 
