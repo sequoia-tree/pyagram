@@ -1,7 +1,8 @@
+import * as Templates from './templates.js';
+
 export function decodePyagramSnapshot(pyagramSnapshot) {
-    var template = Handlebars.compile("Handlebars <b>{{doesWhat}}</b>");
-    console.log(template({ doesWhat: "rocks!" }));
-    // TODO: Okay it looks like Handlebars works!
-    // TODO: Before moving on, switch to loading ACE via CDN instead.
-    // TODO: Maybe also split.js?
+    return Templates.FRAME_TEMPLATE(pyagramSnapshot.global_frame);
 }
+
+// TODO: Finish templates.js and decode.js.
+// TODO: Strip newlines and all the whitespace at the beginning / end of a line from each template?
