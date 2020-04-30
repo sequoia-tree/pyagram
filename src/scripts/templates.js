@@ -1,94 +1,94 @@
-// STATE_TEMPLATE = """
-// <div class="overlap-wrapper">
-//   <table class="overlap border-collapse" id="pyagram-state-table">
-//     <tr>
-//       <td class="align-top">
-//         {{ get_frame_html(global_frame) }}
-//       </td>
-//       <td class="align-top pl-5">
-//         {% for object in memory_state %}
-//           {{ get_object_html(object) }}
-//         {% endfor %}
-//       </td>
-//     </tr>
-//   </table>
-//   <svg class="overlap" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
-//     <defs>
-//       <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
-//         <circle cx="5" cy="5" r="1.5" fill="black"/>
-//       </marker>
-//       <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-//         <path d="M0,0 L10,5 0,10 Z"/>
-//       </marker>
-//     </defs>
-//     <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
-//   </svg>
-// </div>
-// """
+export const STATE_TEMPLATE = Handlebars.compile(`
+<div class="overlap-wrapper">
+  <table class="overlap border-collapse" id="pyagram-state-table">
+    <tr>
+      <td class="align-top">
+        {{decodeFrameSnapshot global_frame}}
+      </td>
+      <td class="align-top pl-5">
+        -- for object in memory_state --
+          -- get_object_html(object) --
+        -- endfor --
+      </td>
+    </tr>
+  </table>
+  <svg class="overlap" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
+        <circle cx="5" cy="5" r="1.5" fill="black"/>
+      </marker>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
+        <path d="M0,0 L10,5 0,10 Z"/>
+      </marker>
+    </defs>
+    <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>
+`)
 
-// ELEMENT_TEMPLATE = """
-// {% for flag in flags %}
-//   {{ get_flag_html(flag) }}
-// {% endfor %}
-// """
+export const ELEMENT_TEMPLATE = `
+{{#each flag}}
+  {{decodeFlagSnapshot this}}
+{{/each}}
+`
 
-// FLAG_TEMPLATE = """
-// <div class="pyagram-flag m-3">
-//   <div class="pyagram-banner {% if is_curr_element %} curr-element {% endif %}">
-//     <table class="text-center font-family-monospace">
-//       <tr>
-//         {% for label, bindings in banner %}
-//           <td {% if bindings|length > 0 %} colspan="{{ 2 * bindings|length - 1 }}" {% endif %}>
-//             {{ label }}
-//           </td>
-//         {% endfor %}
-//       </tr>
-//       <tr>
-//         {% for i in range(banner|length) %}
-//           {% set label = banner[i][0] %}
-//           {% set bindings = banner[i][1] %}
-//           {% if bindings|length == 0 %}
-//             {% if i == 1 %}
-//               {% if i == banner|length - 1 %}
-//                 <td class="text-left">()</td>
-//               {% else %}
-//                 <td class="text-left">(</td>
-//               {% endif %}
-//             {% elif i == banner|length - 1 %}
-//               <td class="text-right">)</td>
-//             {% else %}
-//               <td class="text-left">,</td>
-//             {% endif %}
-//           {% else %}
-//             {% for j in range(bindings|length) %}
-//               {% set binding = bindings[j] %}
-//               <td class="pyagram-value {% if binding is none %} pyagram-placeholder {% endif %}">
-//                 {% if binding is none %}
-//                   -
-//                 {% else %}
-//                   {{ get_reference_html(binding) }}
-//                 {% endif %}
-//               </td>
-//               {% if j < bindings|length - 1 %}
-//                 <td>, </td>
-//               {% endif %}
-//             {% endfor %}
-//           {% endif %}
-//         {% endfor %}
-//       </tr>
-//     </table>
-//   </div>
-//   {{ get_element_html(this) }}
-//   {% if frame is none %}
-//     <div class="pyagram-placeholder font-family-monospace">...</div>
-//   {% else %}
-//     {{ get_frame_html(frame) }}
-//   {% endif %}
-// </div>
-// """
+export const FLAG_TEMPLATE = Handlebars.compile(`
+<div class="pyagram-flag m-3">
+  <div class="pyagram-banner {{#if is_curr_element}} curr-element {{/if}}">
+    <table class="text-center font-family-monospace">
+      <tr>
+        {{#each banner}}
+          <td {{#unless (isEmpty bindings)}} colspan="{{sum (mul 2 bindings.length) -1}}" {{/unless}}>
+            {{code}}
+          </td>
+        {{/each}}
+      </tr>
+      <tr>
+        {{#each banner}}
+          {{#if (isEmpty bindings)}}
+            {{#if (isEqual @index 1)}}
+              {{#if (isEqual @index (sum ../banner.length -1))}}
+                <td class="text-left">()</td>
+              {{else}}
+                <td class="text-left">(</td>
+              {{/if}}
+            {{else if (isEqual @index (sum ../banner.length -1))}}
+              <td class="text-right">)</td>
+            {{else}}
+              <td class="text-left">,</td>
+            {{/if}}
+          {{else}}
+            {{#each bindings}}
+              <td class="pyagram-value {{#if (isNull this)}} pyagram-placeholder {{/if}}">
+                {{#if (isNull this)}}
+                  -
+                {{else}}
+                  {{decodeReferenceSnapshot this}}
+                {{/if}}
+              </td>
+              {{#unless (isEqual @index (sum ../bindings.length - 1))}}
+                <td>,</td>
+              {{/unless}}
+            {{/each}}
+          {{/if}}
+        {{/each}}
+      </tr>
+    </table>
+  </div>
+  {{decodeElementSnapshot this}}
+  {{#if (isNull frame)}}
+    <div class="pyagram-placeholder font-family-monospace">-</div>
+  {{else}}
+    {{decodeFrameSnapshot frame}}
+  {{/if}}
+</div>
+`)
 
 export const FRAME_TEMPLATE = Handlebars.compile(`
-Frame: {{ name }}
+<div>
+  Frame: {{ name }}
+</div>
+{{decodeElementSnapshot this}}
 `)
 // export const FRAME_TEMPLATE = Handlebars.compile(`
 // <div class="pyagram-frame {% if frame_type == 'function' %} mx-3 {% else %} mr-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">

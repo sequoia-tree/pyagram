@@ -122,7 +122,10 @@ class Postprocessor:
         banner = []
         for banner_element in banner_elements:
             if isinstance(banner_element, str):
-                banner.append([banner_element, []])
+                banner.append({
+                    'code': banner_element,
+                    'bindings': [],
+                })
             else:
                 assert isinstance(banner_element, tuple)
                 code, binding_indices = banner_element
@@ -163,7 +166,10 @@ class Postprocessor:
                             self.enforce_early_debut(binding, snapshot_index)
                 else:
                     bindings = [self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)]
-                banner.append([code, bindings])
+                banner.append({
+                    'code': code,
+                    'bindings': bindings,
+                })
         flag_snapshot['banner'] = banner
 
     def enforce_early_debut(self, object_id, new_debut_index):
