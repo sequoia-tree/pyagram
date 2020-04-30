@@ -1,5 +1,5 @@
 function compile(template) {
-    return Handlebars.compile(template, {
+    return Handlebars.compile(template.trim(), {
         noEscape: true,
         assumeObjects: true,
     });
@@ -149,9 +149,7 @@ export const FRAME_TEMPLATE = compile(`
 `)
 
 export const UNKNOWN_VALUE_TEMPLATE = compile(`
-<span class="pyagram-unknown">
-  (?)
-</span>
+<span class="pyagram-unknown">(?)</span>
 `)
 
 export const PRIMITIVE_TEMPLATE = compile(`
@@ -159,9 +157,7 @@ export const PRIMITIVE_TEMPLATE = compile(`
 `)
 
 export const REFERENT_TEMPLATE = compile(`
-<span class="pyagram-placeholder pyagram-reference reference-{{this}}">
-  -
-</span>
+<span class="pyagram-placeholder pyagram-reference reference-{{this}}">-</span>
 `)
 
 export const OBJECT_TEMPLATE = compile(`
@@ -171,7 +167,32 @@ export const OBJECT_TEMPLATE = compile(`
 `)
 
 export const FUNCTION_TEMPLATE = compile(`
-TODO
+<span class="font-family-sans-serif">
+  {{#if is_gen_func}}
+    generator function
+  {{else}}
+    function
+  {{/if}}
+</span>
+{{#if (isNull lambda_id)}}
+  {{~name~}}
+{{else}}
+  {{~#with lambda_id~}}
+    &#955;<sub>{{lineno}}{{#unless single}}#{{number}}{{/unless}}</sub>
+  {{~/with~}}
+{{/if}}
+(
+{{~#each parameters~}}
+  {{~name~}}
+  {{~#unless (isNull default)~}}
+    =<span class="pyagram-value">{{decodeReferenceSnapshot default}}</span>
+  {{~/unless~}}
+  {{~#unless @last}}, {{/unless~}}
+{{~/each~}}
+)
+<div class="font-family-sans-serif">
+  [parent: {{parent}}]
+</div>
 `)
 
 export const BUILTIN_TEMPLATE = compile(`
@@ -198,46 +219,11 @@ export const OTHER_TEMPLATE = compile(`
 TODO
 `)
 
-// FUNCTION_TEMPLATE = """
-// {% if is_gen_func %}
-//   generator function
-// {% else %}
-//   function
-// {% endif %}
-// <span class="ml-2 font-family-monospace">
-//   {% if lambda_id is none %}
-//     {{ name }}
-//   {% else %}
-//     {{ get_lambda_html(lambda_id) }}
-//   {% endif %}
-//   (
-//   {% for i in range(parameters|length) %}
-//     {% set parameter = parameters[i] %}
-//     {{ get_parameter_html(parameter) }}
-//     {% if i < parameters|length - 1 %}, {% endif %}
-//   {% endfor %}
-//   )
-// </span>
-// <div>
-//   {{ get_parent_frame_html([parent]) }}
-// </div>
-// """
-
 // BUILTIN_FUNCTION_TEMPLATE = """
 // function
 // <span class="ml-2 font-family-monospace">
 //   {{ name }}(...)
 // </span>
-// """
-
-// LAMBDA_TEMPLATE = """
-// &#955;
-// <sub>
-//   {{ lineno }}
-//   {% if not single %}
-//     #{{ number }}
-//   {% endif %}
-// </sub>
 // """
 
 // ORDERED_COLLECTION_TEMPLATE = """
@@ -321,13 +307,6 @@ TODO
 //   [parent: {{ parents[0] }}]
 // {% else %}
 //   [parents: {% for i in range(parents|length - 1) %}{{ parents[i] }}, {% endfor %}{{ parents[-1] }}]
-// {% endif %}
-// """
-
-// PARAMETER_TEMPLATE = """
-// {{ name }}
-// {% if default is not none %}
-//   =<span class="pyagram-value">{{ get_reference_html(default) }}</span>
 // {% endif %}
 // """
 

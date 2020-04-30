@@ -42,10 +42,10 @@ export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, 
     //     printOutput.innerHTML += snapshot.exception;
     // }
     // // TODO: Use snapshot.curr_line_no.
-    // var stateTable = $('#'.concat(stateTableID));
-    // var SVGCanvas = $('#'.concat(SVGCanvasID));
-    // drawSVGCanvas(stateTable, SVGCanvas);
-    // drawPointers(SVGCanvas);
+    var stateTable = $('#'.concat(stateTableID));
+    var SVGCanvas = $('#'.concat(SVGCanvasID));
+    drawSVGCanvas(stateTable, SVGCanvas);
+    drawPointers(SVGCanvas);
 }
 
 function drawSVGCanvas(stateTable, SVGCanvas) {

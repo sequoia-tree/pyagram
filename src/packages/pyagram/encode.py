@@ -114,19 +114,19 @@ class Encoder:
             }
             parameters.insert(slash_arg_index, slash_arg)
         return {
-                'is_gen_func': inspect.isgeneratorfunction(object),
-                'name': object.__name__,
-                'lambda_id':
-                    {
-                        'lineno': lineno,
-                        'number': lambda_number,
-                        'single': self.lambdas_per_line[lineno] == 1,
-                    }
-                    if is_lambda
-                    else None,
-                'parameters': parameters,
-                'parent': repr(self.state.memory_state.function_parents[object]),
-            }
+            'is_gen_func': inspect.isgeneratorfunction(object),
+            'name': object.__name__,
+            'lambda_id':
+                {
+                    'lineno': lineno,
+                    'number': lambda_number,
+                    'single': self.lambdas_per_line[lineno] == 1,
+                }
+                if is_lambda
+                else None,
+            'parameters': parameters,
+            'parent': repr(self.state.memory_state.function_parents[object]),
+        }
 
     def encode_builtin(self, object):
         """
