@@ -33,6 +33,39 @@ export function decodeReferenceSnapshot(referenceSnapshot) {
     }
 }
 
+Handlebars.registerHelper('decodeObjectSnapshot', decodeObjectSnapshot);
+export function decodeObjectSnapshot(objectSnapshot) {
+    return Templates.OBJECT_TEMPLATE(objectSnapshot);
+}
+
+Handlebars.registerHelper('decodeEncodedObjectSnapshot', decodeEncodedObjectSnapshot);
+export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
+    switch (encodedObjectSnapshot.encoding) {
+        case 'primitive':
+            return Templates.PRIMITIVE_TEMPLATE(encodedObjectSnapshot.data);
+        case 'function':
+            return Templates.FUNCTION_TEMPLATE(encodedObjectSnapshot.data);
+        case 'builtin':
+            return Templates.BUILTIN_TEMPLATE(encodedObjectSnapshot.data);
+        case 'ordered_collection':
+            return Templates.ORDERED_COLLECTION_TEMPLATE(encodedObjectSnapshot.data);
+        case 'unordered_collection':
+            return Templates.UNORDERED_COLLECTION_TEMPLATE(encodedObjectSnapshot.data);
+        case 'mapping':
+            return Templates.MAPPING_TEMPLATE(encodedObjectSnapshot.data);
+        case 'iterator':
+            return Templates.ITERATOR_TEMPLATE(encodedObjectSnapshot.data);
+        case 'generator':
+            return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
+        case 'obj_class':
+            return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
+        case 'obj_inst':
+            return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
+        case 'other':
+            return Templates.OTHER_TEMPLATE(encodedObjectSnapshot.data);
+    }
+}
+
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
 });

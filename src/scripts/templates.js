@@ -14,7 +14,7 @@ export const PYAGRAM_TEMPLATE = compile(`
       </td>
       <td class="align-top pl-5">
         {{#each memory_state}}
-          TODO
+          {{decodeObjectSnapshot this}}
         {{/each}}
       </td>
     </tr>
@@ -96,6 +96,7 @@ export const FLAG_TEMPLATE = compile(`
 // TODO: Display the parent(s) too. Put the logic in the if/elif/elif/else cases.
 // TODO: Verify this works with classes, instances, and generators (with `yield` + `yield from`).
 // TODO: Replace {{key}} with {{decodeBindingSnapshot key}}. In 99.99% of cases the key should be a string; a variable `'var'` should show up as `var`. If it ain't a string, handle it like a ref. (This will require slight modification to encode.py based on the is_bindings parameter.)
+// TODO: After doing that, make sure `x = 'hi'` shows up properly: `x` unquoted, but `hi` quoted.
 export const FRAME_TEMPLATE = compile(`
 <div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
   <div class="pyagram-frame-name">
@@ -163,11 +164,39 @@ export const REFERENT_TEMPLATE = compile(`
 </span>
 `)
 
-// OBJECT_TEMPLATE = """
-// <div id="object-{{ id }}" class="pyagram-object m-3">
-//   {{ get_object_body_html(object) }}
-// </div>
-// """
+export const OBJECT_TEMPLATE = compile(`
+<div id="object-{{id}}" class="pyagram-object m-3">
+  {{decodeEncodedObjectSnapshot object}}
+</div>
+`)
+
+export const FUNCTION_TEMPLATE = compile(`
+TODO
+`)
+
+export const BUILTIN_TEMPLATE = compile(`
+TODO
+`)
+
+export const ORDERED_COLLECTION_TEMPLATE = compile(`
+TODO
+`)
+
+export const UNORDERED_COLLECTION_TEMPLATE = compile(`
+TODO
+`)
+
+export const MAPPING_TEMPLATE = compile(`
+TODO
+`)
+
+export const ITERATOR_TEMPLATE = compile(`
+TODO
+`)
+
+export const OTHER_TEMPLATE = compile(`
+TODO
+`)
 
 // FUNCTION_TEMPLATE = """
 // {% if is_gen_func %}
