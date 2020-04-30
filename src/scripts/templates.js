@@ -1,4 +1,11 @@
-export const STATE_TEMPLATE = Handlebars.compile(`
+function compile(template) {
+    return Handlebars.compile(template, {
+        noEscape: true,
+        assumeObjects: true,
+    });
+}
+
+export const PYAGRAM_TEMPLATE = compile(`
 <div class="overlap-wrapper">
   <table class="overlap border-collapse" id="pyagram-state-table">
     <tr>
@@ -6,9 +13,9 @@ export const STATE_TEMPLATE = Handlebars.compile(`
         {{decodeFrameSnapshot global_frame}}
       </td>
       <td class="align-top pl-5">
-        -- for object in memory_state --
-          -- get_object_html(object) --
-        -- endfor --
+        {{#each memory_state}}
+          TODO
+        {{/each}}
       </td>
     </tr>
   </table>
@@ -26,13 +33,13 @@ export const STATE_TEMPLATE = Handlebars.compile(`
 </div>
 `)
 
-export const ELEMENT_TEMPLATE = `
-{{#each flag}}
+export const ELEMENT_TEMPLATE = compile(`
+{{#each flags}}
   {{decodeFlagSnapshot this}}
 {{/each}}
-`
+`)
 
-export const FLAG_TEMPLATE = Handlebars.compile(`
+export const FLAG_TEMPLATE = compile(`
 <div class="pyagram-flag m-3">
   <div class="pyagram-banner {{#if is_curr_element}} curr-element {{/if}}">
     <table class="text-center font-family-monospace">
@@ -66,7 +73,7 @@ export const FLAG_TEMPLATE = Handlebars.compile(`
                   {{decodeReferenceSnapshot this}}
                 {{/if}}
               </td>
-              {{#unless (isEqual @index (sum ../bindings.length - 1))}}
+              {{#unless (isEqual @index (sum ../bindings.length -1))}}
                 <td>,</td>
               {{/unless}}
             {{/each}}
@@ -84,13 +91,13 @@ export const FLAG_TEMPLATE = Handlebars.compile(`
 </div>
 `)
 
-export const FRAME_TEMPLATE = Handlebars.compile(`
+export const FRAME_TEMPLATE = compile(`
 <div>
   Frame: {{ name }}
 </div>
 {{decodeElementSnapshot this}}
 `)
-// export const FRAME_TEMPLATE = Handlebars.compile(`
+// export const FRAME_TEMPLATE = compile(`
 // <div class="pyagram-frame {% if frame_type == 'function' %} mx-3 {% else %} mr-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">
 //   <div class="pyagram-frame-name">
 //     {% if frame_type == 'function' %}

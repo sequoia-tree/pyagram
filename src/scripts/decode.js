@@ -1,7 +1,7 @@
 import * as Templates from './templates.js';
 
 export function decodePyagramSnapshot(pyagramSnapshot) {
-    return Templates.STATE_TEMPLATE(pyagramSnapshot);
+    return Templates.PYAGRAM_TEMPLATE(pyagramSnapshot);
 }
 
 export function decodeElementSnapshot(elementSnapshot) {
