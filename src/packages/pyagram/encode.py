@@ -144,19 +144,24 @@ class Encoder:
             ],
         }
 
-    def encode_mapping(self, object):
+    def encode_mapping(self, object, *, is_bindings=False, ignored=()):
         """
         """
-        return {
-            'type': type(object).__name__,
-            'items': [
-                {
-                    'key': self.reference_snapshot(key),
-                    'value': self.reference_snapshot(value),
-                }
-                for key, value in object.items()
-            ],
-        }
+        items = [
+            {
+                'key': self.reference_snapshot(key),
+                'value': self.reference_snapshot(value),
+            }
+            for key, value in object.items()
+            if key not in ignored
+        ]
+        if is_bindings:
+            return items
+        else:
+            return {
+                'type': type(object).__name__,
+                'items': items,
+            }
 
     def encode_iterator(self, object):
         """
@@ -171,20 +176,20 @@ class Encoder:
     def encode_generator(self, object):
         """
         """
-        # TODO: Refactor this func
-        memory_state = self.state.memory_state
-        snapshot = {
+        generator_frames = self.state.memory_state.generator_frames
+        generator_functs = self.state.memory_state.generator_functs
+        encoding = {
             'name': object.__name__,
-            'parents': [repr(memory_state.function_parents[memory_state.generator_functs[object]])],
-            'bindings': {
-                key: self.reference_snapshot(value)
-                for key, value in inspect.getgeneratorlocals(object).items()
-            },
+            'parent': repr(self.state.memory_state.function_parents[generator_functs[object]]),
+            'bindings': self.encode_mapping(
+                inspect.getgeneratorlocals(object),
+                is_bindings=True,
+            ),
             'flags': [],
         }
-        if object in memory_state.generator_frames:
-            frame = memory_state.generator_frames[object]
-            snapshot.update({
+        if object in generator_frames:
+            frame = generator_frames[object]
+            encoding.update({
                 'is_curr_element': frame is self.state.program_state.curr_element,
                 'return_value':
                     self.reference_snapshot(frame.return_value)
@@ -193,27 +198,28 @@ class Encoder:
                 'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
             })
         else:
-            snapshot.update({
+            encoding.update({
                 'is_curr_element': False,
                 'return_value': None,
                 'from': None,
             })
-        return snapshot
+        return encoding
 
     def encode_obj_class(self, object):
         """
         """
-        # TODO: Refactor this func
         return {
+            'type': 'class',
             'is_curr_element': False,
             'name': object.frame.f_code.co_name,
             'parents': None, # Placeholder.
-            'bindings': {
-                key: self.reference_snapshot(value)
-                for key, value in object.bindings.items()
-                if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
-            },
+            'bindings': self.encode_mapping(
+                object.bindings,
+                is_bindings=True,
+                ignored=pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS,
+            ),
             'return_value': None,
+            'from': None,
             'flags': [],
             'self': object, # For postprocessing.
         }
@@ -225,16 +231,17 @@ class Encoder:
     def encode_obj_inst(self, object):
         """
         """
-        # TODO: Refactor this func
         return {
+            'type': 'instance',
             'is_curr_element': False,
             'name': type(object).__name__,
-            'parents': [],
-            'bindings': {
-                key: self.reference_snapshot(value)
-                for key, value in object.__dict__.items()
-            },
+            'parent': type(object).__name__,
+            'bindings': self.encode_mapping(
+                object.__dict__,
+                is_bindings=True,
+            ),
             'return_value': None,
+            'from': None,
             'flags': [],
         }
         # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...

@@ -166,7 +166,6 @@ class PyagramFrame(PyagramElement):
         self.is_new_frame = True
         self.is_implicit = is_implicit
         self.frame = frame
-        self.initial_bindings = None
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
@@ -180,11 +179,15 @@ class PyagramFrame(PyagramElement):
                 self.var_positional_index = var_positional_index
                 self.initial_var_pos_args = None if var_positional_name is None else [
                     self.state.encoder.reference_snapshot(positional_argument)
-                    for positional_argument in self.frame.f_locals[var_positional_name]
+                    for positional_argument in frame.f_locals[var_positional_name]
                 ]
                 self.initial_var_keyword_args = None if var_keyword_name is None else {
                     key: self.state.encoder.reference_snapshot(value)
-                    for key, value in self.frame.f_locals[var_keyword_name].items()
+                    for key, value in frame.f_locals[var_keyword_name].items()
+                }
+                self.initial_bindings = {
+                    key: self.state.encoder.reference_snapshot(value)
+                    for key, value in self.get_bindings().items()
                 }
                 self.frame_number = self.state.program_state.frame_count
                 self.state.program_state.frame_count += 1
@@ -224,32 +227,29 @@ class PyagramFrame(PyagramElement):
     def snapshot(self):
         """
         """
-        bindings = {
-            key: self.state.encoder.reference_snapshot(value)
-            for key, value in self.bindings.items()
-        }
-        if self.initial_bindings is None:
-            self.initial_bindings = bindings
-        # TODO: Still need to refactor this. Double-check / reconsider what you need.
-        # TODO: First you'll have to re-think how postprocess.py works.
         return {
+            'type': 'function',
             'is_curr_element': self is self.state.program_state.curr_element,
             'name': repr(self),
-            'parents':
-                []
+            'parent':
+                None
                 if self.parent is None
-                else [repr(self.parent)],
-            'bindings': bindings, # TODO: Encode this the same way you encode a dict. Use encode_mapping(self.bindings)['items'].
+                else repr(self.parent),
+            'bindings': self.state.encoder.encode_mapping(
+                self.bindings,
+                is_bindings=True,
+            ),
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value)
                 if self.has_returned
                 else None,
+            'from': None,
             'flags': [
                 flag.snapshot()
                 for flag in self.flags
             ],
         }
-        # TODO: Make sure this still works when <obj instance>.__dict__ = {not a primitive: primitive}
+        # TODO: Make sure this still works when <obj instance>.__dict__ = {not a primitive: a primitive}
 
     def get_bindings(self):
         """

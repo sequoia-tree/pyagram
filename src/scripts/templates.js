@@ -91,56 +91,51 @@ export const FLAG_TEMPLATE = compile(`
 </div>
 `)
 
+// TODO: Display the parent(s) too. Put the logic in the if/elif/elif/else cases.
 export const FRAME_TEMPLATE = compile(`
-<div>
-  Frame: {{ name }}
+<div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
+  <div class="pyagram-frame-name">
+    {{#if (isEqual type 'function')}}
+      {{name}}
+    {{else if (isEqual type 'generator')}}
+      generator <span class="font-family-monospace">{{name}}</span>
+    {{else if (isEqual type 'class')}}
+      class <span class="font-family-monospace">{{name}}</span>
+    {{else if (isEqual type 'instance')}}
+      <span class="font-family-monospace">{{name}}</span> instance
+    {{/if}}
+  </div>
+  <table class="ml-auto mr-0">
+    {{#each bindings}}
+      <tr class="font-family-monospace">
+        <td class="text-right">{{key}}</td>
+        <td class="text-left pyagram-value">{{decodeReferenceSnapshot value}}</td>
+      </tr>
+    {{/each}}
+    {{#unless (isNull return_value)}}
+      <tr class="font-family-sans-serif">
+        <td class="text-right">
+          {{#if (isEqual type 'generator')}}
+            Yield value
+          {{else}}
+            Return value
+          {{/if}}
+        </td>
+        <td class="text-left pyagram-value">
+          {{#if (isNull from)}}
+            {{decodeReferenceSnapshot return_value}}
+          {{else}}
+            {{decodeReferenceSnapshot return_value}}
+            <span class="font-family-sans-serif"> from </span>
+            {{decodeReferenceSnapshot from}}
+          {{/if}}
+        </td>
+      </tr>
+    {{/unless}}
+  </table>
 </div>
 {{decodeElementSnapshot this}}
 `)
-// export const FRAME_TEMPLATE = compile(`
-// <div class="pyagram-frame {% if frame_type == 'function' %} mx-3 {% else %} mr-3 {% endif %} my-3 {% if is_curr_element %} curr-element {% endif %}">
-//   <div class="pyagram-frame-name">
-//     {% if frame_type == 'function' %}
-//       {{ name }}
-//     {% elif frame_type == 'generator' %}
-//       generator <span class="font-family-monospace">{{ name }}</span>
-//     {% elif frame_type == 'class' %}
-//       class <span class="font-family-monospace">{{ name }}</span>
-//     {% elif frame_type == 'instance' %}
-//       <span class="font-family-monospace">{{ name }}</span> instance
-//     {% endif %} {{ get_parent_frame_html(parents, monospace=(frame_type == 'class' or frame_type == 'instance')) }}
-//   </div>
-//   <table class="ml-auto mr-0 font-family-monospace">
-//     {% for key, value in bindings.items() %}
-//       <tr>
-//         <td class="text-right">{{ key }}</td>
-//         <td class="pyagram-value text-left">{{ get_reference_html(value) }}</td>
-//       </tr>
-//     {% endfor %}
-//     {% if return_value is not none %}
-//       <tr class="font-family-sans-serif">
-//         <td class="text-right">
-//         {% if frame_type == 'generator' %}
-//           Yield value
-//         {% else %}
-//           Return value
-//         {% endif %}
-//         </td>
-//         <td class="pyagram-value text-left">
-//           {% if frame_type == 'generator' and from is not none %}
-//             {{ get_reference_html(return_value) }}
-//             <span class="font-family-sans-serif"> from </span>
-//             {{ get_reference_html(from) }}
-//           {% else %}
-//             {{ get_reference_html(return_value) }}
-//           {% endif %}
-//         </td>
-//       </tr>
-//     {% endif %}
-//   </table>
-// </div>
-// {{ get_element_html(this) }}
-// `)
 
 // META_REFERENCE_TEMPLATE = """
 // <span class="pyagram-{{ cls }}">
