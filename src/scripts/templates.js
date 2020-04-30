@@ -196,7 +196,10 @@ export const FUNCTION_TEMPLATE = compile(`
 `)
 
 export const BUILTIN_TEMPLATE = compile(`
-TODO
+<span class="font-family-sans-serif">
+  function
+</span>
+{{this}}(...)
 `)
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`
@@ -218,13 +221,6 @@ TODO
 export const OTHER_TEMPLATE = compile(`
 TODO
 `)
-
-// BUILTIN_FUNCTION_TEMPLATE = """
-// function
-// <span class="ml-2 font-family-monospace">
-//   {{ name }}(...)
-// </span>
-// """
 
 // ORDERED_COLLECTION_TEMPLATE = """
 // {% if elements|length == 0 %}
