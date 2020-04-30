@@ -17,7 +17,15 @@ export function decodeFrameSnapshot(frameSnapshot) {
 }
 
 export function decodeReferenceSnapshot(referenceSnapshot) {
-    return 'TODO';
+    if (referenceSnapshot === null) {
+        return Templates.UNKNOWN_VALUE_TEMPLATE(referenceSnapshot);
+    }
+    switch (typeof referenceSnapshot) {
+        case 'string':
+            return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
+        case 'number':
+            return Templates.REFERENT_TEMPLATE(referenceSnapshot);
+    }
 }
 
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);

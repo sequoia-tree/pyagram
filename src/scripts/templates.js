@@ -7,7 +7,7 @@ function compile(template) {
 
 export const PYAGRAM_TEMPLATE = compile(`
 <div class="overlap-wrapper">
-  <table class="overlap border-collapse" id="pyagram-state-table">
+  <table class="overlap border-collapse font-family-monospace" id="pyagram-state-table">
     <tr>
       <td class="align-top">
         {{decodeFrameSnapshot global_frame}}
@@ -42,7 +42,7 @@ export const ELEMENT_TEMPLATE = compile(`
 export const FLAG_TEMPLATE = compile(`
 <div class="pyagram-flag m-3">
   <div class="pyagram-banner {{#if is_curr_element}} curr-element {{/if}}">
-    <table class="text-center font-family-monospace">
+    <table class="text-center">
       <tr>
         {{#each banner}}
           <td {{#unless (isEmpty bindings)}} colspan="{{sum (mul 2 bindings.length) -1}}" {{/unless}}>
@@ -54,12 +54,12 @@ export const FLAG_TEMPLATE = compile(`
         {{#each banner}}
           {{#if (isEmpty bindings)}}
             {{#if (isEqual @index 1)}}
-              {{#if (isEqual @index (sum ../banner.length -1))}}
+              {{#if @last}}
                 <td class="text-left">()</td>
               {{else}}
                 <td class="text-left">(</td>
               {{/if}}
-            {{else if (isEqual @index (sum ../banner.length -1))}}
+            {{else if @last}}
               <td class="text-right">)</td>
             {{else}}
               <td class="text-left">,</td>
@@ -73,7 +73,7 @@ export const FLAG_TEMPLATE = compile(`
                   {{decodeReferenceSnapshot this}}
                 {{/if}}
               </td>
-              {{#unless (isEqual @index (sum ../bindings.length -1))}}
+              {{#unless @last}}
                 <td>,</td>
               {{/unless}}
             {{/each}}
@@ -84,7 +84,9 @@ export const FLAG_TEMPLATE = compile(`
   </div>
   {{decodeElementSnapshot this}}
   {{#if (isNull frame)}}
-    <div class="pyagram-placeholder font-family-monospace">-</div>
+    <div class="pyagram-placeholder">
+      -
+    </div>
   {{else}}
     {{decodeFrameSnapshot frame}}
   {{/if}}
@@ -92,29 +94,35 @@ export const FLAG_TEMPLATE = compile(`
 `)
 
 // TODO: Display the parent(s) too. Put the logic in the if/elif/elif/else cases.
+// TODO: Verify this works with classes, instances, and generators (with `yield` + `yield from`).
+// TODO: Replace {{key}} with {{decodeBindingSnapshot key}}. In 99.99% of cases the key should be a string; a variable `'var'` should show up as `var`. If it ain't a string, handle it like a ref. (This will require slight modification to encode.py based on the is_bindings parameter.)
 export const FRAME_TEMPLATE = compile(`
 <div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
   <div class="pyagram-frame-name">
     {{#if (isEqual type 'function')}}
-      {{name}}
+      <span class="font-family-sans-serif">{{name}}</span>
     {{else if (isEqual type 'generator')}}
-      generator <span class="font-family-monospace">{{name}}</span>
+      <span class="font-family-sans-serif">generator </span>{{name}}
     {{else if (isEqual type 'class')}}
-      class <span class="font-family-monospace">{{name}}</span>
+      <span class="font-family-sans-serif">class </span>{{name}}
     {{else if (isEqual type 'instance')}}
-      <span class="font-family-monospace">{{name}}</span> instance
+      {{name}}<span class="font-family-sans-serif"> instance</span>
     {{/if}}
   </div>
   <table class="ml-auto mr-0">
     {{#each bindings}}
-      <tr class="font-family-monospace">
-        <td class="text-right">{{key}}</td>
-        <td class="text-left pyagram-value">{{decodeReferenceSnapshot value}}</td>
+      <tr>
+        <td class="text-right">
+          {{key}}
+        </td>
+        <td class="text-left pyagram-value" {{#unless (isNull ../from)}} colspan="3" {{/unless}}>
+          {{decodeReferenceSnapshot value}}
+        </td>
       </tr>
     {{/each}}
     {{#unless (isNull return_value)}}
-      <tr class="font-family-sans-serif">
-        <td class="text-right">
+      <tr>
+        <td class="text-right font-family-sans-serif">
           {{#if (isEqual type 'generator')}}
             Yield value
           {{else}}
@@ -122,14 +130,16 @@ export const FRAME_TEMPLATE = compile(`
           {{/if}}
         </td>
         <td class="text-left pyagram-value">
-          {{#if (isNull from)}}
-            {{decodeReferenceSnapshot return_value}}
-          {{else}}
-            {{decodeReferenceSnapshot return_value}}
-            <span class="font-family-sans-serif"> from </span>
-            {{decodeReferenceSnapshot from}}
-          {{/if}}
+          {{decodeReferenceSnapshot return_value}}
         </td>
+        {{#unless (isNull from)}}
+          <td class="text-left font-family-sans-serif">
+            from
+          </td>
+          <td class="text-left pyagram-value">
+            {{decodeReferenceSnapshot from}}
+          </td>
+        {{/unless}}
       </tr>
     {{/unless}}
   </table>
@@ -137,25 +147,21 @@ export const FRAME_TEMPLATE = compile(`
 {{decodeElementSnapshot this}}
 `)
 
-// META_REFERENCE_TEMPLATE = """
-// <span class="pyagram-{{ cls }}">
-//   {{ text }}
-// </span>
-// """
+export const UNKNOWN_VALUE_TEMPLATE = compile(`
+<span class="pyagram-unknown">
+  (?)
+</span>
+`)
 
-// PLAINTEXT_TEMPLATE = """
-// {% if monospace %}
-//   <span class="font-family-monospace">{{ text }}</span>
-// {% else %}
-//   {{ text }}
-// {% endif %}
-// """
+export const PRIMITIVE_TEMPLATE = compile(`
+{{this}}
+`)
 
-// POINTER_TEMPLATE = """
-// <span class="pyagram-placeholder pyagram-reference font-family-monospace reference-{{ id }}">
-//   -
-// </span>
-// """
+export const REFERENT_TEMPLATE = compile(`
+<span class="pyagram-placeholder pyagram-reference reference-{{this}}">
+  -
+</span>
+`)
 
 // OBJECT_TEMPLATE = """
 // <div id="object-{{ id }}" class="pyagram-object m-3">
