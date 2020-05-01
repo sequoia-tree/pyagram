@@ -3,7 +3,7 @@ import inspect
 import math
 
 from . import constants
-from . import pyagram_types
+from . import enum
 
 def pair_naturals(x, y, *, max_x):
     """
@@ -39,7 +39,7 @@ def get_function(frame):
     """
     function = None
     for referrer in gc.get_referrers(frame.f_code):
-        if pyagram_types.is_function_type(referrer):
+        if enum.ObjectTypes.identify_object_type(referrer) is enum.ObjectTypes.FUNCTION:
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer
     assert function is not None
@@ -117,3 +117,15 @@ def assign_unique_code_object(function):
     else:
         assert False
     function.__code__ = function.__code__.replace()
+
+
+def get_iterable(iterator):
+    """
+    """
+    iterable, iterable_type = None, constants.ITERATOR_TYPES[type(iterator)]
+    for referent in gc.get_referents(iterator):
+        if type(referent) is iterable_type:
+            assert iterable is None
+            iterable = referent
+    assert iterable is not None
+    return iterable

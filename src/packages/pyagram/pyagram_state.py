@@ -4,7 +4,6 @@ import inspect
 from . import encode
 from . import enum
 from . import pyagram_element
-from . import pyagram_types
 from . import pyagram_wrapped_object
 from . import utils
 
@@ -239,7 +238,7 @@ class MemoryState:
                     referents = keys
                     referents.extend(values)
                 elif object_type is enum.ObjectTypes.ITERATOR:
-                    iterable = pyagram_types.get_iterable(object)
+                    iterable = utils.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     referents = list(inspect.getgeneratorlocals(object).values())

@@ -41,13 +41,18 @@ MAPPING_TYPES = {
     dict,
 }
 ITERATOR_TYPES = {
-    type(iter([])),
-    type(iter(())),
-    type(iter('')),
-    type(iter(set())),
-    type(iter({}.keys())),
-    type(iter({}.values())),
-    type(iter({}.items())),
+    type(iter([])): list,
+    type(iter(())): tuple,
+    type(iter('')): str,
+    type(iter(set())): set,
+    type(iter({}.keys())): dict,
+    type(iter({}.values())): dict,
+    type(iter({}.items())): dict,
+}
+ITERATOR_ANNOTATIONS = {
+    type(iter({}.keys())): 'keys',
+    type(iter({}.values())): 'values',
+    type(iter({}.items())): 'items',
 }
 GENERATOR_TYPES = {
     types.GeneratorType,

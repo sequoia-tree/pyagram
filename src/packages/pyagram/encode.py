@@ -1,8 +1,8 @@
 import inspect
 
+from . import constants
 from . import enum
 from . import pyagram_element
-from . import pyagram_types
 from . import pyagram_wrapped_object
 from . import utils
 
@@ -166,11 +166,14 @@ class Encoder:
     def encode_iterator(self, object):
         """
         """
-        iterable = pyagram_types.get_iterable(object)
+        iterable = utils.get_iterable(object)
         return None if iterable is None else {
             'object': self.reference_snapshot(iterable),
             'index': len(iterable) - object.__length_hint__(),
-            'annotation': pyagram_types.ITERATOR_TYPE_MAP[type(object)][1],
+            'annotation':
+                constants.ITERATOR_ANNOTATIONS[type(object)]
+                if type(object) in constants.ITERATOR_ANNOTATIONS
+                else None,
         }
 
     def encode_generator(self, object):
