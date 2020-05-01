@@ -85,11 +85,13 @@ class Postprocessor:
     def kill_static_snapshots(self):
         """
         """
+        # TODO: After you finish implementing the snapshotting logic in pyagram_state.py, see if you still need this function.
+        # TODO: If you keep this function, make it count up from 0, not down from len.
+        # TODO: Refactor / clean up this function.
         i = len(self.state.snapshots) - 1
-        while 0 < i: # TODO: If you keep this function, make it count up from 0, not down from len.
+        while 0 < i:
             former_snapshot = self.state.snapshots[i - 1]
             latter_snapshot = self.state.snapshots[i]
-            # TODO: We temporarily remove the lineno because that's the only part of the snapshot we don't want to compare. If you never end up using the lineno at all in the visualization, then you shouldn't even include it from the program_state snapshot.
             former_line_no = former_snapshot.pop('curr_line_no')
             latter_line_no = latter_snapshot.pop('curr_line_no')
             if former_snapshot == latter_snapshot:
@@ -101,24 +103,17 @@ class Postprocessor:
     def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):
         """
         """
-        # TODO: Clean up this function a bit.
-
         pyagram_frame = pyagram_flag.frame
-
         has_frame = pyagram_frame is not None
         if has_frame:
             frame_bindings = pyagram_frame.initial_bindings
             frame_variables = list(frame_bindings)
         else:
             assert self.state.program_state.exception_snapshot is not None
-
         banner_elements = pyagram_flag.banner_elements
         banner_bindings = pyagram_flag.banner_bindings
-
         banner_binding_index = flag_snapshot.pop('banner_binding_index')
-
         snapshot_index = flag_snapshot.pop('snapshot_index')
-
         banner = []
         for banner_element in banner_elements:
             if isinstance(banner_element, str):
@@ -139,25 +134,20 @@ class Postprocessor:
                                 binding = self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)
                             else:
                                 if isinstance(binding_id, str):
-
                                     # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the **kwargs dictionary and then in the frame.
                                     if pyagram_frame.initial_var_keyword_args is not None and binding_id in pyagram_frame.initial_var_keyword_args:
                                         binding = pyagram_frame.initial_var_keyword_args[binding_id]
                                     else:
                                         binding = frame_bindings[binding_id]
-
                                 else:
                                     assert isinstance(binding_id, int)
                                     if binding_id == constants.BANNER_FUNCTION_CODE:
                                         binding = self.state.encoder.reference_snapshot(pyagram_frame.function)
                                     else:
-
                                         # See if there's a *args param. If so, let it be param #i. Then if you encounter a numerical binding_id >= i, look not in the frame bindings but at args[binding_id - i].
-
                                         if pyagram_frame.var_positional_index is not None and pyagram_frame.var_positional_index <= binding_id:
                                             binding = pyagram_frame.initial_var_pos_args[binding_id - pyagram_frame.var_positional_index]
                                         else:
-
                                             binding = frame_bindings[frame_variables[binding_id]]
                         else:
                             binding = None # This means the box is drawn empty. We haven't gotten around to evaluating that binding yet.
@@ -178,14 +168,10 @@ class Postprocessor:
 
         # The flag snapshot should include the index i of the snapshot. If you come across a binding that's an object (i.e. a binding of type int), which first appears in the jth snapshot's memory state where j > i, then go back and insert it into the memory states of snapshots i ... j-1. (You should copy over the version of the object from snapshot j, rather than the last snapshot, because it may later be mutated.) Moreover, suppose you do this, and in so doing you insert the object into the kth index of snapshot i's memory state; then you should also move it up to the kth index of snapshots j, j+1, .... (The order matters so that objects stay in the same order when a student passes in keyword arguments in a different order than they appear in a function's signature.)
 
-        debut_index = self.state.memory_state.object_debuts[object_id]
-        debut_snapshot = None
-
+        debut_index, debut_snapshot = self.state.memory_state.object_debuts[object_id], None
         debut_memory_state = self.state.snapshots[debut_index]['memory_state']
         new_debut_memory_state = self.state.snapshots[new_debut_index]['memory_state']
-
         if new_debut_index < debut_index:
-
             memory_state_index = None
             for i in range(len(debut_memory_state)):
                 object_snapshot = debut_memory_state[i]
@@ -195,7 +181,6 @@ class Postprocessor:
                     memory_state_index = i
             assert debut_snapshot is not None and memory_state_index is not None
             new_memory_state_index = len(new_debut_memory_state)
-
             for snapshot_index in range(new_debut_index, debut_index):
                 snapshot = self.state.snapshots[snapshot_index]
                 if snapshot is not None:
@@ -206,11 +191,9 @@ class Postprocessor:
                             'object': debut_snapshot,
                         },
                     )
-
             for snapshot_index in range(debut_index, len(self.state.snapshots)):
                 snapshot = self.state.snapshots[snapshot_index]
                 if snapshot is not None:
                     object_snapshot = snapshot['memory_state'].pop(memory_state_index)
                     snapshot['memory_state'].insert(new_memory_state_index, object_snapshot)
-
             self.state.memory_state.object_debuts[object_id] = new_debut_index
