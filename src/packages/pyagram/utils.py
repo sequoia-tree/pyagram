@@ -1,6 +1,7 @@
 import gc
 import inspect
 import math
+import types
 
 from . import constants
 from . import enum
@@ -45,6 +46,23 @@ def get_function(frame):
     assert function is not None
     return function
 
+def is_generator_frame(pyagram_frame):
+    """
+    """
+    return inspect.isgeneratorfunction(pyagram_frame.function)
+
+def assign_unique_code_object(function):
+    """
+    """
+    # TODO: Refactor this func.
+    if isinstance(function, types.FunctionType):
+        function = function
+    elif isinstance(function, types.MethodType):
+        function = function.__func__
+    else:
+        assert False
+    function.__code__ = function.__code__.replace()
+
 def get_defaults(function):
     """
     """
@@ -70,6 +88,17 @@ def get_variable_params(function):
             var_keyword_name = name
     return var_positional_index, var_positional_name, var_keyword_name
 
+def get_iterable(iterator):
+    """
+    """
+    iterable, iterable_type = None, constants.ITERATOR_TYPES[type(iterator)]
+    for referent in gc.get_referents(iterator):
+        if type(referent) is iterable_type:
+            assert iterable is None
+            iterable = referent
+    assert iterable is not None
+    return iterable
+
 def concatenate_adjacent_strings(elements):
     """
     """
@@ -82,50 +111,3 @@ def concatenate_adjacent_strings(elements):
             del elements[i + 1]
         else:
             i += 1
-
-
-
-
-
-
-
-def is_generator_frame(pyagram_frame):
-    """
-    """
-    return inspect.isgeneratorfunction(pyagram_frame.function)
-
-
-
-
-
-
-
-
-
-
-
-
-import types
-
-def assign_unique_code_object(function):
-    """
-    """
-    if isinstance(function, types.FunctionType):
-        function = function
-    elif isinstance(function, types.MethodType):
-        function = function.__func__
-    else:
-        assert False
-    function.__code__ = function.__code__.replace()
-
-
-def get_iterable(iterator):
-    """
-    """
-    iterable, iterable_type = None, constants.ITERATOR_TYPES[type(iterator)]
-    for referent in gc.get_referents(iterator):
-        if type(referent) is iterable_type:
-            assert iterable is None
-            iterable = referent
-    assert iterable is not None
-    return iterable
