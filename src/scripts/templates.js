@@ -317,3 +317,11 @@ export const ITERATOR_TEMPLATE = compile(`
 export const OTHER_TEMPLATE = compile(`
 {{this}}
 `)
+
+export const PRINT_OUTPUT_TEMPLATE = Handlebars.compile(`
+{{#each this}}
+  <div class="print-output font-family-monospace">
+    {{~this~}}
+  </div>
+{{/each}}
+`)

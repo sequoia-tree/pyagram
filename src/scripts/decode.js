@@ -66,6 +66,11 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
     }
 }
 
+Handlebars.registerHelper('decodePrintOutputSnapshot', decodePrintOutputSnapshot);
+export function decodePrintOutputSnapshot(printOutputSnapshot) {
+    return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);
+}
+
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
 });
