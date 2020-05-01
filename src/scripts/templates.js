@@ -93,7 +93,6 @@ export const FLAG_TEMPLATE = compile(`
 </div>
 `)
 
-// TODO: Display the parent(s) too. Put the logic in the if/elif/elif/else cases.
 // TODO: Verify this works with classes, instances, and generators (with `yield` + `yield from`).
 // TODO: Replace {{key}} with {{decodeBindingSnapshot key}}. In 99.99% of cases the key should be a string; a variable `'var'` should show up as `var`. If it ain't a string, handle it like a ref. (This will require slight modification to encode.py based on the is_bindings parameter.)
 // TODO: After doing that, make sure `x = 'hi'` shows up properly: `x` unquoted, but `hi` quoted.
@@ -101,13 +100,38 @@ export const FRAME_TEMPLATE = compile(`
 <div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
   <div class="pyagram-frame-name">
     {{#if (isEqual type 'function')}}
-      <span class="font-family-sans-serif">{{name}}</span>
+      <span class="font-family-sans-serif">
+        {{name}}
+        {{#unless (isNull parent)}}
+          [parent: {{parent}}]
+        {{/unless}}
+      </span>
     {{else if (isEqual type 'generator')}}
-      <span class="font-family-sans-serif">generator </span>{{name}}
+      <span class="font-family-sans-serif">
+        generator
+      </span>
+      {{~name~}}
+      <span class="font-family-sans-serif">
+        [parent: {{parent}}]
+      </span>
     {{else if (isEqual type 'class')}}
-      <span class="font-family-sans-serif">class </span>{{name}}
+      <span class="font-family-sans-serif">
+        class
+      </span>
+      {{~name~}}
+      <span class="font-family-sans-serif">
+        [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
+        {{#each parents}}
+          class <span class="font-family-monospace">{{this}}</span>
+          {{~#unless @last}}, {{/unless~}}
+        {{~/each~}}
+        ]
+      </span>
     {{else if (isEqual type 'instance')}}
-      {{name}}<span class="font-family-sans-serif"> instance</span>
+      {{~name~}}
+      <span class="font-family-sans-serif">
+        instance [parent: class <span class="font-family-monospace">{{parent}}</span>]
+      </span>
     {{/if}}
   </div>
   <table class="ml-auto mr-0">
@@ -298,6 +322,7 @@ export const OTHER_TEMPLATE = compile(`
 {{this}}
 `)
 
+// TODO: Keep or delete.
 // PRINT_TEMPLATE = """
 // {% for line in print_output %}
 //   <div class="print-output {% if is_exception %} pyagram-exception {% endif %} font-family-monospace">

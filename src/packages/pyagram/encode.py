@@ -179,6 +179,7 @@ class Encoder:
         generator_frames = self.state.memory_state.generator_frames
         generator_functs = self.state.memory_state.generator_functs
         encoding = {
+            'type': 'generator',
             'name': object.__name__,
             'parent': repr(self.state.memory_state.function_parents[generator_functs[object]]),
             'bindings': self.encode_mapping(
