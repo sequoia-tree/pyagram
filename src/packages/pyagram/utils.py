@@ -54,10 +54,9 @@ def is_generator_frame(pyagram_frame):
 def assign_unique_code_object(function):
     """
     """
-    # TODO: Refactor this func.
-    if isinstance(function, types.FunctionType):
+    if type(function) is types.FunctionType:
         function = function
-    elif isinstance(function, types.MethodType):
+    elif type(function) is types.MethodType:
         function = function.__func__
     else:
         assert False
