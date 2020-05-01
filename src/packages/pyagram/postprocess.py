@@ -134,7 +134,9 @@ class Postprocessor:
                                 binding = self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)
                             else:
                                 if isinstance(binding_id, str):
+
                                     # See if there's a **kwargs param. If so, let it be param #i. Then if you encounter a keyword binding, look first in the **kwargs dictionary and then in the frame.
+
                                     if pyagram_frame.initial_var_keyword_args is not None and binding_id in pyagram_frame.initial_var_keyword_args:
                                         binding = pyagram_frame.initial_var_keyword_args[binding_id]
                                     else:
@@ -144,15 +146,23 @@ class Postprocessor:
                                     if binding_id == constants.BANNER_FUNCTION_CODE:
                                         binding = self.state.encoder.reference_snapshot(pyagram_frame.function)
                                     else:
+
                                         # See if there's a *args param. If so, let it be param #i. Then if you encounter a numerical binding_id >= i, look not in the frame bindings but at args[binding_id - i].
+
                                         if pyagram_frame.var_positional_index is not None and pyagram_frame.var_positional_index <= binding_id:
                                             binding = pyagram_frame.initial_var_pos_args[binding_id - pyagram_frame.var_positional_index]
                                         else:
                                             binding = frame_bindings[frame_variables[binding_id]]
                         else:
-                            binding = None # This means the box is drawn empty. We haven't gotten around to evaluating that binding yet.
+
+                            # This means the box is drawn empty. We haven't gotten around to evaluating that binding yet.
+
+                            binding = None
                         bindings.append(binding)
-                        if type(binding) is int: # This means the binding refers to an object in memory.
+                        if type(binding) is int:
+
+                            # This means the binding refers to an object in memory.
+
                             self.enforce_early_debut(binding, snapshot_index)
                 else:
                     bindings = [self.state.encoder.reference_snapshot(enum.ObjectTypes.UNKNOWN)]
