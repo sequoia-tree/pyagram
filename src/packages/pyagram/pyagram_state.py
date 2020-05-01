@@ -169,12 +169,6 @@ class ProgramState:
         """
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
-        if self.is_ongoing_flag_sans_frame:
-            # --------------------------------------------------------------------------------------
-            # TODO: What should you do here -- if anything?
-            # If we call a built-in function, we open a flag but bdb never gives us a frame to open, so we are forced to close the flag without having a frame!
-            pass
-            # --------------------------------------------------------------------------------------
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, return_value):

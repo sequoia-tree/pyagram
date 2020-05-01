@@ -95,7 +95,11 @@ class PyagramFlag(PyagramElement):
                 else self.frame.snapshot(),
             'flags': [
                 flag.snapshot()
-                for flag in self.flags
+                for flag in (
+                    self.flags + self.frame.flags
+                    if self.is_hidden and self.frame is not None
+                    else self.flags
+                )
             ],
             'self': self, # For postprocessing.
             'banner_binding_index': self.banner_binding_index, # For postprocessing.
