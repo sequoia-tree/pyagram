@@ -203,108 +203,100 @@ export const BUILTIN_TEMPLATE = compile(`
 `)
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`
-TODO
+{{#if (isEmpty elements)}}
+  <div class="font-family-sans-serif">
+    empty {{type}}
+  </div>
+{{else}}
+  <div class="d-flex flex-row align-items-center">
+    <div class="font-family-sans-serif">
+      {{type}}
+    </div>
+    <table class="pyagram-ordered-collection border-collapse ml-1" rules="cols">
+      <tr>
+        {{#each elements}}
+          <td class="pyagram-collection-element px-2">{{decodeReferenceSnapshot this}}</td>
+        {{/each}}
+      </tr>
+    </table>
+  </div>
+{{/if}}
 `)
 
 export const UNORDERED_COLLECTION_TEMPLATE = compile(`
-TODO
+{{#if (isEmpty elements)}}
+  <div class="font-family-sans-serif">
+    empty {{type}}
+  </div>
+{{else}}
+  <div class="d-flex flex-row align-items-center">
+    <div class="font-family-sans-serif">
+      {{type}}
+    </div>
+    <table class="pyagram-unordered-collection ml-1">
+      <tr>
+        {{#each elements}}
+          <td class="pyagram-collection-element px-2">{{decodeReferenceSnapshot this}}</td>
+        {{/each}}
+      </tr>
+    </table>
+  </div>
+{{/if}}
 `)
 
 export const MAPPING_TEMPLATE = compile(`
-TODO
+{{#if (isEmpty items)}}
+  <div class="font-family-sans-serif">
+    empty {{type}}
+  </div>
+{{else}}
+  <div class="d-flex flex-row align-items-center">
+    <div class="font-family-sans-serif">
+      {{type}}
+    </div>
+    <table class="pyagram-mapping border-collapse ml-1" rules="cols">
+      <tr>
+        {{#each items}}
+          <td class="pyagram-mapping-key px-2 text-center">{{decodeReferenceSnapshot key}}</td>
+        {{/each}}
+      </tr>
+      <tr>
+        {{#each items}}
+          <td class="pyagram-mapping-value px-2 text-center">{{decodeReferenceSnapshot value}}</td>
+        {{/each}}
+      </tr>
+    </table>
+  </div>
+{{/if}}
 `)
 
 export const ITERATOR_TEMPLATE = compile(`
-TODO
+{{#if (isNull object)}}
+  <div class="font-family-sans-serif">
+    empty iterator
+  </div>
+{{else}}
+  <span class="font-family-sans-serif">
+    iterator over
+  </span>
+  <span class="pyagram-value">
+    {{~decodeReferenceSnapshot object~}}
+  </span>
+  {{~#unless (isNull annotation)~}}
+    <span class="font-family-sans-serif">
+      {{annotation}}
+    </span>
+  {{~/unless~}}
+  <div class="font-family-sans-serif">
+    [next index: {{index}}]
+  </div>
+{{/if}}
 `)
 
+// TODO: Reconsider how you display these.
 export const OTHER_TEMPLATE = compile(`
-TODO
+{{this}}
 `)
-
-// ORDERED_COLLECTION_TEMPLATE = """
-// {% if elements|length == 0 %}
-//   empty {{ type }}
-// {% else %}
-//   <div class="d-flex flex-row align-items-center">
-//     <div>{{type}}</div>
-//     <table class="pyagram-ordered-collection border-collapse ml-1 font-family-monospace" rules="cols">
-//     <tr>
-//       {% for element in elements %}
-//         <td class="pyagram-collection-element px-2">{{ get_reference_html(element) }}</td>
-//       {% endfor %}
-//     </tr>
-//   </table>
-//   </div>
-// {% endif %}
-// """
-
-// UNORDERED_COLLECTION_TEMPLATE = """
-// {% if elements|length == 0 %}
-//   empty {{ type }}
-// {% else %}
-//   <div class="d-flex flex-row align-items-center">
-//     <div>{{type}}</div>
-//     <table class="pyagram-unordered-collection ml-1 font-family-monospace">
-//     <tr>
-//       {% for element in elements %}
-//         <td class="pyagram-collection-element px-2">{{ get_reference_html(element) }}</td>
-//       {% endfor %}
-//     </tr>
-//   </table>
-//   </div>
-// {% endif %}
-// """
-
-// MAPPING_TEMPLATE = """
-// {% if items|length == 0 %}
-//   empty {{ type }}
-// {% else %}
-//   <div class="d-flex flex-row align-items-center">
-//     <div>{{type}}</div>
-//     <table class="pyagram-mapping border-collapse ml-1 font-family-monospace" rules="cols">
-//     <tr>
-//       {% for item in items %}
-//         <td class="pyagram-mapping-key px-2 text-center">{{ get_reference_html(item[0]) }}</td>
-//       {% endfor %}
-//     </tr>
-//     <tr>
-//       {% for item in items %}
-//         <td class="pyagram-mapping-value px-2 text-center">{{ get_reference_html(item[1]) }}</td>
-//       {% endfor %}
-//     </tr>
-//   </table>
-//   </div>
-// {% endif %}
-// """
-
-// ITERATOR_TEMPLATE = """
-// {% if object is none %}
-//   empty iterator
-// {% else %}
-//   iterator over <span class="pyagram-value">{{ get_reference_html(object) }}</span>
-//   {% if annotation is not none %}
-//     <span> {{ annotation }}</span>
-//   {% endif %}
-//   <div>[next index: {{ index }}]</div>
-// {% endif %}
-// """
-
-// # TODO: Reconsider how you display these.
-// OBJECT_REPR_TEMPLATE = """
-// <div class="font-family-monospace">
-//   {{ repr }}
-// </div>
-// """
-
-// PARENT_FRAME_TEMPLATE = """
-// {% if parents|length == 0 %}
-// {% elif parents|length == 1 %}
-//   [parent: {{ parents[0] }}]
-// {% else %}
-//   [parents: {% for i in range(parents|length - 1) %}{{ parents[i] }}, {% endfor %}{{ parents[-1] }}]
-// {% endif %}
-// """
 
 // PRINT_TEMPLATE = """
 // {% for line in print_output %}
