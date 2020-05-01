@@ -95,7 +95,6 @@ def get_iterable(iterator):
         if type(referent) is iterable_type:
             assert iterable is None
             iterable = referent
-    assert iterable is not None
     return iterable
 
 def concatenate_adjacent_strings(elements):

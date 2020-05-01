@@ -292,7 +292,7 @@ export const MAPPING_TEMPLATE = compile(`
 `)
 
 export const ITERATOR_TEMPLATE = compile(`
-{{#if (isNull object)}}
+{{#if (isNull this)}}
   <div class="font-family-sans-serif">
     empty iterator
   </div>
