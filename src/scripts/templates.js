@@ -93,9 +93,6 @@ export const FLAG_TEMPLATE = compile(`
 </div>
 `)
 
-// TODO: Verify this works with classes, instances, and generators (with `yield` + `yield from`).
-// TODO: Replace {{key}} with {{decodeBindingSnapshot key}}. In 99.99% of cases the key should be a string; a variable `'var'` should show up as `var`. If it ain't a string, handle it like a ref. (This will require slight modification to encode.py based on the is_bindings parameter.)
-// TODO: After doing that, make sure `x = 'hi'` shows up properly: `x` unquoted, but `hi` quoted.
 export const FRAME_TEMPLATE = compile(`
 <div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
   <div class="pyagram-frame-name">
@@ -138,7 +135,7 @@ export const FRAME_TEMPLATE = compile(`
     {{#each bindings}}
       <tr>
         <td class="text-right">
-          {{key}}
+          {{decodeReferenceSnapshot key}}
         </td>
         <td class="text-left pyagram-value" {{#unless (isNull ../from)}} colspan="3" {{/unless}}>
           {{decodeReferenceSnapshot value}}

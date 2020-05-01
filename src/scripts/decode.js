@@ -17,7 +17,7 @@ export function decodeFlagSnapshot(flagSnapshot) {
 
 Handlebars.registerHelper('decodeFrameSnapshot', decodeFrameSnapshot);
 export function decodeFrameSnapshot(frameSnapshot) {
-    return Templates.FRAME_TEMPLATE(frameSnapshot)
+    return Templates.FRAME_TEMPLATE(frameSnapshot);
 }
 
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);

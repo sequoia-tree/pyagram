@@ -249,7 +249,6 @@ class PyagramFrame(PyagramElement):
                 for flag in self.flags
             ],
         }
-        # TODO: Make sure this still works when <obj instance>.__dict__ = {not a primitive: a primitive}
 
     def get_bindings(self):
         """

@@ -16,14 +16,14 @@ class Encoder:
         self.num_lines = num_lines
         self.lambdas_per_line = lambdas_per_line
 
-    def reference_snapshot(self, object):
+    def reference_snapshot(self, object, *, is_bindings=False):
         """
         """
         if object is enum.ObjectTypes.UNKNOWN:
             return None
         object_type = enum.ObjectTypes.identify_object_type(object)
         if object_type is enum.ObjectTypes.PRIMITIVE:
-            return self.encode_primitive(object)
+            return self.encode_primitive(object, is_bindings=is_bindings)
         else:
             return id(object)
 
@@ -71,10 +71,10 @@ class Encoder:
             'data': data,
         }
 
-    def encode_primitive(self, object):
+    def encode_primitive(self, object, *, is_bindings=False):
         """
         """
-        return repr(object) if type(object) is str else str(object)
+        return str(object) if is_bindings or type(object) is not str else repr(object)
 
     def encode_function(self, object):
         """
@@ -149,7 +149,7 @@ class Encoder:
         """
         items = [
             {
-                'key': self.reference_snapshot(key),
+                'key': self.reference_snapshot(key, is_bindings=is_bindings),
                 'value': self.reference_snapshot(value),
             }
             for key, value in object.items()
