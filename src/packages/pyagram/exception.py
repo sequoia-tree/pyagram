@@ -4,7 +4,7 @@ class HiddenSnapshotException(Exception):
 
     pass
 
-class UserException(Exception):
+class UserException(Exception): # TODO: Currently unused, I think.
     """
     """
 

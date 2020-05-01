@@ -245,10 +245,6 @@ class Encoder:
             'from': None,
             'flags': [],
         }
-        # TODO: Might some objects have a lot of items in their __dict__? Some ideas ...
-        # (*) Make it an option [default ON] to render the contents in object frames.
-        # (*) Limit the size of each object frame, but make the contents scrollable on the site.
-        # (*) Include a button next to each object frame, which you can click to toggle whether to render the contents of that particular object frame.
 
     def encode_other(self, object):
         """
