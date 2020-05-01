@@ -314,16 +314,6 @@ export const ITERATOR_TEMPLATE = compile(`
 {{/if}}
 `)
 
-// TODO: Reconsider how you display these.
 export const OTHER_TEMPLATE = compile(`
 {{this}}
 `)
-
-// TODO: Keep or delete.
-// PRINT_TEMPLATE = """
-// {% for line in print_output %}
-//   <div class="print-output {% if is_exception %} pyagram-exception {% endif %} font-family-monospace">
-//     {{ line }}
-//   </div>
-// {% endfor %}
-// """

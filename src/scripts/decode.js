@@ -66,10 +66,6 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
     }
 }
 
-// TODO: Finish templates.js and decode.js.
-// TODO: Handle todos in templates.js.
-// TODO: Strip newlines and all the whitespace at the beginning / end of a line from each template?
-
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
 });

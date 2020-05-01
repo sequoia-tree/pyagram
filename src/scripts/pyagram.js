@@ -36,12 +36,24 @@ export function drawPyagram(slider, pyagram) {
 export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, SVGCanvasID) {
     var snapshot = snapshots[snapshotIndex];
     pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot);
-    // TODO
+
+    // TODO: Print output + student errors.
     // printOutput.innerHTML = snapshot.print_output;
     // if (snapshot.exception !== null) {
     //     printOutput.innerHTML += snapshot.exception;
     // }
-    // // TODO: Use snapshot.curr_line_no.
+
+    // TODO: Old print output template.
+    // PRINT_TEMPLATE = """
+    // {% for line in print_output %}
+    //   <div class="print-output {% if is_exception %} pyagram-exception {% endif %} font-family-monospace">
+    //     {{ line }}
+    //   </div>
+    // {% endfor %}
+    // """
+
+    // TODO: Use snapshot.curr_line_no.
+
     var stateTable = $('#'.concat(stateTableID));
     var SVGCanvas = $('#'.concat(SVGCanvasID));
     drawSVGCanvas(stateTable, SVGCanvas);
