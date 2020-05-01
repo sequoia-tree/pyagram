@@ -211,7 +211,9 @@ class Encoder:
         """
         return {
             'type': 'class',
-            'is_curr_element': False,
+            'is_curr_element':
+                object is self.state.program_state.curr_classdef \
+                and self.state.program_state.curr_element is object.outer_frame,
             'name': object.frame.f_code.co_name,
             'parents': None, # Placeholder.
             'bindings': self.encode_mapping(
@@ -224,10 +226,6 @@ class Encoder:
             'flags': [],
             'self': object, # For postprocessing.
         }
-        # TODO: Consider this.
-        # (*) Introduce a new attribute, curr_class, which is initially bound to None. When you open a class frame: (1) set the class frame's opened_by equal to the curr_class; (2) set the curr_class equal to the newly-opened class frame. When you close a class frame, set the curr_class equal to the class frame's opened_by.
-        # (*) If the curr_class is not None, and the curr_elem is the PyagramFrame that you were in when you instantiated the curr_class, then the green background should go behind the class frame -- not the program frame.
-        # (*) Make sure this works for nested classdefs interleaved with function calls.
 
     def encode_obj_inst(self, object):
         """

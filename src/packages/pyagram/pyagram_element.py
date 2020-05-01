@@ -233,7 +233,12 @@ class PyagramFrame(PyagramElement):
         """
         return {
             'type': 'function',
-            'is_curr_element': self is self.state.program_state.curr_element,
+            'is_curr_element':
+                self is self.state.program_state.curr_element \
+                and (
+                    self.state.program_state.curr_classdef is None \
+                    or self is not self.state.program_state.curr_classdef.outer_frame
+                ),
             'name': repr(self),
             'parent':
                 None
