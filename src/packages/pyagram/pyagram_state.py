@@ -120,6 +120,7 @@ class ProgramState:
                 # This is the original exception.
 
                 self.exception_info = exception_info
+                self.exception_index = len(self.state.snapshots)
                 def finish_prev_step():
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
@@ -172,8 +173,8 @@ class ProgramState:
     def process_exception(self, frame, frame_type):
         """
         """
-        if self.is_flag:
-            self.curr_element.hidden_from = len(self.state.snapshots)
+        while self.is_flag:
+            self.curr_element.hidden_from = self.exception_index + 1
             self.curr_element.hide_subflags = True
             self.curr_element = self.curr_element.opened_by
 
