@@ -23,11 +23,9 @@ class Tracer(bdb.Bdb):
     def user_return(self, frame, return_value):
         """
         """
-        print('RET')
         self.state.step(frame, return_value, trace_type=enum.TraceTypes.USER_RETURN)
 
     def user_exception(self, frame, exception_info):
         """
         """
-        print('EXCEPTION in', self.state.program_state.curr_element)
         self.state.step(frame, exception_info, trace_type=enum.TraceTypes.USER_EXCEPTION)

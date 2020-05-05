@@ -121,10 +121,11 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 def finish_prev_step():
+                    self.process_exception(frame, frame_type)
                     self.exception_info = None
                 self.finish_prev_step = finish_prev_step
-            if self.is_flag:
-                self.curr_element = self.curr_element.opened_by
+            else:
+                self.process_exception(frame, frame_type)
         self.global_frame.step()
 
     def snapshot(self):
@@ -167,6 +168,12 @@ class ProgramState:
             self.close_class_frame(frame)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
+
+    def process_exception(self, frame, frame_type):
+        """
+        """
+        if self.is_flag:
+            self.curr_element = self.curr_element.opened_by
 
     def open_pyagram_flag(self, banner):
         """
