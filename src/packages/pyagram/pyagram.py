@@ -39,7 +39,7 @@ class Pyagram:
                     has_uncaught_exception = True
                 else:
                     has_uncaught_exception = False
-                print(has_uncaught_exception) # TODO: Give this to the postprocessor?
+                print(has_uncaught_exception) # TODO: Give this to the postprocessor? It might not be useful though. You'll have to finish the snapshotting logic first; then, if you still take excessive snapshots here, you can worry about it.
                 sys.stdout = old_stdout
                 postprocessor = postprocess.Postprocessor(state)
                 postprocessor.postprocess()
