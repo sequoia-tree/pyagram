@@ -215,7 +215,7 @@ class Encoder:
         return {
             'type': 'class',
             'is_curr_element':
-                object is self.state.program_state.curr_classdef \
+                object is self.state.program_state.curr_cls_def \
                 and self.state.program_state.curr_element is object.outer_frame,
             'name': object.frame.f_code.co_name,
             'parents': None, # Placeholder.

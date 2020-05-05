@@ -54,7 +54,7 @@ class ProgramState:
         self.state = state
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
-        self.curr_classdef = None
+        self.curr_cls_def = None
         self.curr_line_no = 0
         self.exception_info = None
         self.finish_prev_step = None
@@ -184,9 +184,9 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        self.curr_classdef = pyagram_wrapped_object.PyagramClassFrame(
+        self.curr_cls_def = pyagram_wrapped_object.PyagramClassFrame(
             self.curr_element,
-            self.curr_classdef,
+            self.curr_cls_def,
             frame,
             state=self.state,
         )
@@ -216,7 +216,7 @@ class ProgramState:
         def finish_prev_step():
             class_object = frame.f_back.f_locals[frame.f_code.co_name]
             self.state.memory_state.record_class_frame(frame, class_object)
-            self.curr_classdef = self.curr_classdef.outer_classdef
+            self.curr_cls_def = self.curr_cls_def.outer_classdef
         self.finish_prev_step = finish_prev_step
 
 class MemoryState:
