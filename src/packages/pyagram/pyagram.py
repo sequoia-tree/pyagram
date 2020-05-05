@@ -28,11 +28,21 @@ class Pyagram:
                 )
                 tracer = trace.Tracer(state)
                 sys.stdout = new_stdout
-                tracer.run(
-                    preprocessor.ast,
-                    globals=bindings,
-                    locals=bindings,
-                )
+                try:
+                    tracer.run(
+                        preprocessor.ast,
+                        globals=bindings,
+                        locals=bindings,
+                    )
+                except Exception as exception:
+
+
+                    # TODO: I think that if an exception is caught, then we're chilling. But if there's an uncaught one, the next step will be a return from <module>?
+                    # TODO: If it's an uncaught exception, the trace should stop then, or perhaps the next step, right? Whereas if it's caught, the trace will keep going for a while?
+
+                    raise exception
+
+
                 sys.stdout = old_stdout
                 postprocessor = postprocess.Postprocessor(state)
                 postprocessor.postprocess()

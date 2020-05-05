@@ -56,6 +56,7 @@ class ProgramState:
         self.curr_element = self.global_frame
         self.curr_classdef = None
         self.curr_line_no = 0
+        self.exception_info = None
         self.finish_prev_step = None
         self.frame_types = {}
         self.frame_count = 1
@@ -103,7 +104,10 @@ class ProgramState:
             return_value, = step_info
             self.process_frame_close(frame, frame_type, return_value)
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
-            pass
+            exception_info, = step_info
+            self.process_exception(frame, frame_type, exception_info)
+            _, _, traceback = exception_info # TODO: Delete this.
+            print(exception_info, traceback.tb_next) # TODO: Delete this.
         self.global_frame.step()
 
     def snapshot(self):
@@ -112,6 +116,7 @@ class ProgramState:
         return {
             'global_frame': self.global_frame.snapshot(),
             'curr_line_no': self.curr_line_no,
+            'exception': self.state.encoder.encode_exception_info(self.exception_info),
         }
 
     def process_frame_open(self, frame, frame_type):
@@ -145,6 +150,14 @@ class ProgramState:
             self.close_class_frame(frame)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
+
+    def process_exception(self, frame, frame_type, exception_info):
+        """
+        """
+        self.exception_info = exception_info
+        def finish_prev_step():
+            self.exception_info = None
+        self.finish_prev_step = finish_prev_step
 
     def open_pyagram_flag(self, banner):
         """

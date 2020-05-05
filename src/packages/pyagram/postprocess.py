@@ -109,7 +109,7 @@ class Postprocessor:
             frame_bindings = pyagram_frame.initial_bindings
             frame_variables = list(frame_bindings)
         else:
-            assert self.state.program_state.exception_snapshot is not None
+            pass # TODO: assert that there's an uncaught error in the student's code?
         banner_elements = pyagram_flag.banner_elements
         banner_bindings = pyagram_flag.banner_bindings
         banner_binding_index = flag_snapshot.pop('banner_binding_index')

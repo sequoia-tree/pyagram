@@ -247,6 +247,19 @@ class Encoder:
             'flags': [],
         }
 
+    def encode_exception_info(self, object):
+        """
+        """
+        if object is None:
+            return None
+        else:
+            type, value, traceback = object
+            return {
+                'type': type.__name__,
+                'value': str(value),
+                'lineno': traceback.tb_lineno,
+            }
+
     def encode_other(self, object):
         """
         """

@@ -1,6 +1,8 @@
 import fractions
 import types
 
+USERCODE_FILENAME = 'main.py'
+
 UNMODIFIED_LINENO = 0
 INNER_CALL_LINENO = 1
 OUTER_CALL_LINENO = 2

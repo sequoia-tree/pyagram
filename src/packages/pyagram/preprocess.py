@@ -28,7 +28,7 @@ class Preprocessor:
         ast.fix_missing_locations(self.ast)
         self.ast = compile(
             self.ast,
-            filename='main.py',
+            filename=constants.USERCODE_FILENAME,
             mode='exec',
         )
 
