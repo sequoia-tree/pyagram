@@ -33,9 +33,10 @@ export function drawPyagram(slider, pyagram) {
     }
 }
 
-export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, SVGCanvasID) {
+export function drawSnapshot(snapshotIndex, pyagram, pyagramException, printOutput, stateTableID, SVGCanvasID) {
     var snapshot = snapshots[snapshotIndex];
     pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot);
+    pyagramException.innerHTML = Decode.decodePyagramExceptionSnapshot(snapshot.exception);
     printOutput.innerHTML = Decode.decodePrintOutputSnapshot(snapshot.print_output);
     // TODO: Use snapshot.curr_line_no.
     var stateTable = $('#'.concat(stateTableID));

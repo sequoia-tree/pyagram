@@ -318,6 +318,14 @@ export const OTHER_TEMPLATE = compile(`
 {{this}}
 `)
 
+export const PYAGRAM_EXCEPTION_TEMPLATE = Handlebars.compile(`
+{{#unless (isNull this)}}
+  <div class="pyagram-exception px-3 py-2 font-family-monospace">
+    {{~this~}}
+  </div>
+{{/unless}}
+`)
+
 export const PRINT_OUTPUT_TEMPLATE = Handlebars.compile(`
 {{#each this}}
   <div class="print-output font-family-monospace">

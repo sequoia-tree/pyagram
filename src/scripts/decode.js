@@ -66,6 +66,11 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
     }
 }
 
+Handlebars.registerHelper('decodePyagramExceptionSnapshot', decodePyagramExceptionSnapshot);
+export function decodePyagramExceptionSnapshot(pyagramExceptionSnapshot) {
+    return Templates.PYAGRAM_EXCEPTION_TEMPLATE(pyagramExceptionSnapshot);
+}
+
 Handlebars.registerHelper('decodePrintOutputSnapshot', decodePrintOutputSnapshot);
 export function decodePrintOutputSnapshot(printOutputSnapshot) {
     return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);

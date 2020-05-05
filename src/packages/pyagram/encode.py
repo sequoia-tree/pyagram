@@ -253,12 +253,8 @@ class Encoder:
         if object is None:
             return None
         else:
-            type, value, traceback = object
-            return {
-                'type': type.__name__,
-                'value': str(value),
-                'lineno': traceback.tb_lineno,
-            }
+            type, value, _ = object
+            return f'{type.__name__}: {value}'
 
     def encode_other(self, object):
         """

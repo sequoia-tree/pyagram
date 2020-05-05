@@ -31,7 +31,7 @@
 }
 
 .pyagram-unknown {
-  color: red;
+  color: $apple-red;
 }
 
 .pyagram-object {
@@ -73,5 +73,5 @@
 }
 
 .pyagram-exception {
-  color: red;
+  background: rgba($apple-red, 0.5);
 }
