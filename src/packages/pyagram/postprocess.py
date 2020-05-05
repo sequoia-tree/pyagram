@@ -16,7 +16,7 @@ class Postprocessor:
         """
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
-        # self.kill_static_snapshots() # TODO: Consider deleting this.
+        self.kill_static_snapshots() # TODO: Consider deleting this.
 
     def postprocess_snapshots(self):
         """
@@ -82,23 +82,23 @@ class Postprocessor:
             else:
                 i += 1
 
-    # def kill_static_snapshots(self):
-    #     """
-    #     """
-    #     # TODO: After you finish implementing the snapshotting logic in pyagram_state.py, see if you still need this function.
-    #     # TODO: If you keep this function, make it count up from 0, not down from len.
-    #     # TODO: Refactor / clean up this function.
-    #     i = len(self.state.snapshots) - 1
-    #     while 0 < i:
-    #         former_snapshot = self.state.snapshots[i - 1]
-    #         latter_snapshot = self.state.snapshots[i]
-    #         former_line_no = former_snapshot.pop('curr_line_no')
-    #         latter_line_no = latter_snapshot.pop('curr_line_no')
-    #         if former_snapshot == latter_snapshot:
-    #             del self.state.snapshots[i]
-    #         former_snapshot['curr_line_no'] = former_line_no
-    #         latter_snapshot['curr_line_no'] = latter_line_no
-    #         i -= 1
+    def kill_static_snapshots(self):
+        """
+        """
+        # TODO: After you finish implementing the snapshotting logic in pyagram_state.py, see if you still need this function.
+        # TODO: If you keep this function, make it count up from 0, not down from len.
+        # TODO: Refactor / clean up this function.
+        i = len(self.state.snapshots) - 1
+        while 0 < i:
+            former_snapshot = self.state.snapshots[i - 1]
+            latter_snapshot = self.state.snapshots[i]
+            former_line_no = former_snapshot.pop('curr_line_no')
+            latter_line_no = latter_snapshot.pop('curr_line_no')
+            if former_snapshot == latter_snapshot:
+                del self.state.snapshots[i]
+            former_snapshot['curr_line_no'] = former_line_no
+            latter_snapshot['curr_line_no'] = latter_line_no
+            i -= 1
 
     def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):
         """

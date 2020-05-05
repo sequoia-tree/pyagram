@@ -32,6 +32,7 @@ class State:
         # (*) Set `self.take_snapshot = True` elsewhere in this file (and maybe others).
         # (*) PS: Right now it takes an eternity to run, since you're taking a million snapshots and then filtering out duplicates in postprocess.py.
         self.take_snapshot = True
+        # TODO: Before working on this bit, or comment out kill_static_snapshots in postprocess.py.
         # ------------------------------------------------------------------------------------------
         if self.take_snapshot:
             self.snapshot()
