@@ -32,7 +32,8 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_flag = True
-        self.is_hidden = False
+        self.hidden_from = None
+        self.hide_subflags = False
         banner_elements, banner_bindings = banner
         utils.concatenate_adjacent_strings(banner_elements)
         self.has_processed_subflag_since_prev_eval = False
@@ -61,6 +62,13 @@ class PyagramFlag(PyagramElement):
         assert self.has_returned
         return self.frame.return_value
 
+    def is_hidden(self, snapshot_index=None):
+        """
+        """
+        if snapshot_index is None:
+            snapshot_index = len(self.state.snapshots)
+        return self.hidden_from is not None and self.hidden_from <= snapshot_index
+
     def step(self):
         """
         """
@@ -86,21 +94,25 @@ class PyagramFlag(PyagramElement):
     def snapshot(self):
         """
         """
+        is_hidden = self.is_hidden()
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'banner': None, # Placeholder.
             'frame':
                 None
-                if self.frame is None or self.is_hidden
+                if self.frame is None or is_hidden
                 else self.frame.snapshot(),
-            'flags': [
-                flag.snapshot()
-                for flag in (
-                    self.flags + self.frame.flags
-                    if self.is_hidden and self.frame is not None
-                    else self.flags
-                )
-            ],
+            'flags':
+                []
+                if self.hide_subflags
+                else [
+                    flag.snapshot()
+                    for flag in (
+                        self.flags + self.frame.flags
+                        if is_hidden and self.frame is not None
+                        else self.flags
+                    )
+                ],
             'self': self, # For postprocessing.
             'banner_binding_index': self.banner_binding_index, # For postprocessing.
             'snapshot_index': len(self.state.snapshots), # For postprocessing.
@@ -158,7 +170,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         if self.frame is None:
-            self.is_hidden = True
+            self.hidden_from = 0
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
@@ -176,7 +188,7 @@ class PyagramFrame(PyagramElement):
             self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
             if utils.is_generator_frame(self):
-                self.opened_by.is_hidden = True
+                self.opened_by.hidden_from = 0
                 self.state.memory_state.record_generator_frame(self)
             else:
                 var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)

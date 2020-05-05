@@ -23,26 +23,26 @@ class Postprocessor:
         """
         for i, snapshot in enumerate(self.state.snapshots):
             try:
-                self.postprocess_frame_snapshot(snapshot['global_frame'])
-                self.postprocess_memory_snapshot(snapshot['memory_state'])
+                self.postprocess_frame_snapshot(i, snapshot['global_frame'])
+                self.postprocess_memory_snapshot(i, snapshot['memory_state'])
             except exception.HiddenSnapshotException:
                 self.state.snapshots[i] = None
 
-    def postprocess_element_snapshot(self, element_snapshot):
+    def postprocess_element_snapshot(self, snapshot_index, element_snapshot):
         """
         """
         i, flags = 0, element_snapshot['flags']
         while i < len(flags):
-            if self.postprocess_flag_snapshot(flags[i]) == constants.HIDDEN_FLAG_CODE:
+            if self.postprocess_flag_snapshot(snapshot_index, flags[i]) == constants.HIDDEN_FLAG_CODE:
                 flags[i : i + 1] = flags[i]['flags']
             else:
                 i += 1
 
-    def postprocess_flag_snapshot(self, flag_snapshot):
+    def postprocess_flag_snapshot(self, snapshot_index, flag_snapshot):
         """
         """
         pyagram_flag = flag_snapshot.pop('self')
-        if pyagram_flag.is_hidden:
+        if pyagram_flag.is_hidden(snapshot_index):
             if flag_snapshot['is_curr_element']:
                 raise exception.HiddenSnapshotException()
             else:
@@ -50,15 +50,15 @@ class Postprocessor:
         self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:
-            self.postprocess_frame_snapshot(frame_snapshot)
-        self.postprocess_element_snapshot(flag_snapshot)
+            self.postprocess_frame_snapshot(snapshot_index, frame_snapshot)
+        self.postprocess_element_snapshot(snapshot_index, flag_snapshot)
 
-    def postprocess_frame_snapshot(self, frame_snapshot):
+    def postprocess_frame_snapshot(self, snapshot_index, frame_snapshot):
         """
         """
-        self.postprocess_element_snapshot(frame_snapshot)
+        self.postprocess_element_snapshot(snapshot_index, frame_snapshot)
 
-    def postprocess_memory_snapshot(self, memory_snapshot):
+    def postprocess_memory_snapshot(self, snapshot_index, memory_snapshot):
         """
         """
         for object_snapshot in memory_snapshot:
