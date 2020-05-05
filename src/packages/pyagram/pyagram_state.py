@@ -62,25 +62,34 @@ class ProgramState:
         self.frame_count = 1
 
     @property
+    def is_flag(self):
+        """
+        """
+        return isinstance(self.curr_element, pyagram_element.PyagramFlag)
+
+    @property
+    def is_frame(self):
+        """
+        """
+        return isinstance(self.curr_element, pyagram_element.PyagramFrame)
+
+    @property
     def is_ongoing_flag_sans_frame(self):
         """
         """
-        is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
-        return is_flag and self.curr_element.frame is None
+        return self.is_flag and self.curr_element.frame is None
 
     @property
     def is_ongoing_frame(self):
         """
         """
-        is_frame = isinstance(self.curr_element, pyagram_element.PyagramFrame)
-        return is_frame and not self.curr_element.has_returned
+        return self.is_frame and not self.curr_element.has_returned
 
     @property
     def is_complete_flag(self):
         """
         """
-        is_flag = isinstance(self.curr_element, pyagram_element.PyagramFlag)
-        return is_flag and self.curr_element.has_returned
+        return self.is_flag and self.curr_element.has_returned
 
     def step(self, frame, *step_info, trace_type):
         """
@@ -105,9 +114,17 @@ class ProgramState:
             self.process_frame_close(frame, frame_type, return_value)
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             exception_info, = step_info
-            self.process_exception(frame, frame_type, exception_info)
-            _, _, traceback = exception_info # TODO: Delete this.
-            print(exception_info, traceback.tb_next) # TODO: Delete this.
+            _, _, traceback = exception_info
+            if traceback.tb_next is None:
+
+                # This is the original exception.
+
+                self.exception_info = exception_info
+                def finish_prev_step():
+                    self.exception_info = None
+                self.finish_prev_step = finish_prev_step
+            if self.is_flag:
+                self.curr_element = self.curr_element.opened_by
         self.global_frame.step()
 
     def snapshot(self):
@@ -150,14 +167,6 @@ class ProgramState:
             self.close_class_frame(frame)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
-
-    def process_exception(self, frame, frame_type, exception_info):
-        """
-        """
-        self.exception_info = exception_info
-        def finish_prev_step():
-            self.exception_info = None
-        self.finish_prev_step = finish_prev_step
 
     def open_pyagram_flag(self, banner):
         """

@@ -40,7 +40,11 @@ class Pyagram:
                     # TODO: I think that if an exception is caught, then we're chilling. But if there's an uncaught one, the next step will be a return from <module>?
                     # TODO: If it's an uncaught exception, the trace should stop then, or perhaps the next step, right? Whereas if it's caught, the trace will keep going for a while?
 
-                    raise exception
+                    # TODO: Start by making it work for errors that get caught.
+
+                    # TODO: Actually, when you get to uncaught errors, I don't think you'll need this try/except block. You can detect the exception as you already do, perhaps just modify the `if traceback.tb_next is None` block in state.py?
+
+                    raise exception # TODO: Delete this and do something else.
 
 
                 sys.stdout = old_stdout
