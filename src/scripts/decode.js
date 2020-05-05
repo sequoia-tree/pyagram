@@ -20,6 +20,11 @@ export function decodeFrameSnapshot(frameSnapshot) {
     return Templates.FRAME_TEMPLATE(frameSnapshot);
 }
 
+Handlebars.registerHelper('decodeUnknownSnapshot', decodeUnknownSnapshot);
+export function decodeUnknownSnapshot(unknownSnapshot) {
+    return Templates.UNKNOWN_VALUE_TEMPLATE(unknownSnapshot);
+}
+
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);
 export function decodeReferenceSnapshot(referenceSnapshot) {
     if (referenceSnapshot === null) {

@@ -117,12 +117,16 @@ export const FRAME_TEMPLATE = compile(`
       </span>
       {{~name~}}
       <span class="font-family-sans-serif">
-        [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
-        {{#each parents}}
-          class <span class="font-family-monospace">{{this}}</span>
-          {{~#unless @last}}, {{/unless~}}
-        {{~/each~}}
-        ]
+        {{#if (isNull parents)}}
+          [parent: <span class="font-family-monospace">{{decodeUnknownSnapshot this}}</this>]
+        {{else}}
+          [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
+          {{#each parents}}
+            class <span class="font-family-monospace">{{this}}</span>
+            {{~#unless @last}}, {{/unless~}}
+          {{~/each~}}
+          ]
+        {{/if}}
       </span>
     {{else if (isEqual type 'instance')}}
       {{~name~}}
