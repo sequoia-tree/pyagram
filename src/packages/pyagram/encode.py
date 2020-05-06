@@ -259,8 +259,12 @@ class Encoder:
         if object is None:
             return None
         else:
-            type, value, _ = object
-            return f'{type.__name__}: {value}'
+            type, value, traceback = object
+            lineno, _, _ = utils.decode_lineno(
+                traceback.tb_lineno,
+                max_lineno=self.num_lines,
+            )
+            return f'{type.__name__} (line {lineno}): {value}'
 
     def encode_other(self, object):
         """
