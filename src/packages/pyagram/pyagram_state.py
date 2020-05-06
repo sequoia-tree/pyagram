@@ -172,6 +172,8 @@ class ProgramState:
     def process_exception(self, frame, frame_type):
         """
         """
+        if self.is_frame:
+            self.curr_element.hide_from(self.exception_index + 1)
         while self.is_flag:
             self.curr_element.hide_from(self.exception_index + 1)
             self.curr_element.hide_subflags = True

@@ -236,8 +236,8 @@ class PyagramFrame(PyagramElement):
     def hide_from(self, snapshot_index):
         """
         """
-        assert not self.is_global_frame
-        self.opened_by.hide_from(snapshot_index)
+        if not self.is_global_frame:
+            self.opened_by.hide_from(snapshot_index)
 
     def is_hidden(self, snapshot_index=None):
         """
@@ -248,13 +248,14 @@ class PyagramFrame(PyagramElement):
         """
         """
         self.bindings = self.get_bindings()
-        referents = list(self.bindings.values())
-        if not self.is_global_frame:
-            referents.append(self.function)
-        if self.has_returned:
-            referents.append(self.return_value)
-        for referent in referents:
-            self.state.memory_state.track(referent)
+        if not self.is_hidden():
+            referents = list(self.bindings.values())
+            if not self.is_global_frame:
+                referents.append(self.function)
+            if self.has_returned:
+                referents.append(self.return_value)
+            for referent in referents:
+                self.state.memory_state.track(referent)
         super().step()
 
     def snapshot(self):
