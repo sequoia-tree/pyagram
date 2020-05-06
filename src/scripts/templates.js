@@ -173,7 +173,7 @@ export const FRAME_TEMPLATE = compile(`
 {{decodeElementSnapshot this}}
 `)
 
-export const UNKNOWN_VALUE_TEMPLATE = compile(`
+export const UNKNOWN_TEMPLATE = compile(`
 <span class="pyagram-unknown">(?)</span>
 `)
 

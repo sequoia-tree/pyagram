@@ -22,15 +22,14 @@ export function decodeFrameSnapshot(frameSnapshot) {
 
 Handlebars.registerHelper('decodeUnknownSnapshot', decodeUnknownSnapshot);
 export function decodeUnknownSnapshot(unknownSnapshot) {
-    return Templates.UNKNOWN_VALUE_TEMPLATE(unknownSnapshot);
+    return Templates.UNKNOWN_TEMPLATE(unknownSnapshot);
 }
 
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);
 export function decodeReferenceSnapshot(referenceSnapshot) {
-    if (referenceSnapshot === null) {
-        return Templates.UNKNOWN_VALUE_TEMPLATE(referenceSnapshot);
-    }
     switch (typeof referenceSnapshot) {
+        case 'object':
+            return Templates.UNKNOWN_TEMPLATE(referenceSnapshot);
         case 'string':
             return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
         case 'number':

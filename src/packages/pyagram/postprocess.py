@@ -10,6 +10,7 @@ class Postprocessor:
 
     def __init__(self, state):
         self.state = state
+        self.obj_numbers = {}
 
     def postprocess(self):
         """
@@ -17,6 +18,7 @@ class Postprocessor:
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots() # TODO: Consider deleting this.
+        self.encode_object_numbers() # TODO: Employ this map in in decode.js and templates.js for the text-based pointer representation visualization option.
 
     def postprocess_snapshots(self):
         """
@@ -95,6 +97,12 @@ class Postprocessor:
             former_snapshot['curr_line_no'] = former_line_no
             latter_snapshot['curr_line_no'] = latter_line_no
             i -= 1
+
+    def encode_object_numbers(self):
+        """
+        """
+        for i, object_snapshot in enumerate(self.state.snapshots[-1]['memory_state']):
+            self.obj_numbers[object_snapshot['id']] = i + 1
 
     def interpolate_flag_banner(self, flag_snapshot, pyagram_flag):
         """
