@@ -57,7 +57,7 @@ class ProgramState:
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.exception_info = None
-        self.finish_prev_step = None
+        self.finish_prev = []
         self.frame_types = {}
         self.frame_count = 1
 
@@ -94,9 +94,8 @@ class ProgramState:
     def step(self, frame, *step_info, trace_type):
         """
         """
-        if self.finish_prev_step is not None:
-            self.finish_prev_step()
-            self.finish_prev_step = None
+        while 0 < len(self.finish_prev):
+            self.finish_prev.pop()()
         line_no, step_code, _ = utils.decode_lineno(
             frame.f_lineno,
             max_lineno=self.state.encoder.num_lines,
@@ -121,10 +120,10 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
-                def finish_prev_step():
+                def finish_prev():
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
-                self.finish_prev_step = finish_prev_step
+                self.finish_prev.append(finish_prev)
             else:
                 self.process_exception(frame, frame_type)
         self.global_frame.step()
@@ -208,20 +207,21 @@ class ProgramState:
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
         pyagram_flag = self.curr_element.close(return_value)
-        def finish_prev_step():
+        def finish_prev():
             self.curr_element = pyagram_flag
             if is_implicit:
                 self.curr_element = self.curr_element.close()
-        self.finish_prev_step = finish_prev_step
+        self.finish_prev.append(finish_prev)
 
     def close_class_frame(self, frame):
         """
         """
         assert self.is_ongoing_frame
-        def finish_prev_step():
-            class_object = frame.f_back.f_locals[frame.f_code.co_name]
-            self.state.memory_state.record_class_frame(frame, class_object)
-        self.finish_prev_step = finish_prev_step
+        def finish_prev():
+            parent_bindings, class_name = frame.f_back.f_locals, frame.f_code.co_name
+            if class_name in parent_bindings:
+                self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
+        self.finish_prev.append(finish_prev)
 
 class MemoryState:
     """
