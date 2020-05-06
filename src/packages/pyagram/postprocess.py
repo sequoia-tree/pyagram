@@ -25,8 +25,9 @@ class Postprocessor:
     def kill_excess_snapshots(self):
         """
         """
-        while self.state.snapshots[-1]['exception'] is None:
-            self.state.snapshots.pop()
+        if self.terminal_ex:
+            while self.state.snapshots[-1]['exception'] is None:
+                self.state.snapshots.pop()
 
     def postprocess_snapshots(self):
         """
