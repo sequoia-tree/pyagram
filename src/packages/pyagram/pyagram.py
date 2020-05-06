@@ -36,12 +36,11 @@ class Pyagram:
                     )
                 except Exception as exception:
                     assert state.program_state.curr_element is state.program_state.global_frame
-                    has_uncaught_exception = True
+                    terminal_ex = True
                 else:
-                    has_uncaught_exception = False
-                print(has_uncaught_exception) # TODO: Give this to the postprocessor? It might not be useful though. You'll have to finish the snapshotting logic first; then, if you still take excessive snapshots here, you can worry about it.
+                    terminal_ex = False
                 sys.stdout = old_stdout
-                postprocessor = postprocess.Postprocessor(state)
+                postprocessor = postprocess.Postprocessor(state, terminal_ex)
                 postprocessor.postprocess()
                 self.encoding = 'pyagram'
                 self.data = state.snapshots

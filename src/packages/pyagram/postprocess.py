@@ -8,17 +8,25 @@ class Postprocessor:
     """
     """
 
-    def __init__(self, state):
+    def __init__(self, state, terminal_ex):
         self.state = state
+        self.terminal_ex = terminal_ex
         self.obj_numbers = {}
 
     def postprocess(self):
         """
         """
+        self.kill_excess_snapshots()
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots() # TODO: Consider deleting this.
         self.encode_object_numbers() # TODO: Employ this map in in decode.js and templates.js for the text-based pointer representation visualization option later on.
+
+    def kill_excess_snapshots(self):
+        """
+        """
+        while self.state.snapshots[-1]['exception'] is None:
+            self.state.snapshots.pop()
 
     def postprocess_snapshots(self):
         """
