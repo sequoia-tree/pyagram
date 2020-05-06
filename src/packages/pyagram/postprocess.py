@@ -18,7 +18,7 @@ class Postprocessor:
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots() # TODO: Consider deleting this.
-        self.encode_object_numbers() # TODO: Employ this map in in decode.js and templates.js for the text-based pointer representation visualization option.
+        self.encode_object_numbers() # TODO: Employ this map in in decode.js and templates.js for the text-based pointer representation visualization option later on.
 
     def postprocess_snapshots(self):
         """
@@ -182,7 +182,7 @@ class Postprocessor:
 
         # The flag snapshot should include the index i of the snapshot. If you come across a binding that's an object (i.e. a binding of type int), which first appears in the jth snapshot's memory state where j > i, then go back and insert it into the memory states of snapshots i ... j-1. (You should copy over the version of the object from snapshot j, rather than the last snapshot, because it may later be mutated.) Moreover, suppose you do this, and in so doing you insert the object into the kth index of snapshot i's memory state; then you should also move it up to the kth index of snapshots j, j+1, .... (The order matters so that objects stay in the same order when a student passes in keyword arguments in a different order than they appear in a function's signature.)
 
-        debut_index, debut_snapshot = self.state.memory_state.object_debuts[object_id], None
+        debut_index, debut_snapshot = self.state.memory_state.obj_init_debuts[object_id], None
         debut_memory_state = self.state.snapshots[debut_index]['memory_state']
         new_debut_memory_state = self.state.snapshots[new_debut_index]['memory_state']
         if new_debut_index < debut_index:
@@ -210,4 +210,4 @@ class Postprocessor:
                 if snapshot is not None:
                     object_snapshot = snapshot['memory_state'].pop(memory_state_index)
                     snapshot['memory_state'].insert(new_memory_state_index, object_snapshot)
-            self.state.memory_state.object_debuts[object_id] = new_debut_index
+            self.state.memory_state.obj_init_debuts[object_id] = new_debut_index

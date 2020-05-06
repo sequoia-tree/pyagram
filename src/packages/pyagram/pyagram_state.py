@@ -232,7 +232,7 @@ class MemoryState:
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
-        self.object_debuts = {}
+        self.obj_init_debuts = {}
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.generator_frames = {}
@@ -303,12 +303,12 @@ class MemoryState:
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
-        is_unseen = id(object) not in self.object_debuts
+        is_unseen = id(object) not in self.obj_init_debuts
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
-            debut_index = len(self.state.snapshots)
+            debut_idx = len(self.state.snapshots)
             self.objects.append(object)
-            self.object_debuts[id(object)] = debut_index
+            self.obj_init_debuts[id(object)] = debut_idx
             if object_type is enum.ObjectTypes.GENERATOR:
                 self.generator_functs[object] = utils.get_function(object.gi_frame)
 
