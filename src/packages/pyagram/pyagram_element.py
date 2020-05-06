@@ -1,4 +1,5 @@
 import inspect
+import math
 
 from . import constants
 from . import utils
@@ -32,7 +33,7 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
         self.is_new_flag = True
-        self.hidden_from = None
+        self.hidden_from = math.inf
         self.hide_subflags = False
         banner_elements, banner_bindings = banner
         utils.concatenate_adjacent_strings(banner_elements)
@@ -62,12 +63,17 @@ class PyagramFlag(PyagramElement):
         assert self.has_returned
         return self.frame.return_value
 
+    def hide_from(self, snapshot_index):
+        """
+        """
+        self.hidden_from = min(self.hidden_from, snapshot_index)
+
     def is_hidden(self, snapshot_index=None):
         """
         """
         if snapshot_index is None:
             snapshot_index = len(self.state.snapshots)
-        return self.hidden_from is not None and self.hidden_from <= snapshot_index
+        return self.hidden_from <= snapshot_index
 
     def step(self):
         """
@@ -170,7 +176,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         if self.frame is None:
-            self.hidden_from = 0
+            self.hide_from(0)
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
@@ -188,7 +194,7 @@ class PyagramFrame(PyagramElement):
             self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
             if utils.is_generator_frame(self):
-                self.opened_by.hidden_from = 0
+                self.hide_from(0)
                 self.state.memory_state.record_generator_frame(self)
             else:
                 var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
@@ -226,6 +232,17 @@ class PyagramFrame(PyagramElement):
         """
         """
         return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
+
+    def hide_from(self, snapshot_index):
+        """
+        """
+        assert not self.is_global_frame
+        self.opened_by.hide_from(snapshot_index)
+
+    def is_hidden(self, snapshot_index=None):
+        """
+        """
+        return not self.is_global_frame and self.opened_by.is_hidden(snapshot_index)
 
     def step(self):
         """
