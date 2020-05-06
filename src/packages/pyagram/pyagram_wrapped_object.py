@@ -4,15 +4,17 @@ class PyagramWrappedObject:
     """
     """
 
-    def __init__(self, state):
+    def __init__(self, state, *, object_type=None):
+        if object_type is None:
+            state.memory_state.track(self)
+        else:
+            state.memory_state.track(self, object_type)
         self.state = state
-        self.id = id(self)
 
     def wrap_object(self, object):
         """
         """
-        self.state.memory_state.masked_objects.append(object)
-        self.id = id(object)
+        self.state.memory_state.wrapped_obj_ids[id(object)] = id(self)
 
 class PyagramClassFrame(PyagramWrappedObject):
     """
@@ -27,12 +29,9 @@ class PyagramClassFrame(PyagramWrappedObject):
         # TODO: Are there any more that should be added add here? This should ideally include every "magic" attribute that is not a magic method -- in other words, every non-callable attribute with double-underscores on either side. Look for a complete list online.
     }
 
-    def __init__(self, outer_frame, outer_classdef, frame, *, state):
-        super().__init__(state)
-        state.memory_state.class_frames_by_frame[frame] = self
-        state.memory_state.track(self, enum.ObjectTypes.OBJ_CLASS)
-        self.outer_frame = outer_frame
-        self.outer_classdef = outer_classdef
+    def __init__(self, frame, *, state):
+        super().__init__(state, object_type=enum.ObjectTypes.OBJ_CLASS)
+        state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
         self.bindings = frame.f_locals
         self.parents = None

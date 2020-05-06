@@ -55,7 +55,6 @@ class ProgramState:
         self.state = state
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
-        self.curr_cls_def = None
         self.curr_line_no = 0
         self.exception_info = None
         self.finish_prev_step = None
@@ -195,12 +194,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        self.curr_cls_def = pyagram_wrapped_object.PyagramClassFrame(
-            self.curr_element,
-            self.curr_cls_def,
-            frame,
-            state=self.state,
-        )
+        pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
     def close_pyagram_flag(self):
         """
@@ -227,7 +221,6 @@ class ProgramState:
         def finish_prev_step():
             class_object = frame.f_back.f_locals[frame.f_code.co_name]
             self.state.memory_state.record_class_frame(frame, class_object)
-            self.curr_cls_def = self.curr_cls_def.outer_classdef
         self.finish_prev_step = finish_prev_step
 
 class MemoryState:
@@ -240,12 +233,11 @@ class MemoryState:
         self.state = state
         self.objects = []
         self.object_debuts = {}
-        self.class_frames_by_frame = {}
-        self.class_frames_by_class = {}
+        self.wrapped_obj_ids = {}
+        self.pg_class_frames = {}
         self.generator_frames = {}
         self.generator_functs = {}
         self.function_parents = {}
-        self.masked_objects = []
         # ------------------------------------------------------------------------------------------
 
     def step(self):
@@ -298,10 +290,7 @@ class MemoryState:
         """
         return [
             {
-                'id':
-                    object.id
-                    if isinstance(object, pyagram_wrapped_object.PyagramWrappedObject)
-                    else id(object),
+                'id': id(object),
                 'object': self.state.encoder.object_snapshot(object),
             }
             for object in self.objects
@@ -314,8 +303,8 @@ class MemoryState:
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
-        is_unseen = not self.is_tracked(object)
-        is_masked = object in self.masked_objects
+        is_unseen = id(object) not in self.object_debuts
+        is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
             debut_index = len(self.state.snapshots)
             self.objects.append(object)
@@ -323,17 +312,10 @@ class MemoryState:
             if object_type is enum.ObjectTypes.GENERATOR:
                 self.generator_functs[object] = utils.get_function(object.gi_frame)
 
-    def is_tracked(self, object):
-        """
-        """
-        # TODO: Refactor this func
-        return id(object) in self.object_debuts
-
     def record_class_frame(self, frame_object, class_object):
         """
         """
-        pyagram_class_frame = self.class_frames_by_frame[frame_object]
-        self.class_frames_by_class[class_object] = pyagram_class_frame
+        pyagram_class_frame = self.pg_class_frames[frame_object]
         pyagram_class_frame.wrap_object(class_object)
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__

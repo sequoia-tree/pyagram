@@ -27,7 +27,7 @@ class Pyagram:
                     new_stdout,
                 )
                 tracer = trace.Tracer(state)
-                sys.stdout = new_stdout
+                # sys.stdout = new_stdout # TODO: Uncomment.
                 try:
                     tracer.run(
                         preprocessor.ast,

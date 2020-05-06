@@ -16,6 +16,12 @@ class Encoder:
         self.num_lines = num_lines
         self.lambdas_per_line = lambdas_per_line
 
+    def object_id(self, object):
+        """
+        """
+        raw_id = id(object)
+        return self.state.memory_state.wrapped_obj_ids.get(raw_id, raw_id)
+
     def reference_snapshot(self, object, *, is_bindings=False):
         """
         """
@@ -25,7 +31,7 @@ class Encoder:
         if object_type is enum.ObjectTypes.PRIMITIVE:
             return self.encode_primitive(object, is_bindings=is_bindings)
         else:
-            return id(object)
+            return self.object_id(object)
 
     def object_snapshot(self, object):
         """
@@ -214,9 +220,7 @@ class Encoder:
         """
         return {
             'type': 'class',
-            'is_curr_element':
-                object is self.state.program_state.curr_cls_def \
-                and self.state.program_state.curr_element is object.outer_frame,
+            'is_curr_element': False,
             'name': object.frame.f_code.co_name,
             'parents': None, # Placeholder.
             'bindings': self.encode_mapping(
