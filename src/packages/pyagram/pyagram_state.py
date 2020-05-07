@@ -56,7 +56,8 @@ class ProgramState:
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
-        self.exception_info = None
+        self.prev_trace_type = None
+        self.exception_info = None # TODO: Rename to init_error_info?
         self.finish_prev = []
         self.frame_types = {}
         self.frame_count = 1
@@ -126,6 +127,7 @@ class ProgramState:
                 self.finish_prev.append(finish_prev)
             else:
                 self.process_exception(frame, frame_type)
+        self.prev_trace_type = trace_type
         self.global_frame.step()
 
     def snapshot(self):
@@ -208,7 +210,8 @@ class ProgramState:
         """
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
-        pyagram_flag = self.curr_element.close(return_value)
+        is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
+        pyagram_flag = self.curr_element.close(is_exception, return_value)
         def finish_prev():
             self.curr_element = pyagram_flag
             if is_implicit:
@@ -238,7 +241,7 @@ class MemoryState:
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.generator_frames = {}
-        self.generator_functs = {}
+        self.generator_functs = {} # TODO: Can't you get this from the generator frame's .function?
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 

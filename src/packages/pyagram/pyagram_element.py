@@ -213,6 +213,7 @@ class PyagramFrame(PyagramElement):
                 }
                 self.frame_number = self.state.program_state.frame_count
                 self.state.program_state.frame_count += 1
+        self.is_exception = False
         self.has_returned = False
         self.return_value = None
 
@@ -227,6 +228,12 @@ class PyagramFrame(PyagramElement):
         """
         """
         return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
+
+    @property
+    def return_value_is_visible(self):
+        """
+        """
+        return self.has_returned and not self.is_exception
 
     def __repr__(self):
         """
@@ -252,7 +259,7 @@ class PyagramFrame(PyagramElement):
             referents = list(self.bindings.values())
             if not self.is_global_frame:
                 referents.append(self.function)
-            if self.has_returned:
+            if self.return_value_is_visible:
                 referents.append(self.return_value)
             for referent in referents:
                 self.state.memory_state.track(referent)
@@ -275,7 +282,7 @@ class PyagramFrame(PyagramElement):
             ),
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value)
-                if self.has_returned
+                if self.return_value_is_visible
                 else None,
             'from': None,
             'flags': [
@@ -305,10 +312,11 @@ class PyagramFrame(PyagramElement):
             for variable in sorted_binding_names
         }
 
-    def close(self, return_value):
+    def close(self, is_exception, return_value):
         """
         """
         if not self.is_global_frame:
+            self.is_exception = is_exception
             self.has_returned = True
             self.return_value = return_value
         return self.opened_by
