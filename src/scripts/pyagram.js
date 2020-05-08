@@ -1,3 +1,4 @@
+import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 
 const POINTERS_SVG_GROUP_ID = 'pointers';
@@ -16,7 +17,7 @@ var snapshots;
 export function drawPyagram(slider, pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
-            snapshots = pyagram.data.snapshots;
+            snapshots = pyagram.data;
             slider.min = 0;
             slider.max = snapshots.length - 1;
             Slider.reset(slider);
@@ -32,13 +33,11 @@ export function drawPyagram(slider, pyagram) {
     }
 }
 
-export function drawSnapshot(snapshotIndex, pyagram, printOutput, stateTableID, SVGCanvasID) {
+export function drawSnapshot(snapshotIndex, pyagram, pyagramException, printOutput, stateTableID, SVGCanvasID) {
     var snapshot = snapshots[snapshotIndex];
-    pyagram.innerHTML = snapshot.state;
-    printOutput.innerHTML = snapshot.print_output;
-    if (snapshot.exception !== null) {
-        printOutput.innerHTML += snapshot.exception;
-    }
+    pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot);
+    pyagramException.innerHTML = Decode.decodePyagramExceptionSnapshot(snapshot.exception);
+    printOutput.innerHTML = Decode.decodePrintOutputSnapshot(snapshot.print_output);
     // TODO: Use snapshot.curr_line_no.
     var stateTable = $('#'.concat(stateTableID));
     var SVGCanvas = $('#'.concat(SVGCanvasID));

@@ -2,7 +2,6 @@ import flask
 import json
 
 from src.packages.pyagram import pyagram as pg
-from src.packages.renderer import render as rd
 
 def render_endpoints(app):
     render_root(app)
@@ -29,8 +28,6 @@ def render_draw(app):
     def draw(methods=['GET', 'POST']):
         code = flask.request.values.get('code')
         pyagram = pg.Pyagram(code, debug=True) # TODO: Set debug=False.
-        if pyagram.encoding == 'pyagram':
-            rd.render_components(pyagram.data)
         return json.dumps(pyagram.serialize())
     return draw
 

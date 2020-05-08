@@ -1,5 +1,3 @@
-import Split from 'split.js';
-
 const GUTTER_SIZE = 8;
 
 export function split(direction, panelIDs, initialSizes, minSizes) {

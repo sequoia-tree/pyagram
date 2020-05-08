@@ -1,77 +1,61 @@
 import io
 import sys
-import traceback
 
-from . import encode
-from . import exception
 from . import postprocess
 from . import preprocess
+from . import pyagram_state
 from . import trace
 
 class Pyagram:
     """
-    A diagram describing the step-by-step execution of a snippet of Python code.
-
-    After initialization, :self.snapshots: is a list of serializable snapshots. Each such snapshot
-    encodes the state of the pyagram at a particular step during the execution of the input code.
-
-    :param code: The snippet of Python code for which to create the pyagram.
-    :param debug: Whether or not to enable debugging features such as on-the-fly printing of the pyagram during its construction.
     """
 
     def __init__(self, code, *, debug):
         old_stdout = sys.stdout
         new_stdout = io.StringIO()
-        sys.stdout = new_stdout
         try:
-            num_lines, global_bindings = len(code.split('\n')), {} # TODO: Isn't the default behavior of Bdb.run the same as not specifying the global_bindings?
             try:
-                preprocessor = preprocess.Preprocessor(code, num_lines)
+                preprocessor = preprocess.Preprocessor(code)
                 preprocessor.preprocess()
-            except SyntaxError as e:
-                self.data = {
-                    'lineno': e.lineno,
-                    'position': e.offset,
-                    'text': e.text,
-                }
+            except SyntaxError as exception:
                 self.encoding = 'syntax_error'
+                self.data = 'TODO' # TODO
             else:
-                encoder = encode.Encoder(num_lines, preprocessor.lambdas_by_line)
-                tracer = trace.Tracer(encoder, new_stdout)
+                bindings = {}
+                state = pyagram_state.State(
+                    preprocessor.summary,
+                    new_stdout,
+                )
+                tracer = trace.Tracer(state)
+                sys.stdout = new_stdout
                 try:
                     tracer.run(
                         preprocessor.ast,
-                        globals=global_bindings,
-                        locals=global_bindings,
+                        globals=bindings,
+                        locals=bindings,
                     )
-                except exception.UserException as e:
-                    tracer.state.program_state.exception_snapshot = {
-                        'type': e.type.__name__,
-                        'value': str(e.value),
-                        'lineno': e.traceback.tb_lineno,
-                    }
+                except Exception as exception:
+                    assert state.program_state.curr_element is state.program_state.global_frame
+                    terminal_ex = True
                 else:
-                    tracer.state.program_state.exception_snapshot = None
-                postprocessor = postprocess.Postprocessor(tracer.state)
-                postprocessor.postprocess()
-                self.data = {
-                    'snapshots': tracer.state.snapshots,
-                    'exception': tracer.state.program_state.exception_snapshot,
-                }
-                self.encoding = 'pyagram'
-        except Exception as e:
-            self.data = str(e)
-            self.encoding = 'pyagram_error'
-            if debug:
+                    terminal_ex = False
                 sys.stdout = old_stdout
+                postprocessor = postprocess.Postprocessor(state, terminal_ex)
+                postprocessor.postprocess()
+                self.encoding = 'pyagram'
+                self.data = state.snapshots
+        except Exception as exception:
+            sys.stdout = old_stdout
+            if debug:
                 print(new_stdout.getvalue())
-                raise e
-        sys.stdout = old_stdout
+                raise exception
+            self.encoding = 'pyagram_error'
+            self.data = 'TODO' # TODO
 
     def serialize(self):
         """
         """
         return {
-            'data': self.data,
             'encoding': self.encoding,
+            'data': self.data,
         }

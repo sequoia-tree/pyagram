@@ -1,5 +1,5 @@
 * setup:
-  * make a python virtualenv called `env`
+  * make a python virtualenv called `venv`
   * `pip install -r requirements.txt`
   * `npm install --no-optional`
 * to deploy:

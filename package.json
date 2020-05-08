@@ -3,14 +3,9 @@
     "watch-js": "webpack --progress --watch",
     "watch-css": "sass --watch ./src/styles:./static/styles"
   },
-  "dependencies": {
-    "ace-builds": "1.x",
-    "split.js": "1.5.x"
-  },
   "devDependencies": {
     "webpack": "4.x",
     "webpack-cli": "3.x",
-    "file-loader": "4.x",
     "sass": "1.x"
   }
 }
