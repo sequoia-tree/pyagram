@@ -35,16 +35,20 @@ export function drawPyagram(slider, pyagram) {
     }
 }
 
-export function drawSnapshot(snapshotIndex, pyagram, pyagramException, printOutput, stateTableID, SVGCanvasID) {
-    var snapshot = snapshots[snapshotIndex];
-    pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot, globalData);
-    pyagramException.innerHTML = Decode.decodePyagramExceptionSnapshot(snapshot.exception);
-    printOutput.innerHTML = Decode.decodePrintOutputSnapshot(snapshot.print_output);
-    // TODO: Use snapshot.curr_line_no.
-    var stateTable = $('#'.concat(stateTableID));
-    var SVGCanvas = $('#'.concat(SVGCanvasID));
-    drawSVGCanvas(stateTable, SVGCanvas);
-    drawPointers(SVGCanvas);
+export function drawSnapshot(snapshotIndex, visOptions, pyagram, pyagramException, printOutput, stateTableID, SVGCanvasID) {
+    if (typeof snapshots !== 'undefined') {
+        var snapshot = snapshots[snapshotIndex];
+        pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot, globalData, visOptions);
+        pyagramException.innerHTML = Decode.decodePyagramExceptionSnapshot(snapshot.exception);
+        printOutput.innerHTML = Decode.decodePrintOutputSnapshot(snapshot.print_output);
+        // TODO: Use snapshot.curr_line_no.
+        if (!visOptions.textPointers.checked) {
+            var stateTable = $('#'.concat(stateTableID));
+            var SVGCanvas = $('#'.concat(SVGCanvasID));
+            drawSVGCanvas(stateTable, SVGCanvas);
+            drawPointers(SVGCanvas);
+        };
+    }
 }
 
 function drawSVGCanvas(stateTable, SVGCanvas) {

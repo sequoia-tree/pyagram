@@ -13,6 +13,8 @@ const SLIDER_ID = 'slider-snapshot-slider';
 const SLIDER_LABEL_ID = 'slider-snapshot-slider-label';
 const SLIDER_L_BUTTON_ID = 'slider-snapshot-slider-button-l';
 const SLIDER_R_BUTTON_ID = 'slider-snapshot-slider-button-r';
+const VIS_OPTIONS_TEXT_POINTERS_ID = 'visualization-options-option-text-pointers';
+const VIS_OPTIONS_HIDE_FLAGS_ID = 'visualization-options-option-hide-flags';
 const OUTPUT_OVERLAY_ID = 'overlay-output-overlay';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw-pyagram';
 const PYAGRAM_ID = 'pyagram';
@@ -60,18 +62,37 @@ var slider = document.getElementById(SLIDER_ID);
 var sliderLabel = document.getElementById(SLIDER_LABEL_ID);
 var sliderButtonL = document.getElementById(SLIDER_L_BUTTON_ID);
 var sliderButtonR = document.getElementById(SLIDER_R_BUTTON_ID);
+var visOptionsTextPointers = document.getElementById(VIS_OPTIONS_TEXT_POINTERS_ID);
+var visOptionsHideFlags = document.getElementById(VIS_OPTIONS_HIDE_FLAGS_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
 var pyagram = document.getElementById(PYAGRAM_ID);
 var pyagramException = document.getElementById(PYAGRAM_EXCEPTION_ID);
 var printOutput = document.getElementById(PRINT_OUTPUT_ID);
 
+var visOptions = {
+    'textPointers': visOptionsTextPointers,
+    'hideFlags': visOptionsHideFlags,
+};
+
+function drawSnapshot(snapshotIndex) {
+    Pyagram.drawSnapshot(
+        snapshotIndex,
+        visOptions,
+        pyagram,
+        pyagramException,
+        printOutput,
+        PYAGRAM_STATE_TABLE_ID,
+        PYAGRAM_SVG_CANVAS_ID,
+    );
+}
+
 editor.session.on('change', function(delta) {
     Overlay.setTop(outputOverlay);
 });
 
 Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
-    Pyagram.drawSnapshot(newValue, pyagram, pyagramException, printOutput, PYAGRAM_STATE_TABLE_ID, PYAGRAM_SVG_CANVAS_ID);
+    drawSnapshot(newValue);
 });
 
 drawPyagramButton.onclick = function() {
@@ -100,5 +121,11 @@ drawPyagramButton.onclick = function() {
         });
     }
 };
+
+Object.keys(visOptions).forEach(function(visOptionID) {
+    visOptions[visOptionID].onclick = function() {
+        drawSnapshot(slider.value);
+    }
+});
 
 editor.focus();

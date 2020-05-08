@@ -2,9 +2,14 @@ import * as Templates from './templates.js';
 
 var objNumbers;
 
+var textPointers;
+var hideFlags;
+
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
-export function decodePyagramSnapshot(pyagramSnapshot, globalSnapshotData) {
-    objNumbers = globalSnapshotData.obj_numbers;
+export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
+    objNumbers = globalData.obj_numbers;
+    textPointers = visOptions.textPointers.checked;
+    hideFlags = visOptions.hideFlags.checked;
     return Templates.PYAGRAM_TEMPLATE(pyagramSnapshot);
 }
 
@@ -23,6 +28,15 @@ export function decodeFrameSnapshot(frameSnapshot) {
     return Templates.FRAME_TEMPLATE(frameSnapshot);
 }
 
+Handlebars.registerHelper('decodeMemoryStateSnapshot', decodeMemoryStateSnapshot);
+export function decodeMemoryStateSnapshot(memoryStateSnapshot) {
+    if (textPointers) {
+        return Templates.MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T(memoryStateSnapshot);
+    } else {
+        return Templates.MEMORY_STATE_TEMPLATE_TEXTPOINTERS_F(memoryStateSnapshot);
+    }
+}
+
 Handlebars.registerHelper('decodeUnknownSnapshot', decodeUnknownSnapshot);
 export function decodeUnknownSnapshot(unknownSnapshot) {
     return Templates.UNKNOWN_TEMPLATE(unknownSnapshot);
@@ -36,13 +50,12 @@ export function decodeReferenceSnapshot(referenceSnapshot) {
         case 'string':
             return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
         case 'number':
-            return Templates.REFERENT_TEMPLATE(referenceSnapshot);
+            if (textPointers) {
+                return Templates.REFERENT_TEMPLATE_TEXTPOINTERS_T(referenceSnapshot);
+            } else {
+                return Templates.REFERENT_TEMPLATE_TEXTPOINTERS_F(referenceSnapshot);
+            }
     }
-}
-
-Handlebars.registerHelper('decodeObjectSnapshot', decodeObjectSnapshot);
-export function decodeObjectSnapshot(objectSnapshot) {
-    return Templates.OBJECT_TEMPLATE(objectSnapshot);
 }
 
 Handlebars.registerHelper('decodeObjectIdSnapshot', decodeObjectIdSnapshot);

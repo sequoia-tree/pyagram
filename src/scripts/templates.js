@@ -12,10 +12,8 @@ export const PYAGRAM_TEMPLATE = compile(`
       <td class="align-top">
         {{decodeFrameSnapshot global_frame}}
       </td>
-      <td class="align-top pl-5">
-        {{#each memory_state}}
-          {{decodeObjectSnapshot this}}
-        {{/each}}
+      <td class="align-top">
+        {{decodeMemoryStateSnapshot memory_state}}
       </td>
     </tr>
   </table>
@@ -173,6 +171,34 @@ export const FRAME_TEMPLATE = compile(`
 {{decodeElementSnapshot this}}
 `)
 
+// TODO: Make the left and right panes separately scrollable.
+export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T = compile(`
+<table class="mt-2 border-collapse">
+  {{#each this}}
+    <tr>
+      <td class="px-2 font-family-sans-serif">
+        @{{decodeObjectIdSnapshot id}})
+      </td>
+      <td>
+        <div class="pyagram-object my-2">
+          {{decodeEncodedObjectSnapshot object}}
+        </div>
+      </td>
+    </tr>
+  {{/each}}
+</table>
+`)
+
+// TODO: Remake the templates immediately above and below.
+
+export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_F = compile(`
+{{#each this}}
+  <div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object my-2">
+    {{decodeEncodedObjectSnapshot object}}
+  </div>
+{{/each}}
+`)
+
 export const UNKNOWN_TEMPLATE = compile(`
 <span class="pyagram-unknown">(?)</span>
 `)
@@ -181,14 +207,12 @@ export const PRIMITIVE_TEMPLATE = compile(`
 {{this}}
 `)
 
-export const REFERENT_TEMPLATE = compile(`
-<span class="pyagram-placeholder pyagram-reference reference-{{decodeObjectIdSnapshot this}}">-</span>
+export const REFERENT_TEMPLATE_TEXTPOINTERS_T = compile(`
+<span class="font-family-sans-serif">@{{decodeObjectIdSnapshot this}}</span>
 `)
 
-export const OBJECT_TEMPLATE = compile(`
-<div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object m-3">
-  {{decodeEncodedObjectSnapshot object}}
-</div>
+export const REFERENT_TEMPLATE_TEXTPOINTERS_F = compile(`
+<span class="pyagram-placeholder pyagram-reference reference-{{decodeObjectIdSnapshot this}}">-</span>
 `)
 
 export const OBJECT_ID_TEMPLATE = compile(`
