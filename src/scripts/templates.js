@@ -150,9 +150,9 @@ export const FRAME_TEMPLATE = compile(`
       <tr>
         <td class="text-right font-family-sans-serif">
           {{#if (isEqual type 'generator')}}
-            Yield value
+            Yield:
           {{else}}
-            Return value
+            Return:
           {{/if}}
         </td>
         <td class="text-left pyagram-value">
