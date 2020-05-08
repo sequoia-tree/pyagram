@@ -58,7 +58,7 @@ class ProgramState:
         self.curr_line_no = 0
         self.prev_trace_type = None
         self.exception_info = None # TODO: Rename to init_error_info?
-        self.finish_prev = []
+        self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 1
 
@@ -92,11 +92,18 @@ class ProgramState:
         """
         return self.is_flag and self.curr_element.has_returned
 
+    def defer(self, function):
+        """
+        """
+        assert self.finish_prev is None
+        self.finish_prev = function
+
     def step(self, frame, *step_info, trace_type):
         """
         """
-        while 0 < len(self.finish_prev):
-            self.finish_prev.pop()()
+        if self.finish_prev is not None:
+            self.finish_prev()
+            self.finish_prev = None
         line_no, step_code, _ = utils.decode_lineno(
             frame.f_lineno,
             max_lineno=self.state.encoder.num_lines,
@@ -121,10 +128,17 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
-                def finish_prev():
+                overwrite_throw_frame = self.is_flag \
+                                    and self.curr_element.frame is not None \
+                                    and utils.is_generator_frame(self.curr_element.frame)
+                if overwrite_throw_frame:
+                    self.curr_element = self.curr_element.frame
+                def finish_step():
+                    if overwrite_throw_frame:
+                        self.curr_element = self.curr_element.opened_by
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
-                self.finish_prev.append(finish_prev)
+                self.defer(finish_step)
             else:
                 self.process_exception(frame, frame_type)
         self.prev_trace_type = trace_type
@@ -212,21 +226,21 @@ class ProgramState:
         is_implicit = self.curr_element.is_implicit
         is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
         pyagram_flag = self.curr_element.close(is_exception, return_value)
-        def finish_prev():
+        def finish_step():
             self.curr_element = pyagram_flag
             if is_implicit:
                 self.curr_element = self.curr_element.close()
-        self.finish_prev.append(finish_prev)
+        self.defer(finish_step)
 
     def close_class_frame(self, frame):
         """
         """
         assert self.is_ongoing_frame
-        def finish_prev():
+        def finish_step():
             parent_bindings, class_name = frame.f_back.f_locals, frame.f_code.co_name
             if class_name in parent_bindings:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
-        self.finish_prev.append(finish_prev)
+        self.defer(finish_step)
 
 class MemoryState:
     """

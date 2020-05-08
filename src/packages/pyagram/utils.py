@@ -49,7 +49,7 @@ def get_function(frame):
 def is_generator_frame(pyagram_frame):
     """
     """
-    return inspect.isgeneratorfunction(pyagram_frame.function)
+    return not pyagram_frame.is_global_frame and inspect.isgeneratorfunction(pyagram_frame.function)
 
 def assign_unique_code_object(function):
     """

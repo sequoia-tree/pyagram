@@ -260,11 +260,14 @@ class Encoder:
             return None
         else:
             type, value, traceback = object
+            ex_cause = str(value)
+            if len(ex_cause) > 0:
+                ex_cause = f': {ex_cause}'
             lineno, _, _ = utils.decode_lineno(
                 traceback.tb_lineno,
                 max_lineno=self.num_lines,
             )
-            return f'{type.__name__} (line {lineno}): {value}'
+            return f'{type.__name__} (line {lineno}){ex_cause}'
 
     def encode_other(self, object):
         """
