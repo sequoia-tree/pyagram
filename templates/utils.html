@@ -43,6 +43,22 @@
   </div>
 {% endmacro %}
 
+{% macro accordion(id, options) %}
+  <div class="mb-3" id="{{ id }}-accordion">
+    {% for i in range(options|length) %}
+      {% set option_id, option_label, option_encoding, option_context = options[i] %}
+      <div class="d-flex flex-row accordion-option-wrapper mt-3 mb-0 collapsed" id="{{ id }}-accordion-option-{{ option_id }}" data-toggle="collapse" data-target="#{{ id }}-accordion-content-{{ option_id }}" aria-expanded="false" aria-controls="{{ id }}-accordion-content-{{ option_id }}">
+        <a class="accordion-option flex-fill mx-1 px-3 py-2 text-uppercase font-family-serif">{{ option_label }}</a>
+      </div>
+      <div id="{{ id }}-accordion-content-{{ option_id }}" class="collapse" aria-labelledby="{{ id }}-accordion-option-{{ option_id }}" data-parent="#{{ id }}-accordion">
+        <div class="accordion-content ml-4 py-3 pl-3">
+          {{ decode_content(option_id, option_encoding, option_context, **kwargs) }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
 {% macro decode_content(id, encoding, context) %}
   {% if encoding == 'template' %}
     {% include '{}.html'.format(id) %}
@@ -99,4 +115,15 @@
       <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-r">></a>
     </div>
   </div>
+{% endmacro %}
+
+{% macro options(id, options) %}
+  {% for i in range(options|length) %}
+    {% set option_id, option_label = options[i] %}
+    <label class="d-block position-relative checkbox-wrapper text-unselectable" for="{{ id }}-option-{{ option_id }}">
+      <div class="pl-3">{{ option_label }}</div>
+      <input type="checkbox" id="{{ id }}-option-{{ option_id }}">
+      <span class="position-absolute checkmark"></span>
+    </label>
+  {% endfor %}
 {% endmacro %}

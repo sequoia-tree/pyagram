@@ -182,13 +182,17 @@ export const PRIMITIVE_TEMPLATE = compile(`
 `)
 
 export const REFERENT_TEMPLATE = compile(`
-<span class="pyagram-placeholder pyagram-reference reference-{{this}}">-</span>
+<span class="pyagram-placeholder pyagram-reference reference-{{decodeObjectIdSnapshot this}}">-</span>
 `)
 
 export const OBJECT_TEMPLATE = compile(`
-<div id="object-{{id}}" class="pyagram-object m-3">
+<div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object m-3">
   {{decodeEncodedObjectSnapshot object}}
 </div>
+`)
+
+export const OBJECT_ID_TEMPLATE = compile(`
+{{this}}
 `)
 
 export const FUNCTION_TEMPLATE = compile(`

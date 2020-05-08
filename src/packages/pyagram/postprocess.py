@@ -20,7 +20,7 @@ class Postprocessor:
         self.postprocess_snapshots()
         self.kill_hidden_snapshots()
         self.kill_static_snapshots() # TODO: Consider deleting this.
-        self.encode_object_numbers() # TODO: Employ this map in in decode.js and templates.js for the text-based pointer representation visualization option later on.
+        self.encode_object_numbers()
 
     def kill_excess_snapshots(self):
         """

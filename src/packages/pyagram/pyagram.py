@@ -43,7 +43,12 @@ class Pyagram:
                 postprocessor = postprocess.Postprocessor(state, terminal_ex)
                 postprocessor.postprocess()
                 self.encoding = 'pyagram'
-                self.data = state.snapshots
+                self.data = {
+                    'snapshots': state.snapshots,
+                    'global_data': {
+                        'obj_numbers': postprocessor.obj_numbers,
+                    },
+                }
         except Exception as exception:
             sys.stdout = old_stdout
             if debug:

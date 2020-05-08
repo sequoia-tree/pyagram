@@ -13,11 +13,13 @@ const POINTER_BUFFER_X = 100;
 const POINTER_BUFFER_Y = 0;
 
 var snapshots;
+var globalData;
 
 export function drawPyagram(slider, pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
-            snapshots = pyagram.data;
+            snapshots = pyagram.data.snapshots;
+            globalData = pyagram.data.global_data;
             slider.min = 0;
             slider.max = snapshots.length - 1;
             Slider.reset(slider);
@@ -35,7 +37,7 @@ export function drawPyagram(slider, pyagram) {
 
 export function drawSnapshot(snapshotIndex, pyagram, pyagramException, printOutput, stateTableID, SVGCanvasID) {
     var snapshot = snapshots[snapshotIndex];
-    pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot);
+    pyagram.innerHTML = Decode.decodePyagramSnapshot(snapshot, globalData);
     pyagramException.innerHTML = Decode.decodePyagramExceptionSnapshot(snapshot.exception);
     printOutput.innerHTML = Decode.decodePrintOutputSnapshot(snapshot.print_output);
     // TODO: Use snapshot.curr_line_no.

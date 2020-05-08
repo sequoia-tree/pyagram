@@ -1,7 +1,10 @@
 $border-width: 2px;
 
-@mixin border($width: $border-width, $color: black) {
+@mixin border($width: $border-width, $color: black, $round: false) {
   border: solid $width $color;
+  @if $round {
+    border-radius: 100vh;
+  }
 }
 
 @mixin border-top($width: $border-width, $color: black) {

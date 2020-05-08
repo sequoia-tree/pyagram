@@ -1,5 +1,28 @@
 {% import 'utils.html' as utils %}
 
-<div class="mx-3">
+<div class="mx-3 mt-3">
   text
+  {{ utils.accordion(
+    'menu',
+    [
+        (
+            'visualization-options',
+            'Visualization Options',
+            'html',
+            utils.options(
+                'visualization-options',
+                [
+                    (
+                        'text-pointers',
+                        'Draw pointers as text.',
+                    ),
+                    (
+                        'hide-flags',
+                        'Hide completed flags.',
+                    ),
+                ],
+            ),
+        ),
+    ],
+  ) }}
 </div>

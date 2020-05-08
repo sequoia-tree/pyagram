@@ -1,0 +1,22 @@
+@import 'borders';
+@import 'colors';
+
+$checkbox-size: 25px;
+
+.checkbox-wrapper {
+  padding-left: $checkbox-size;
+  cursor: pointer;
+  input[type=checkbox] {
+    display: none;
+    &:checked ~ .checkmark {
+      background-color: $primary-color;
+    }
+  }
+  .checkmark {
+    @include border($color: $primary-color, $round: true);
+    top: 0;
+    left: 0;
+    height: $checkbox-size;
+    width: $checkbox-size;
+  }
+}

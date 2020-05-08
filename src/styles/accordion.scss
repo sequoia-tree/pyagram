@@ -1,0 +1,19 @@
+@import 'clickable';
+
+.accordion-option-wrapper:not(.collapsed) > .accordion-option {
+  @include active-clickable();
+}
+
+.accordion-option {
+  @include clickable();
+}
+
+.accordion-content {
+  border-left: solid $accent-width $primary-color;
+  & > :first-child {
+    margin-top: 0 !important;
+  }
+  & > :last-child {
+    margin-bottom: 0 !important;
+  }
+}

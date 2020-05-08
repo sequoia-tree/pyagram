@@ -1,7 +1,10 @@
 import * as Templates from './templates.js';
 
+var objNumbers;
+
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
-export function decodePyagramSnapshot(pyagramSnapshot) {
+export function decodePyagramSnapshot(pyagramSnapshot, globalSnapshotData) {
+    objNumbers = globalSnapshotData.obj_numbers;
     return Templates.PYAGRAM_TEMPLATE(pyagramSnapshot);
 }
 
@@ -40,6 +43,12 @@ export function decodeReferenceSnapshot(referenceSnapshot) {
 Handlebars.registerHelper('decodeObjectSnapshot', decodeObjectSnapshot);
 export function decodeObjectSnapshot(objectSnapshot) {
     return Templates.OBJECT_TEMPLATE(objectSnapshot);
+}
+
+Handlebars.registerHelper('decodeObjectIdSnapshot', decodeObjectIdSnapshot);
+export function decodeObjectIdSnapshot(objectIdSnapshot) {
+    objectIdSnapshot = objNumbers[objectIdSnapshot];
+    return Templates.OBJECT_ID_TEMPLATE(objectIdSnapshot);
 }
 
 Handlebars.registerHelper('decodeEncodedObjectSnapshot', decodeEncodedObjectSnapshot);
