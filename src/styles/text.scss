@@ -56,3 +56,10 @@ a, a:hover {
   unicode-bidi: bidi-override;
   direction: rtl;
 }
+
+.text-unselectable {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

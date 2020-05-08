@@ -94,9 +94,9 @@
       <input type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}" class="flex-grow-1 mx-3" id="slider-{{ id }}">
     </div>
     <div class="d-flex flex-row align-items-center">
-      <a class="button font-weight-bold mx-3 px-5" id="slider-{{ id }}-button-l"><</a>
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-l"><</a>
       <div class="flex-grow-1 text-center text-nowrap">{{ pre_label }}<span id="slider-{{ id }}-label">{{ min }}</span>{{ post_label }}</div>
-      <a class="button font-weight-bold mx-3 px-5" id="slider-{{ id }}-button-r">></a>
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-r">></a>
     </div>
   </div>
 {% endmacro %}
