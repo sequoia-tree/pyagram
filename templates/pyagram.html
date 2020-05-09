@@ -1,23 +1,53 @@
 {% import 'utils.html' as utils %}
 
-{{ utils.flex_scroll(
-  'vertical',
-  [
-      (None, 'html', utils.section(3, 'Pyagram', False, True)),
-      (None, 'html', '<hr class="m-0">'),
-  ],
-  [
-      (None, 'html', '<div id="pyagram-exception"></div>')
-  ],
-  (
-      None,
-      'html',
-      utils.flex_scroll(
-          'horizontal',
+<div class="d-flex flex-column h-100 w-100">
+  {{ utils.section(3, 'Pyagram', False, True) }}
+  <hr class="m-0">
+  {{ utils.split(
+    'stack-heap-split',
+    'horizontal',
+    [
+      (
+        'stack',
+        'html',
+        utils.flex_scroll(
+          'vertical',
           [],
           [],
-          (None, 'html', ''),
-          'pyagram',
+          (
+            None,
+            'html',
+            utils.flex_scroll(
+              'horizontal',
+              [],
+              [],
+              (None, 'html', ''),
+              'pyagram',
+            ),
+          ),
+        ),
       ),
-  ),
-) }}
+      (
+        'heap',
+        'html',
+        utils.flex_scroll(
+          'vertical',
+          [],
+          [],
+          (
+            None,
+            'html',
+            utils.flex_scroll(
+              'horizontal',
+              [],
+              [],
+              (None, 'html', ''),
+              'TODO',
+            ),
+          ),
+        ),
+      ),
+    ],
+  ) }}
+  <div id="pyagram-exception"></div>
+</div>

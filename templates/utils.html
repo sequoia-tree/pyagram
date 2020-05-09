@@ -9,7 +9,9 @@
 {% macro split(id, direction, panels) %}
   <div class="split split-{{ direction }} h-100 w-100" id="split-{{ id }}">
     {% for panel_id, panel_encoding, panel_context in panels %}
-      <div id="split-{{ id }}-panel-{{ panel_id }}">{{ decode_content(panel_id, panel_encoding, panel_context, **kwargs) }}</div>
+      <div id="split-{{ id }}-panel-{{ panel_id }}">
+        {{ decode_content(panel_id, panel_encoding, panel_context, **kwargs) }}
+      </div>
     {% endfor %}
   </div>
 {% endmacro %}

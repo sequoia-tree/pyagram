@@ -171,7 +171,8 @@ export const FRAME_TEMPLATE = compile(`
 {{decodeElementSnapshot this}}
 `)
 
-// TODO: Make the left and right panes separately scrollable.
+// TODO: When text-pointers are enabled, the left and right panes should be separately scrollable.
+// TODO: How? Render the split-pane as if it's gonna be there permanently. Then, in index.js, scrape out that HTML and save it in a variable, so that you can use it later if you want. Or, better yet, find a way for split-screen to work regardless of the text-pointers option ... consider using the same SVG library that PyTutor uses?
 export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T = compile(`
 <table class="mt-2 border-collapse">
   {{#each this}}

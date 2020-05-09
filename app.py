@@ -19,7 +19,7 @@ def render_root(app):
             output_panels=[
                 ('pyagram', 'template', None),
                 ('print-output', 'template', None),
-            ],
+            ], # TODO: Most of your templating kwargs are scattered in various HTML files. Consolidate them here.
         )
     return root
 

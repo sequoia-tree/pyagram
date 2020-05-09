@@ -1,14 +1,14 @@
 {% import 'utils.html' as utils %}
 
 {{ utils.overlay(
-    'output-overlay',
-    (
-        'html',
-        utils.button('draw-pyagram', 'Draw Pyagram', big=True),
-    ),
-    (
-        'html',
-        utils.split('pyagram-print-output-split', 'vertical', kwargs['output_panels']),
-    ),
-    start_active=True,
+  'output-overlay',
+  (
+    'html',
+    utils.button('draw-pyagram', 'Draw Pyagram', big=True),
+  ),
+  (
+    'html',
+    utils.split('pyagram-print-output-split', 'vertical', kwargs['output_panels']),
+  ),
+  start_active=True,
 ) }}

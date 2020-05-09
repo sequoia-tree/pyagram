@@ -8,6 +8,8 @@ const SPLIT_PANEL_INPUT_ID = 'split-input-output-split-panel-input';
 const SPLIT_PANEL_OUTPUT_ID = 'split-input-output-split-panel-output';
 const SPLIT_PANEL_PYAGRAM_ID = 'split-pyagram-print-output-split-panel-pyagram';
 const SPLIT_PANEL_PRINT_OUTPUT_ID = 'split-pyagram-print-output-split-panel-print-output';
+const SPLIT_PANEL_STACK_ID = 'split-stack-heap-split-panel-stack';
+const SPLIT_PANEL_HEAP_ID = 'split-stack-heap-split-panel-heap';
 const EDITOR_ID = 'editor';
 const SLIDER_ID = 'slider-snapshot-slider';
 const SLIDER_LABEL_ID = 'slider-snapshot-slider-label';
@@ -31,14 +33,8 @@ Split.split(
         SPLIT_PANEL_INPUT_ID,
         SPLIT_PANEL_OUTPUT_ID,
     ],
-    [
-        35,
-        65,
-    ],
-    [
-        0,
-        0,
-    ],
+    [35, 65],
+    [0, 0],
 );
 
 Split.split(
@@ -47,14 +43,18 @@ Split.split(
         SPLIT_PANEL_PYAGRAM_ID,
         SPLIT_PANEL_PRINT_OUTPUT_ID,
     ],
+    [80, 20],
+    [0, 0],
+);
+
+Split.split(
+    'horizontal',
     [
-        80,
-        20,
+        SPLIT_PANEL_STACK_ID,
+        SPLIT_PANEL_HEAP_ID,
     ],
-    [
-        0,
-        0,
-    ],
+    [75, 25],
+    [0, 0],
 );
 
 var editor = Editor.editor(EDITOR_ID, NUM_LINES);

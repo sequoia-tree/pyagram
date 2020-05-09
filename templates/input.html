@@ -1,12 +1,12 @@
 {% import 'utils.html' as utils %}
 
 {{ utils.flex_scroll(
-    'vertical',
-    [
-        (None, 'html', utils.editor('editor')),
-        (None, 'html', utils.slider('snapshot-slider', 'Step ', '', 0, 0)),
-        (None, 'html', '<hr class="m-0">'),
-    ],
-    [],
-    ('info', 'template', None),
+  'vertical',
+  [
+    (None, 'html', utils.editor('editor')),
+    (None, 'html', utils.slider('snapshot-slider', 'Step ', '', 0, 0)),
+    (None, 'html', '<hr class="m-0">'),
+  ],
+  [],
+  ('info', 'template', None),
 ) }}
