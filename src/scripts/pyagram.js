@@ -1,7 +1,9 @@
 import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 
+const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
 const POINTERS_SVG_GROUP_ID = 'pointers';
+
 const OBJECT_CLASS_NAME = 'pyagram-object';
 const POINTER_CLASS_NAME = 'pyagram-pointer';
 const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
@@ -35,7 +37,7 @@ export function drawPyagram(slider, pyagram) {
     }
 }
 
-export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput, stateTableID, SVGCanvasID) {
+export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
     if (typeof snapshots !== 'undefined') {
         var snapshot = snapshots[snapshotIndex];
         var pyagramHTML = Decode.decodePyagramSnapshot(
@@ -48,18 +50,20 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
         pyagramException.innerHTML = pyagramHTML.exceptionHTML;
         printOutput.innerHTML = pyagramHTML.printOutputHTML;
         // TODO: Use snapshot.curr_line_no.
-        // if (!visOptions.textPointers.checked) {
-        //     var stateTable = $('#'.concat(stateTableID));
-        //     var SVGCanvas = $('#'.concat(SVGCanvasID));
-        //     drawSVGCanvas(stateTable, SVGCanvas);
-        //     drawPointers(SVGCanvas);
-        // };
+        drawSVGs(visOptions);
     }
 }
 
-function drawSVGCanvas(stateTable, SVGCanvas) {
-    SVGCanvas.css('height', stateTable.height());
-    SVGCanvas.css('width', stateTable.width());
+export function drawSVGs(visOptions) {
+    var SVGCanvas = $('#'.concat(PYAGRAM_SVG_CANVAS_ID));
+    prepSVGCanvas(SVGCanvas);
+    if (!visOptions.textPointers.checked) {
+        drawPointers(SVGCanvas);
+    }
+}
+
+function prepSVGCanvas(SVGCanvas) {
+    $('#'.concat(POINTERS_SVG_GROUP_ID)).empty();
     $(
         `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
     ).removeClass('text-left').addClass('text-center');

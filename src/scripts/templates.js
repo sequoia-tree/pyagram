@@ -119,7 +119,7 @@ export const FRAME_TEMPLATE = compile(`
         <td class="text-right">
           {{decodeReferenceSnapshot key}}
         </td>
-        <td class="text-left pyagram-value" {{#unless (isNull ../from)}} colspan="3" {{/unless}}>
+        <td class="text-left pyagram-value pyagram-frame-value" {{#unless (isNull ../from)}} colspan="3" {{/unless}}>
           {{decodeReferenceSnapshot value}}
         </td>
       </tr>
@@ -133,7 +133,7 @@ export const FRAME_TEMPLATE = compile(`
             Return:
           {{/if}}
         </td>
-        <td class="text-left pyagram-value">
+        <td class="text-left pyagram-value pyagram-frame-value">
           {{decodeReferenceSnapshot return_value}}
         </td>
         {{#unless (isNull from)}}

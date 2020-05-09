@@ -23,8 +23,6 @@ const PYAGRAM_STACK_ID = 'pyagram-stack';
 const PYAGRAM_HEAP_ID = 'pyagram-heap';
 const PYAGRAM_EXCEPTION_ID = 'pyagram-exception';
 const PRINT_OUTPUT_ID = 'print-output';
-const PYAGRAM_STATE_TABLE_ID = 'pyagram-state-table';
-const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
 const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
 const NUM_LINES = 20;
 
@@ -54,7 +52,7 @@ Split.split(
         SPLIT_PANEL_STACK_ID,
         SPLIT_PANEL_HEAP_ID,
     ],
-    [75, 25],
+    [75, 25], // TODO: Reconsider this.
     [0, 0],
 );
 
@@ -85,9 +83,11 @@ function drawSnapshot(snapshotIndex) {
         pyagramHeap,
         pyagramException,
         printOutput,
-        PYAGRAM_STATE_TABLE_ID,
-        PYAGRAM_SVG_CANVAS_ID,
     );
+}
+
+function updateSVGs() {
+    Pyagram.drawSVGs(visOptions);
 }
 
 editor.session.on('change', function(delta) {
@@ -96,6 +96,12 @@ editor.session.on('change', function(delta) {
 
 Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
     drawSnapshot(newValue);
+});
+
+Object.keys(visOptions).forEach(function(visOptionID) {
+    visOptions[visOptionID].onclick = function() {
+        drawSnapshot(slider.value);
+    }
 });
 
 drawPyagramButton.onclick = function() {
@@ -125,10 +131,7 @@ drawPyagramButton.onclick = function() {
     }
 };
 
-Object.keys(visOptions).forEach(function(visOptionID) {
-    visOptions[visOptionID].onclick = function() {
-        drawSnapshot(slider.value);
-    }
-});
+pyagramStack.onscroll = updateSVGs;
+pyagramHeap.onscroll = updateSVGs;
 
 editor.focus();
