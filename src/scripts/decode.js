@@ -10,7 +10,17 @@ export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     objNumbers = globalData.obj_numbers;
     textPointers = visOptions.textPointers.checked;
     hideFlags = visOptions.hideFlags.checked;
-    return Templates.PYAGRAM_TEMPLATE(pyagramSnapshot);
+    return {
+        'stackHTML': decodeStackSnapshot(pyagramSnapshot.global_frame),
+        'heapHTML': decodeHeapSnapshot(pyagramSnapshot.memory_state),
+        'exceptionHTML': decodeExceptionSnapshot(pyagramSnapshot.exception),
+        'printOutputHTML': decodePrintOutputSnapshot(pyagramSnapshot.print_output),
+    };
+}
+
+Handlebars.registerHelper('decodeStackSnapshot', decodeStackSnapshot);
+export function decodeStackSnapshot(stackSnapshot) {
+    return Templates.STACK_TEMPLATE(stackSnapshot);
 }
 
 Handlebars.registerHelper('decodeElementSnapshot', decodeElementSnapshot);
@@ -28,12 +38,12 @@ export function decodeFrameSnapshot(frameSnapshot) {
     return Templates.FRAME_TEMPLATE(frameSnapshot);
 }
 
-Handlebars.registerHelper('decodeMemoryStateSnapshot', decodeMemoryStateSnapshot);
-export function decodeMemoryStateSnapshot(memoryStateSnapshot) {
+Handlebars.registerHelper('decodeHeapSnapshot', decodeHeapSnapshot);
+export function decodeHeapSnapshot(heapSnapshot) {
     if (textPointers) {
-        return Templates.MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T(memoryStateSnapshot);
+        return Templates.HEAP_TEMPLATE_TEXTPOINTERS_T(heapSnapshot);
     } else {
-        return Templates.MEMORY_STATE_TEMPLATE_TEXTPOINTERS_F(memoryStateSnapshot);
+        return Templates.HEAP_TEMPLATE_TEXTPOINTERS_F(heapSnapshot);
     }
 }
 
@@ -92,9 +102,9 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
     }
 }
 
-Handlebars.registerHelper('decodePyagramExceptionSnapshot', decodePyagramExceptionSnapshot);
-export function decodePyagramExceptionSnapshot(pyagramExceptionSnapshot) {
-    return Templates.PYAGRAM_EXCEPTION_TEMPLATE(pyagramExceptionSnapshot);
+Handlebars.registerHelper('decodeExceptionSnapshot', decodeExceptionSnapshot);
+export function decodeExceptionSnapshot(exceptionSnapshot) {
+    return Templates.EXCEPTION_TEMPLATE(exceptionSnapshot);
 }
 
 Handlebars.registerHelper('decodePrintOutputSnapshot', decodePrintOutputSnapshot);

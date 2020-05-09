@@ -5,29 +5,9 @@ function compile(template) {
     });
 }
 
-export const PYAGRAM_TEMPLATE = compile(`
-<div class="overlap-wrapper">
-  <table class="overlap border-collapse font-family-monospace" id="pyagram-state-table">
-    <tr>
-      <td class="align-top">
-        {{decodeFrameSnapshot global_frame}}
-      </td>
-      <td class="align-top">
-        {{decodeMemoryStateSnapshot memory_state}}
-      </td>
-    </tr>
-  </table>
-  <svg class="overlap" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
-        <circle cx="5" cy="5" r="1.5" fill="black"/>
-      </marker>
-      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-        <path d="M0,0 L10,5 0,10 Z"/>
-      </marker>
-    </defs>
-    <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
-  </svg>
+export const STACK_TEMPLATE = compile(`
+<div class="font-family-monospace">
+  {{decodeFrameSnapshot this}}
 </div>
 `)
 
@@ -173,8 +153,8 @@ export const FRAME_TEMPLATE = compile(`
 
 // TODO: When text-pointers are enabled, the left and right panes should be separately scrollable.
 // TODO: How? Render the split-pane as if it's gonna be there permanently. Then, in index.js, scrape out that HTML and save it in a variable, so that you can use it later if you want. Or, better yet, find a way for split-screen to work regardless of the text-pointers option ... consider using the same SVG library that PyTutor uses?
-export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T = compile(`
-<table class="mt-2 border-collapse">
+export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
+<table class="mt-2 border-collapse font-family-monospace">
   {{#each this}}
     <tr>
       <td class="px-2 font-family-sans-serif">
@@ -192,12 +172,14 @@ export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_T = compile(`
 
 // TODO: Remake the templates immediately above and below.
 
-export const MEMORY_STATE_TEMPLATE_TEXTPOINTERS_F = compile(`
-{{#each this}}
-  <div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object my-2">
-    {{decodeEncodedObjectSnapshot object}}
-  </div>
-{{/each}}
+export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
+<div class="font-family-monospace">
+  {{#each this}}
+    <div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object my-2">
+      {{decodeEncodedObjectSnapshot object}}
+    </div>
+  {{/each}}
+</div>
 `)
 
 export const UNKNOWN_TEMPLATE = compile(`
@@ -351,7 +333,7 @@ export const OTHER_TEMPLATE = compile(`
 {{this}}
 `)
 
-export const PYAGRAM_EXCEPTION_TEMPLATE = Handlebars.compile(`
+export const EXCEPTION_TEMPLATE = Handlebars.compile(`
 {{#unless (isNull this)}}
   <div class="pyagram-exception px-3 py-2 font-family-monospace">
     {{~this~}}
