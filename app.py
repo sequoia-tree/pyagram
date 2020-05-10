@@ -19,7 +19,10 @@ def render_root(app):
             output_panels=[
                 ('pyagram', 'template', None),
                 ('print-output', 'template', None),
-            ], # TODO: Most of your templating kwargs are scattered in various HTML files. Consolidate them here.
+            ],
+            # TODO: Most of your templating kwargs are scattered in various HTML files. Consolidate them here.
+            # TODO: Refactor the front-end stuff too!
+            # TODO: You have pyagram.html and pyagram-unified.html; you should have a pyagram-divided.html too.
         )
     return root
 
