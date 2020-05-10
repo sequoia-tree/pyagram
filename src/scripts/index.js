@@ -21,8 +21,12 @@ const VIS_OPTIONS_HIDE_FLAGS_ID = 'visualization-options-option-hide-flags';
 const OUTPUT_OVERLAY_ID = 'overlay-output-overlay';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw-pyagram';
 const PYAGRAM_STACK_HEAP_SWITCH_ID = 'pyagram-stack-heap-switch';
-const PYAGRAM_STACK_ID = 'pyagram-stack';
-const PYAGRAM_HEAP_ID = 'pyagram-heap';
+const PYAGRAM_TRACK_UNIFIED_VIEW_ID = 'pyagram-stack-heap-switch-track-unified-view';
+const PYAGRAM_TRACK_DIVIDED_VIEW_ID = 'pyagram-stack-heap-switch-track-divided-view';
+const PYAGRAM_UNIFIED_VIEW_STACK_ID = 'unified-view-pyagram-stack';
+const PYAGRAM_UNIFIED_VIEW_HEAP_ID = 'unified-view-pyagram-heap';
+const PYAGRAM_DIVIDED_VIEW_STACK_ID = 'divided-view-pyagram-stack';
+const PYAGRAM_DIVIDED_VIEW_HEAP_ID = 'divided-view-pyagram-heap';
 const PYAGRAM_EXCEPTION_ID = 'pyagram-exception';
 const PRINT_OUTPUT_ID = 'print-output';
 const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
@@ -38,10 +42,15 @@ var visOptionsHideFlags = document.getElementById(VIS_OPTIONS_HIDE_FLAGS_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
 var pyagramStackHeapSwitch = document.getElementById(PYAGRAM_STACK_HEAP_SWITCH_ID);
-var pyagramStack = document.getElementById(PYAGRAM_STACK_ID);
-var pyagramHeap = document.getElementById(PYAGRAM_HEAP_ID);
+var unifiedViewPyagramStack = document.getElementById(PYAGRAM_UNIFIED_VIEW_STACK_ID);
+var unifiedViewPyagramHeap = document.getElementById(PYAGRAM_UNIFIED_VIEW_HEAP_ID);
+var dividedViewPyagramStack = document.getElementById(PYAGRAM_DIVIDED_VIEW_STACK_ID);
+var dividedViewPyagramHeap = document.getElementById(PYAGRAM_DIVIDED_VIEW_HEAP_ID);
 var pyagramException = document.getElementById(PYAGRAM_EXCEPTION_ID);
 var printOutput = document.getElementById(PRINT_OUTPUT_ID);
+
+var pyagramStack = unifiedViewPyagramStack;
+var pyagramHeap = unifiedViewPyagramHeap;
 
 var visOptions = {
     'textPointers': visOptionsTextPointers,
@@ -107,9 +116,13 @@ Object.keys(visOptions).forEach(function(visOptionID) {
 
 visOptions.textPointers.onclick = function() {
     if (visOptions.textPointers.checked) {
-        Switch.select(pyagramStackHeapSwitch, 0);
+        Switch.select(pyagramStackHeapSwitch, PYAGRAM_TRACK_DIVIDED_VIEW_ID);
+        pyagramStack = dividedViewPyagramStack;
+        pyagramHeap = dividedViewPyagramHeap;
     } else {
-        Switch.select(pyagramStackHeapSwitch, 1);
+        Switch.select(pyagramStackHeapSwitch, PYAGRAM_TRACK_UNIFIED_VIEW_ID);
+        pyagramStack = unifiedViewPyagramStack;
+        pyagramHeap = unifiedViewPyagramHeap;
     }
     visOptionClick();
 };

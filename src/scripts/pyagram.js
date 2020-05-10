@@ -38,33 +38,39 @@ export function drawPyagram(slider, pyagram) {
 }
 
 export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
-    var snapshot = snapshots[snapshotIndex];
-    var pyagramHTML = Decode.decodePyagramSnapshot(
-        snapshot,
-        globalData,
-        visOptions,
-    );
-    pyagramStack.innerHTML = pyagramHTML.stackHTML;
-    pyagramHeap.innerHTML = pyagramHTML.heapHTML;
-    pyagramException.innerHTML = pyagramHTML.exceptionHTML;
-    printOutput.innerHTML = pyagramHTML.printOutputHTML;
-    // TODO: Use snapshot.curr_line_no.
-    drawSVGs(visOptions);
+    if (typeof snapshots !== 'undefined') {
+        var snapshot = snapshots[snapshotIndex];
+        var pyagramHTML = Decode.decodePyagramSnapshot(
+            snapshot,
+            globalData,
+            visOptions,
+        );
+        pyagramStack.innerHTML = pyagramHTML.stackHTML;
+        pyagramHeap.innerHTML = pyagramHTML.heapHTML;
+        pyagramException.innerHTML = pyagramHTML.exceptionHTML;
+        printOutput.innerHTML = pyagramHTML.printOutputHTML;
+        // TODO: Use snapshot.curr_line_no.
+        drawSVGs(visOptions);
+    }
 }
 
 function drawSVGs(visOptions) {
-    var SVGCanvas = $('#'.concat(PYAGRAM_SVG_CANVAS_ID));
-    prepSVGCanvas(SVGCanvas);
+    var SVGCanvas = document.getElementById(PYAGRAM_SVG_CANVAS_ID);
+    clearSVGCanvas(SVGCanvas);
+    SVGCanvas = $(SVGCanvas);
     if (!visOptions.textPointers.checked) {
+        $(
+            `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
+        ).removeClass('text-left').addClass('text-center');
         drawPointers(SVGCanvas);
     }
 }
 
-function prepSVGCanvas(SVGCanvas) {
-    $('#'.concat(POINTERS_SVG_GROUP_ID)).empty();
-    $(
-        `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
-    ).removeClass('text-left').addClass('text-center');
+function clearSVGCanvas(SVGCanvas) {
+    var SVGGroup;
+    for (SVGGroup of SVGCanvas.getElementsByTagName('g')) {
+        $(SVGGroup).empty();
+    }
 }
 
 function drawPointers(SVGCanvas) {

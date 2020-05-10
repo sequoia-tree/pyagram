@@ -1,0 +1,19 @@
+<div class="overlap-wrapper h-100 w-100">
+  <table class="overlap h-100 w-100 border-collapse font-family-monospace">
+    <tr>
+      <td class="align-top" id="unified-view-pyagram-stack"></td>
+      <td class="align-top pl-5" id="unified-view-pyagram-heap"></td>
+    </tr>
+  </table>
+  <svg class="overlap h-100 w-100" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
+        <circle cx="5" cy="5" r="1.5" fill="black"/>
+      </marker>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
+        <path d="M0,0 L10,5 0,10 Z"/>
+      </marker>
+    </defs>
+    <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
+  </svg>
+</div>

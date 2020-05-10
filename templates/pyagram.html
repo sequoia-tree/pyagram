@@ -7,6 +7,7 @@
     'pyagram-stack-heap-switch',
     (
       (
+        'unified-view',
         'html',
         utils.flex_scroll(
           'vertical',
@@ -19,12 +20,13 @@
               'horizontal',
               [],
               [],
-              ('template', 'unified-pyagram', None),
+              ('pyagram-svg', 'template', None),
             ),
           ),
         ),
       ),
       (
+        'divided-view',
         'html',
         utils.split(
           'stack-heap-split',
@@ -45,7 +47,7 @@
                     [],
                     [],
                     (None, 'html', ''),
-                    'pyagram-stack',
+                    'divided-view-pyagram-stack',
                   ),
                 ),
               ),
@@ -65,7 +67,7 @@
                     [],
                     [],
                     (None, 'html', ''),
-                    'pyagram-heap',
+                    'divided-view-pyagram-heap',
                   ),
                 ),
               ),
