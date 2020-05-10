@@ -38,23 +38,21 @@ export function drawPyagram(slider, pyagram) {
 }
 
 export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
-    if (typeof snapshots !== 'undefined') {
-        var snapshot = snapshots[snapshotIndex];
-        var pyagramHTML = Decode.decodePyagramSnapshot(
-            snapshot,
-            globalData,
-            visOptions,
-        );
-        pyagramStack.innerHTML = pyagramHTML.stackHTML;
-        pyagramHeap.innerHTML = pyagramHTML.heapHTML;
-        pyagramException.innerHTML = pyagramHTML.exceptionHTML;
-        printOutput.innerHTML = pyagramHTML.printOutputHTML;
-        // TODO: Use snapshot.curr_line_no.
-        drawSVGs(visOptions);
-    }
+    var snapshot = snapshots[snapshotIndex];
+    var pyagramHTML = Decode.decodePyagramSnapshot(
+        snapshot,
+        globalData,
+        visOptions,
+    );
+    pyagramStack.innerHTML = pyagramHTML.stackHTML;
+    pyagramHeap.innerHTML = pyagramHTML.heapHTML;
+    pyagramException.innerHTML = pyagramHTML.exceptionHTML;
+    printOutput.innerHTML = pyagramHTML.printOutputHTML;
+    // TODO: Use snapshot.curr_line_no.
+    drawSVGs(visOptions);
 }
 
-export function drawSVGs(visOptions) {
+function drawSVGs(visOptions) {
     var SVGCanvas = $('#'.concat(PYAGRAM_SVG_CANVAS_ID));
     prepSVGCanvas(SVGCanvas);
     if (!visOptions.textPointers.checked) {

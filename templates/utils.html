@@ -45,6 +45,17 @@
   </div>
 {% endmacro %}
 
+{% macro switch(id, elements) %}
+  <div class="switch h-100 w-100" id="{{ id }}">
+    {% for i in range(elements|length) %}
+      {% set element = elements[i] %}
+      <div class="h-100 w-100 {% if i == 0 %} active {% endif %}">
+        {{ decode_content('{}-element-{}'.format(id, i), *element, **kwargs) }}
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
 {% macro accordion(id, options) %}
   <div class="mb-3" id="{{ id }}-accordion">
     {% for i in range(options|length) %}

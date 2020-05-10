@@ -3,69 +3,77 @@
 <div class="d-flex flex-column h-100 w-100">
   {{ utils.section(3, 'Pyagram', False, True) }}
   <hr class="m-0">
-  <div class="overlap-wrapper h-100 w-100">
-    <div class="overlap h-100 w-100">
-      {{ utils.split(
-        'stack-heap-split',
-        'horizontal',
-        [
+  {{ utils.switch(
+    'pyagram-stack-heap-switch',
+    (
+      (
+        'html',
+        utils.flex_scroll(
+          'vertical',
+          [],
+          [],
           (
-            'stack',
+            None,
             'html',
             utils.flex_scroll(
-              'vertical',
+              'horizontal',
               [],
               [],
-              (
-                None,
-                'html',
-                utils.flex_scroll(
-                  'horizontal',
-                  [],
-                  [],
-                  (None, 'html', ''),
-                  'pyagram-stack',
+              ('template', 'unified-pyagram', None),
+            ),
+          ),
+        ),
+      ),
+      (
+        'html',
+        utils.split(
+          'stack-heap-split',
+          'horizontal',
+          [
+            (
+              'stack',
+              'html',
+              utils.flex_scroll(
+                'vertical',
+                [],
+                [],
+                (
+                  None,
+                  'html',
+                  utils.flex_scroll(
+                    'horizontal',
+                    [],
+                    [],
+                    (None, 'html', ''),
+                    'pyagram-stack',
+                  ),
                 ),
               ),
             ),
-          ),
-          (
-            'heap',
-            'html',
-            utils.flex_scroll(
-              'vertical',
-              [],
-              [],
-              (
-                None,
-                'html',
-                utils.flex_scroll(
-                  'horizontal',
-                  [],
-                  [],
-                  (None, 'html', ''),
-                  'pyagram-heap',
+            (
+              'heap',
+              'html',
+              utils.flex_scroll(
+                'vertical',
+                [],
+                [],
+                (
+                  None,
+                  'html',
+                  utils.flex_scroll(
+                    'horizontal',
+                    [],
+                    [],
+                    (None, 'html', ''),
+                    'pyagram-heap',
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ) }}
-    </div>
-    <svg class="overlap h-100 w-100" id="pyagram-svg-canvas" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="circle" markerWidth="6.5" markerHeight="6.5" refX="5" refY="5">
-          <circle cx="5" cy="5" r="1.5" fill="black"/>
-        </marker>
-        <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="5" viewBox="0 0 10 10" orient="auto">
-          <path d="M0,0 L10,5 0,10 Z"/>
-        </marker>
-      </defs>
-      <g id="pointers" fill="none" stroke="black" stroke-width="1.5" marker-start="url(#circle)" marker-end="url(#arrowhead)"/>
-    </svg>
-  </div>
+          ],
+        )
+      ),
+    ),
+  )}}
   <div id="pyagram-exception"></div>
 </div>
-
-<!-- TODO: Each time you draw a snapshot, scroll the stack or the heap, or drag the stack-heap split ... re-draw the pointers in the SVG canvas. -->
-<!-- TODO: Or, better yet, see if you can get JSPlumb to work. -->
