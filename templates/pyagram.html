@@ -4,10 +4,10 @@
   {{ utils.section(3, 'Pyagram', False, True) }}
   <hr class="m-0">
   {{ utils.switch(
-    'pyagram-stack-heap-switch',
+    'vm',
     (
       (
-        'unified-view',
+        'unified',
         'html',
         utils.flex_scroll(
           'vertical',
@@ -26,7 +26,7 @@
         ),
       ),
       (
-        'divided-view',
+        'divided',
         'template',
         'pyagram-divided',
       ),
