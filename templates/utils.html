@@ -118,7 +118,7 @@
 
 {% macro decode_content(id, encoding, context) %}
   {% if encoding == 'template' %}
-    {% include '{}.html'.format(id) %}
+    {% include '{}.html'.format(context) %}
   {% elif encoding == 'textbook' %}
     {% for part_title, chapters in context.items() %}
       {{ section(3, part_title, False) }}
