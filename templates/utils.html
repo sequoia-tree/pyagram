@@ -7,13 +7,13 @@
 {% endmacro %}
 
 {% macro accordion(id, options) %}
-  <div class="mb-3" id="{{ id }}-accordion">
+  <div class="mb-3" id="accordion-{{ id }}">
     {% for i in range(options|length) %}
       {% set option_id, option_label, option_encoding, option_context = options[i] %}
-      <div class="d-flex flex-row accordion-option-wrapper mt-3 mb-0 collapsed" id="{{ id }}-accordion-option-{{ option_id }}" data-toggle="collapse" data-target="#{{ id }}-accordion-content-{{ option_id }}" aria-expanded="false" aria-controls="{{ id }}-accordion-content-{{ option_id }}">
+      <div class="d-flex flex-row accordion-option-wrapper mt-3 mb-0 collapsed" id="accordion-{{ id }}-option-{{ option_id }}" data-toggle="collapse" data-target="#accordion-{{ id }}-content-{{ option_id }}" aria-expanded="false" aria-controls="accordion-{{ id }}-content-{{ option_id }}">
         <a class="accordion-option flex-fill mx-1 px-3 py-2 text-uppercase font-family-serif">{{ option_label }}</a>
       </div>
-      <div id="{{ id }}-accordion-content-{{ option_id }}" class="collapse" aria-labelledby="{{ id }}-accordion-option-{{ option_id }}" data-parent="#{{ id }}-accordion">
+      <div id="accordion-{{ id }}-content-{{ option_id }}" class="collapse" aria-labelledby="accordion-{{ id }}-option-{{ option_id }}" data-parent="#accordion-{{ id }}">
         <div class="accordion-content ml-4 py-3 pl-3">
           {{ decode_content(option_id, option_encoding, option_context, **kwargs) }}
         </div>
@@ -29,7 +29,7 @@
 {% endmacro %}
 
 {% macro editor(id) %}
-  <div id="{{ id }}"></div>
+  <div id="editor-{{ id }}"></div>
 {% endmacro %}
 
 {% macro flex_scroll(direction, pre_contents, post_contents, scroll_content, scroll_id=None) %}
@@ -49,9 +49,9 @@
 {% macro options(id, options) %}
   {% for i in range(options|length) %}
     {% set option_id, option_label = options[i] %}
-    <label class="d-block position-relative checkbox-wrapper text-unselectable" for="{{ id }}-option-{{ option_id }}">
+    <label class="d-block position-relative checkbox-wrapper text-unselectable" for="options-{{ id }}-option-{{ option_id }}">
       <div class="pl-3">{{ option_label }}</div>
-      <input type="checkbox" id="{{ id }}-option-{{ option_id }}">
+      <input type="checkbox" id="options-{{ id }}-option-{{ option_id }}">
       <span class="position-absolute checkmark"></span>
     </label>
   {% endfor %}
@@ -88,9 +88,9 @@
       <input type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}" class="flex-grow-1 mx-3" id="slider-{{ id }}">
     </div>
     <div class="d-flex flex-row align-items-center">
-      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-l"><</a>
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-l"><</a>
       <div class="flex-grow-1 text-center text-nowrap">{{ pre_label }}<span id="slider-{{ id }}-label">{{ min }}</span>{{ post_label }}</div>
-      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-r">></a>
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-r">></a>
     </div>
   </div>
 {% endmacro %}
@@ -106,10 +106,10 @@
 {% endmacro %}
 
 {% macro switch(id, elements) %}
-  <div class="switch h-100 w-100" id="{{ id }}">
+  <div class="switch h-100 w-100" id="switch-{{ id }}">
     {% for i in range(elements|length) %}
       {% set element_id, element_encoding, element_context = elements[i] %}
-      <div id="{{ id }}-track-{{ element_id }}" class="h-100 w-100 {% if i == 0 %} active {% else %} inactive {% endif %}">
+      <div id="switch-{{ id }}-track-{{ element_id }}" class="h-100 w-100 {% if i == 0 %} active {% else %} inactive {% endif %}">
         {{ decode_content(element_id, element_encoding, element_context, **kwargs) }}
       </div>
     {% endfor %}
