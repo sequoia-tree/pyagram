@@ -27,53 +27,8 @@
       ),
       (
         'divided-view',
-        'html',
-        utils.split(
-          'stack-heap-split',
-          'horizontal',
-          [
-            (
-              'stack',
-              'html',
-              utils.flex_scroll(
-                'vertical',
-                [],
-                [],
-                (
-                  None,
-                  'html',
-                  utils.flex_scroll(
-                    'horizontal',
-                    [],
-                    [],
-                    (None, 'html', ''),
-                    'divided-view-pyagram-stack',
-                  ),
-                ),
-              ),
-            ),
-            (
-              'heap',
-              'html',
-              utils.flex_scroll(
-                'vertical',
-                [],
-                [],
-                (
-                  None,
-                  'html',
-                  utils.flex_scroll(
-                    'horizontal',
-                    [],
-                    [],
-                    (None, 'html', ''),
-                    'divided-view-pyagram-heap',
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        'template',
+        'pyagram-divided',
       ),
     ),
   )}}
