@@ -6,6 +6,13 @@
 
 {% block body %}
   <div class="page-content vh-100">
-    {{ utils.split('input-output-split', 'horizontal', split_panels, output_panels=output_panels) }}
+    {{ utils.split(
+      'input-output-split',
+      'horizontal',
+      [
+        ('input', 'template', None),
+        ('output', 'template', None),
+      ],
+    ) }}
   </div>
 {% endblock %}

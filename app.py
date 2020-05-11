@@ -10,20 +10,7 @@ def render_endpoints(app):
 def render_root(app):
     @app.route('/')
     def root():
-        return flask.render_template(
-            'index.html',
-            split_panels=[
-                ('input', 'template', None),
-                ('output', 'template', None),
-            ],
-            output_panels=[
-                ('pyagram', 'template', None),
-                ('print-output', 'template', None),
-            ],
-            # TODO: Most of your templating kwargs are scattered in various HTML files. Consolidate them here.
-            # TODO: Refactor the front-end stuff too!
-            # TODO: You have pyagram.html and pyagram-unified.html; you should have a pyagram-divided.html too.
-        )
+        return flask.render_template('index.html')
     return root
 
 def render_draw(app):

@@ -8,7 +8,14 @@
   ),
   (
     'html',
-    utils.split('pyagram-print-output-split', 'vertical', kwargs['output_panels']),
+    utils.split(
+      'pyagram-print-output-split',
+      'vertical',
+      [
+        ('pyagram', 'template', None),
+        ('print-output', 'template', None),
+      ],
+    ),
   ),
   start_active=True,
 ) }}
