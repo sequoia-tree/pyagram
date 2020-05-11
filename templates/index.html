@@ -10,8 +10,43 @@
       'input-output-split',
       'horizontal',
       [
-        (None, 'template', 'input'),
-        (None, 'template', 'output'),
+        (
+          'input',
+          'html',
+          utils.flex_scroll(
+            'vertical',
+            [
+              (None, 'html', utils.editor('pyagram-code')),
+              (None, 'html', utils.slider('snapshot-slider', 'Step ', '', 0, 0)),
+              (None, 'html', '<hr class="m-0">'),
+            ],
+            [],
+            (None, 'template', 'info'),
+          ),
+        ),
+        (
+          'output',
+          'html',
+          utils.overlay(
+            'output-overlay',
+            (
+              'html',
+              utils.button('draw-pyagram', 'Draw Pyagram', big=True),
+            ),
+            (
+              'html',
+              utils.split(
+                'pyagram-print-output-split',
+                'vertical',
+                [
+                  ('pyagram', 'template', 'pyagram'),
+                  ('print-output', 'template', 'print-output'),
+                ],
+              ),
+            ),
+            start_active=True,
+          ),
+        ),
       ],
     ) }}
   </div>
