@@ -26,12 +26,12 @@
   }
 }
 
-.pyagram-value {
-  @include border();
-}
-
 .pyagram-unknown {
   color: $bright-red;
+}
+
+.pyagram-value {
+  @include border();
 }
 
 .pyagram-object {
