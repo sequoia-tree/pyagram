@@ -286,6 +286,8 @@ class MemoryState:
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     referents = list(inspect.getgeneratorlocals(object).values())
+                    if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
+                        referents.append(self.generator_frames[object].return_value)
                     if object.gi_yieldfrom is not None:
                         referents.append(object.gi_yieldfrom)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
