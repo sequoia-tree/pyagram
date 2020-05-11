@@ -6,14 +6,30 @@
   <script type="text/javascript" src="{{ url_for('static', filename='scripts/{}.js'.format(file)) }}"></script>
 {% endmacro %}
 
-{% macro split(id, direction, panels) %}
-  <div class="split split-{{ direction }} h-100 w-100" id="split-{{ id }}">
-    {% for panel_id, panel_encoding, panel_context in panels %}
-      <div id="split-{{ id }}-panel-{{ panel_id }}">
-        {{ decode_content(panel_id, panel_encoding, panel_context, **kwargs) }}
+{% macro accordion(id, options) %}
+  <div class="mb-3" id="{{ id }}-accordion">
+    {% for i in range(options|length) %}
+      {% set option_id, option_label, option_encoding, option_context = options[i] %}
+      <div class="d-flex flex-row accordion-option-wrapper mt-3 mb-0 collapsed" id="{{ id }}-accordion-option-{{ option_id }}" data-toggle="collapse" data-target="#{{ id }}-accordion-content-{{ option_id }}" aria-expanded="false" aria-controls="{{ id }}-accordion-content-{{ option_id }}">
+        <a class="accordion-option flex-fill mx-1 px-3 py-2 text-uppercase font-family-serif">{{ option_label }}</a>
+      </div>
+      <div id="{{ id }}-accordion-content-{{ option_id }}" class="collapse" aria-labelledby="{{ id }}-accordion-option-{{ option_id }}" data-parent="#{{ id }}-accordion">
+        <div class="accordion-content ml-4 py-3 pl-3">
+          {{ decode_content(option_id, option_encoding, option_context, **kwargs) }}
+        </div>
       </div>
     {% endfor %}
   </div>
+{% endmacro %}
+
+{% macro button(id, label, href=None, big=False, reverse=False) %}
+  <div class="d-flex flex-row justify-content-center my-3">
+    <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" {% if big %} style="border-radius: 100vh;" {% endif %} id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
+  </div>
+{% endmacro %}
+
+{% macro editor(id) %}
+  <div id="{{ id }}"></div>
 {% endmacro %}
 
 {% macro flex_scroll(direction, pre_contents, post_contents, scroll_content, scroll_id=None) %}
@@ -28,6 +44,17 @@
       {{ decode_content(*post_content, **kwargs) }}
     {% endfor %}
   </div>
+{% endmacro %}
+
+{% macro options(id, options) %}
+  {% for i in range(options|length) %}
+    {% set option_id, option_label = options[i] %}
+    <label class="d-block position-relative checkbox-wrapper text-unselectable" for="{{ id }}-option-{{ option_id }}">
+      <div class="pl-3">{{ option_label }}</div>
+      <input type="checkbox" id="{{ id }}-option-{{ option_id }}">
+      <span class="position-absolute checkmark"></span>
+    </label>
+  {% endfor %}
 {% endmacro %}
 
 {% macro overlay(id, top, bottom, start_active=False, center_vertically=True) %}
@@ -45,28 +72,45 @@
   </div>
 {% endmacro %}
 
+{% macro section(level, label, render_link=True, center=False) %}
+  {% set id = label.replace(' ', '-') %}
+  <div class="section my-3 text-uppercase {% if center %} text-center {% endif %} font-family-serif font-size-{{ 'sub' * (level - 1) }}section" id="section-{{ id }}">
+    {{ label }}
+    {% if render_link %}
+      <a class="section-link" href="#section-{{ id }}">&#167;</a>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro slider(id, pre_label, post_label, min, max) %}
+  <div class="my-3">
+    <div class="d-flex flex-row mb-3">
+      <input type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}" class="flex-grow-1 mx-3" id="slider-{{ id }}">
+    </div>
+    <div class="d-flex flex-row align-items-center">
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-l"><</a>
+      <div class="flex-grow-1 text-center text-nowrap">{{ pre_label }}<span id="slider-{{ id }}-label">{{ min }}</span>{{ post_label }}</div>
+      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-r">></a>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro split(id, direction, panels) %}
+  <div class="split split-{{ direction }} h-100 w-100" id="split-{{ id }}">
+    {% for panel_id, panel_encoding, panel_context in panels %}
+      <div id="split-{{ id }}-panel-{{ panel_id }}">
+        {{ decode_content(panel_id, panel_encoding, panel_context, **kwargs) }}
+      </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
 {% macro switch(id, elements) %}
   <div class="switch h-100 w-100" id="{{ id }}">
     {% for i in range(elements|length) %}
       {% set element_id, element_encoding, element_context = elements[i] %}
       <div id="{{ id }}-track-{{ element_id }}" class="h-100 w-100 {% if i == 0 %} active {% else %} inactive {% endif %}">
         {{ decode_content(element_id, element_encoding, element_context, **kwargs) }}
-      </div>
-    {% endfor %}
-  </div>
-{% endmacro %}
-
-{% macro accordion(id, options) %}
-  <div class="mb-3" id="{{ id }}-accordion">
-    {% for i in range(options|length) %}
-      {% set option_id, option_label, option_encoding, option_context = options[i] %}
-      <div class="d-flex flex-row accordion-option-wrapper mt-3 mb-0 collapsed" id="{{ id }}-accordion-option-{{ option_id }}" data-toggle="collapse" data-target="#{{ id }}-accordion-content-{{ option_id }}" aria-expanded="false" aria-controls="{{ id }}-accordion-content-{{ option_id }}">
-        <a class="accordion-option flex-fill mx-1 px-3 py-2 text-uppercase font-family-serif">{{ option_label }}</a>
-      </div>
-      <div id="{{ id }}-accordion-content-{{ option_id }}" class="collapse" aria-labelledby="{{ id }}-accordion-option-{{ option_id }}" data-parent="#{{ id }}-accordion">
-        <div class="accordion-content ml-4 py-3 pl-3">
-          {{ decode_content(option_id, option_encoding, option_context, **kwargs) }}
-        </div>
       </div>
     {% endfor %}
   </div>
@@ -95,48 +139,4 @@
   {% elif encoding == 'text' %}
     {{ context }}
   {% endif %}
-{% endmacro %}
-
-{% macro editor(id) %}
-  <div id="{{ id }}"></div>
-{% endmacro %}
-
-{% macro button(id, label, href=None, big=False, reverse=False) %}
-  <div class="d-flex flex-row justify-content-center my-3">
-    <a class="button mx-1 px-3 py-2 {% if reverse %} text-reverse {% endif %} text-uppercase font-family-serif {% if big %} font-size-subsubsection {% endif %}" {% if big %} style="border-radius: 100vh;" {% endif %} id="button-{{ id }}" {% if href is not none %} href="{{ href }}" {% endif %}>{{ label }}</a>
-  </div>
-{% endmacro %}
-
-{% macro section(level, label, render_link=True, center=False) %}
-  {% set id = label.replace(' ', '-') %}
-  <div class="section my-3 text-uppercase {% if center %} text-center {% endif %} font-family-serif font-size-{{ 'sub' * (level - 1) }}section" id="section-{{ id }}">
-    {{ label }}
-    {% if render_link %}
-      <a class="section-link" href="#section-{{ id }}">&#167;</a>
-    {% endif %}
-  </div>
-{% endmacro %}
-
-{% macro slider(id, pre_label, post_label, min, max) %}
-  <div class="my-3">
-    <div class="d-flex flex-row mb-3">
-      <input type="range" min="{{ min }}" max="{{ max }}" value="{{ min }}" class="flex-grow-1 mx-3" id="slider-{{ id }}">
-    </div>
-    <div class="d-flex flex-row align-items-center">
-      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-l"><</a>
-      <div class="flex-grow-1 text-center text-nowrap">{{ pre_label }}<span id="slider-{{ id }}-label">{{ min }}</span>{{ post_label }}</div>
-      <a class="button font-weight-bold mx-3 px-5 text-unselectable" id="slider-{{ id }}-button-r">></a>
-    </div>
-  </div>
-{% endmacro %}
-
-{% macro options(id, options) %}
-  {% for i in range(options|length) %}
-    {% set option_id, option_label = options[i] %}
-    <label class="d-block position-relative checkbox-wrapper text-unselectable" for="{{ id }}-option-{{ option_id }}">
-      <div class="pl-3">{{ option_label }}</div>
-      <input type="checkbox" id="{{ id }}-option-{{ option_id }}">
-      <span class="position-absolute checkmark"></span>
-    </label>
-  {% endfor %}
 {% endmacro %}
