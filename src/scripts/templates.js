@@ -151,17 +151,15 @@ export const FRAME_TEMPLATE = compile(`
 {{decodeElementSnapshot this}}
 `)
 
-// TODO: When text-pointers are enabled, the left and right panes should be separately scrollable.
-// TODO: How? Render the split-pane as if it's gonna be there permanently. Then, in index.js, scrape out that HTML and save it in a variable, so that you can use it later if you want. Or, better yet, find a way for split-screen to work regardless of the text-pointers option ... consider using the same SVG library that PyTutor uses?
 export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
-<table class="mt-2 border-collapse font-family-monospace">
+<table class="border-collapse font-family-monospace">
   {{#each this}}
     <tr>
-      <td class="px-2 font-family-sans-serif">
+      <td class="px-2 py-0 font-family-sans-serif">
         @{{decodeObjectIdSnapshot id}})
       </td>
-      <td>
-        <div class="pyagram-object my-2">
+      <td class="p-0">
+        <div class="pyagram-object my-3">
           {{decodeEncodedObjectSnapshot object}}
         </div>
       </td>
@@ -170,16 +168,18 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
 </table>
 `)
 
-// TODO: Remake the templates immediately above and below.
-
 export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
-<div class="font-family-monospace">
+<table class="border-collapse font-family-monospace">
   {{#each this}}
-    <div id="object-{{decodeObjectIdSnapshot id}}" class="pyagram-object my-2">
-      {{decodeEncodedObjectSnapshot object}}
-    </div>
+    <tr>
+      <td class="p-0">
+        <div class="pyagram-object my-3" id="object-{{decodeObjectIdSnapshot id}}">
+          {{decodeEncodedObjectSnapshot object}}
+        </div>
+      </td>
+    </tr>
   {{/each}}
-</div>
+</table>
 `)
 
 export const UNKNOWN_TEMPLATE = compile(`
