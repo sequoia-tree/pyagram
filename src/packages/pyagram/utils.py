@@ -9,13 +9,13 @@ from . import enum
 def pair_naturals(x, y, *, max_x):
     """
     """
-    max_magnitude = 10 ** max(1, math.ceil(math.log10(max_x)))
+    max_magnitude = 10 ** math.ceil(math.log10(max_x + 1))
     return max_magnitude * y + x
 
 def unpair_naturals(pair, *, max_x):
     """
     """
-    max_magnitude = 10 ** max(1, math.ceil(math.log10(max_x)))
+    max_magnitude = 10 ** math.ceil(math.log10(max_x + 1))
     return pair % max_magnitude, pair // max_magnitude
 
 def encode_lineno(lineno, natural, is_lambda, *, max_lineno):
