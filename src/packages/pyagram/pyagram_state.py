@@ -163,7 +163,6 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
-                # TODO: Add support for implicit calls (e.g. calls to magic methods).
                 self.open_pyagram_flag(None)
             self.open_pyagram_frame(frame, is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:

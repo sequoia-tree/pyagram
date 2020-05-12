@@ -234,7 +234,7 @@ class PyagramFrame(PyagramElement):
             num_bindings = 1 + num_args
             flag.banner_elements = [
                 (
-                    self.function.__qualname__, # TODO: What about classdefs interleaved w funcs?
+                    self.function.__name__,
                     [0],
                 ),
                 '(',
