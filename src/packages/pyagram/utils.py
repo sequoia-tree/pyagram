@@ -46,6 +46,14 @@ def get_function(frame):
     assert function is not None
     return function
 
+def fix_init_banner(banner_elements, function):
+    """
+    """
+    if 0 < len(banner_elements):
+        class_name, binding_indices = banner_elements[0]
+        if function.__qualname__.endswith(f'{class_name}.__init__'):
+            banner_elements[0] = ('__init__', binding_indices)
+
 def is_generator_frame(pyagram_frame):
     """
     """

@@ -212,6 +212,7 @@ class PyagramFrame(PyagramElement):
                 self.hide_from(0)
                 self.state.memory_state.record_generator_frame(self)
             else:
+                utils.fix_init_banner(self.opened_by.banner_elements, self.function)
                 var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
                 self.var_positional_index = var_positional_index
                 self.initial_var_pos_args = None if var_positional_name is None else [
