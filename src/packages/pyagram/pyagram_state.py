@@ -18,19 +18,25 @@ class State:
         self.encoder = encode.Encoder(self, preprocessor_summary)
         self.snapshots = []
 
-    def step(self, frame, *step_info, trace_type):
+    def step(self, *args):
         """
         """
-        self.take_snapshot = False
-        if self.program_state is None:
-            self.program_state = ProgramState(self, frame)
-        self.program_state.step(frame, *step_info, trace_type=trace_type)
+        if 0 == len(args):
+            self.take_snapshot = True
+        else:
+            self.take_snapshot = False
+            if self.program_state is None:
+                frame, *_ = args
+                self.program_state = ProgramState(self, frame)
+            self.program_state.process_trace_event(*args)
+        self.program_state.step()
         self.memory_state.step()
         # ------------------------------------------------------------------------------------------
         # TODO: Only take a snapshot when appropriate!
         # (*) Delete the next line.
         # (*) Set `self.take_snapshot = True` elsewhere in this file (and maybe others).
         # (*) PS: Right now it takes an eternity to run, since you're taking a million snapshots and then filtering out duplicates in postprocess.py.
+        # (*) Don't take the last snapshot where curr_elem is None.
         self.take_snapshot = True
         # TODO: Before working on this bit, or comment out kill_static_snapshots in postprocess.py.
         # ------------------------------------------------------------------------------------------
@@ -92,13 +98,21 @@ class ProgramState:
         """
         return self.is_flag and self.curr_element.has_returned
 
-    def defer(self, function):
+    def step(self):
         """
         """
-        assert self.finish_prev is None
-        self.finish_prev = function
+        self.global_frame.step()
 
-    def step(self, frame, *step_info, trace_type):
+    def snapshot(self):
+        """
+        """
+        return {
+            'global_frame': self.global_frame.snapshot(),
+            'curr_line_no': self.curr_line_no,
+            'exception': self.state.encoder.encode_exception_info(self.exception_info),
+        }
+
+    def process_trace_event(self, frame, trace_type, *step_info):
         """
         """
         if self.finish_prev is not None:
@@ -128,13 +142,13 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
-                overwrite_throw_frame = self.is_flag \
-                                    and self.curr_element.frame is not None \
-                                    and utils.is_generator_frame(self.curr_element.frame)
-                if overwrite_throw_frame:
+                overwrite_throw_flag = self.is_flag \
+                                   and self.curr_element.frame is not None \
+                                   and utils.is_generator_frame(self.curr_element.frame)
+                if overwrite_throw_flag:
                     self.curr_element = self.curr_element.frame
                 def finish_step():
-                    if overwrite_throw_frame:
+                    if overwrite_throw_flag:
                         self.curr_element = self.curr_element.opened_by
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
@@ -142,16 +156,6 @@ class ProgramState:
             else:
                 self.process_exception(frame, frame_type)
         self.prev_trace_type = trace_type
-        self.global_frame.step()
-
-    def snapshot(self):
-        """
-        """
-        return {
-            'global_frame': self.global_frame.snapshot(),
-            'curr_line_no': self.curr_line_no,
-            'exception': self.state.encoder.encode_exception_info(self.exception_info),
-        }
 
     def process_frame_open(self, frame, frame_type):
         """
@@ -159,8 +163,8 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
-                banner = None # TODO: Add support for implicit calls (e.g. calls to magic methods).
-                self.open_pyagram_flag(banner)
+                # TODO: Add support for implicit calls (e.g. calls to magic methods).
+                self.open_pyagram_flag(None)
             self.open_pyagram_frame(frame, is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
@@ -225,12 +229,9 @@ class ProgramState:
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
         is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-        pyagram_flag = self.curr_element.close(is_exception, return_value)
-        def finish_step():
-            self.curr_element = pyagram_flag
-            if is_implicit:
-                self.curr_element = self.curr_element.close()
-        self.defer(finish_step)
+        self.curr_element = self.curr_element.close(is_exception, return_value)
+        if is_implicit:
+            self.curr_element = self.curr_element.close()
 
     def close_class_frame(self, frame):
         """
@@ -241,6 +242,12 @@ class ProgramState:
             if class_name in parent_bindings:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
         self.defer(finish_step)
+
+    def defer(self, function):
+        """
+        """
+        assert self.finish_prev is None
+        self.finish_prev = function
 
 class MemoryState:
     """

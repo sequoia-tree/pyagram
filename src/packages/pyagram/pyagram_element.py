@@ -35,8 +35,11 @@ class PyagramFlag(PyagramElement):
         self.is_new_flag = True
         self.hidden_from = math.inf
         self.hide_subflags = False
-        banner_elements, banner_bindings = banner
-        utils.concatenate_adjacent_strings(banner_elements)
+        if banner is None:
+            banner_elements, banner_bindings = [], []
+        else:
+            banner_elements, banner_bindings = banner
+            utils.concatenate_adjacent_strings(banner_elements)
         self.has_processed_subflag_since_prev_eval = False
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
@@ -319,4 +322,5 @@ class PyagramFrame(PyagramElement):
             self.is_exception = is_exception
             self.has_returned = True
             self.return_value = return_value
+        self.state.step()
         return self.opened_by
