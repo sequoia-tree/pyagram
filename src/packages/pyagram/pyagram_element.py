@@ -87,11 +87,7 @@ class PyagramFlag(PyagramElement):
         if not self.banner_is_complete:
             if self is self.state.program_state.curr_element:
                 if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
-                    if not self.is_new_flag:
-                        self.evaluate_next_banner_binding(True)
-                    next_binding_might_not_be_call = True
-                    while next_binding_might_not_be_call and not self.banner_is_complete:
-                        next_binding_might_not_be_call = self.evaluate_next_banner_binding(False)
+                    self.evaluate_next_banner_bindings()
                 self.has_processed_subflag_since_prev_eval = False
             else:
                 self.has_processed_subflag_since_prev_eval = True
@@ -128,7 +124,21 @@ class PyagramFlag(PyagramElement):
         }
         # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)". The easiest place to do it might be in postprocess.py, where you append (code, bindings). You could just replace bindings -> (name or None, bindings).
 
-    def evaluate_next_banner_binding(self, expect_call):
+    def evaluate_next_banner_bindings(self, *, skip_args=False):
+        """
+        """
+        self.state.snapshot()
+        if not self.is_new_flag:
+            assert not skip_args
+            self.evaluate_next_banner_binding(True)
+        next_binding_might_not_be_call = True
+        while next_binding_might_not_be_call and not self.banner_is_complete:
+            next_binding_might_not_be_call = self.evaluate_next_banner_binding(
+                False,
+                skip_args=skip_args,
+            )
+
+    def evaluate_next_banner_binding(self, expect_call, *, skip_args=False):
         """
         """
 
@@ -144,27 +154,29 @@ class PyagramFlag(PyagramElement):
         binding = self.banner_bindings[self.banner_binding_index]
         is_unsupported_binding = binding is None
         if is_unsupported_binding:
-            self.state.snapshot()
             while not self.banner_is_complete:
                 self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
                 self.banner_binding_index += 1
+            self.state.snapshot()
             return False
         else:
             is_call, param_if_known = binding
             if is_call and not expect_call:
                 return False
             else:
-                self.state.snapshot()
+                is_func_binding = self.banner_binding_index == 0
                 if param_if_known is None:
-                    next_binding_is_func = self.banner_binding_index == 0
-                    if next_binding_is_func:
+                    if is_func_binding:
                         self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
                     else:
                         self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
                         self.positional_arg_index += 1
                 else:
+                    assert not is_func_binding
                     self.banner_bindings[self.banner_binding_index] = param_if_known
                 self.banner_binding_index += 1
+                if not skip_args or is_func_binding or self.banner_is_complete:
+                    self.state.snapshot()
                 return True
 
     def add_frame(self, frame, is_implicit):
@@ -216,6 +228,24 @@ class PyagramFrame(PyagramElement):
                 }
                 self.frame_number = self.state.program_state.frame_count
                 self.state.program_state.frame_count += 1
+        if is_implicit:
+            flag = self.opened_by
+            num_args = len(self.initial_bindings)
+            num_bindings = 1 + num_args
+            flag.banner_elements = [
+                (
+                    self.function.__qualname__, # TODO: What about classdefs interleaved w funcs?
+                    [0],
+                ),
+                '(',
+                (
+                    '...',
+                    list(range(1, num_bindings)),
+                ),
+                ')',
+            ]
+            flag.banner_bindings = [(False, None)] * num_bindings
+            flag.evaluate_next_banner_bindings(skip_args=True)
         self.is_exception = False
         self.has_returned = False
         self.return_value = None
