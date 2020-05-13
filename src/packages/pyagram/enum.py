@@ -26,6 +26,7 @@ class FrameTypes(Enum):
     SRC_CALL = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
+    COMPREHENSION = object()
 
     @staticmethod
     def identify_frame_type(step_code):
@@ -39,6 +40,8 @@ class FrameTypes(Enum):
             return FrameTypes.SRC_CALL_SUCCESSOR
         elif step_code == constants.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
+        elif step_code == constants.GENXP_COMP_LINENO:
+            return FrameTypes.COMPREHENSION
         else:
             raise FrameTypes.illegal_enum(step_code)
 

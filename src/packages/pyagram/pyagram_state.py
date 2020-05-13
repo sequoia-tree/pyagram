@@ -171,6 +171,8 @@ class ProgramState:
             self.close_pyagram_flag()
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
+        elif frame_type is enum.FrameTypes.COMPREHENSION:
+            pass
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -185,6 +187,8 @@ class ProgramState:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
+        elif frame_type is enum.FrameTypes.COMPREHENSION:
+            pass
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
