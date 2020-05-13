@@ -62,8 +62,7 @@ class ProgramState:
         self.global_frame = pyagram_element.PyagramFrame(None, global_frame, None, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
-        self.prev_trace_type = None
-        self.exception_info = None # TODO: Rename to init_error_info?
+        self.exception_info = None # TODO: Rename to init_err_dat?
         self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 1
@@ -148,7 +147,6 @@ class ProgramState:
                 self.defer(finish_step)
             else:
                 self.process_exception(frame, frame_type)
-        self.prev_trace_type = trace_type
 
     def process_frame_open(self, frame, frame_type):
         """
@@ -207,7 +205,7 @@ class ProgramState:
         assert self.is_ongoing_flag_sans_frame
         function = utils.get_function(frame)
         if inspect.isgeneratorfunction(function):
-            self.state.memory_state.record_generator(frame, function)
+            self.state.memory_state.record_generator(frame)
         else:
             self.curr_element = self.curr_element.add_frame(frame, function, is_implicit)
 
@@ -228,11 +226,11 @@ class ProgramState:
         """
         if frame in self.state.memory_state.generator_frames.values():
             assert self.is_flag
+            # TODO: Record the return value here!
         else:
             assert self.is_ongoing_frame
             is_implicit = self.curr_element.is_implicit
-            is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-            self.curr_element = self.curr_element.close(is_exception, return_value)
+            self.curr_element = self.curr_element.close(return_value)
             if is_implicit:
                 self.curr_element = self.curr_element.close()
 
@@ -296,10 +294,11 @@ class MemoryState:
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     referents = list(inspect.getgeneratorlocals(object).values())
+                    # TODO: Fix.
                     # if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
                     #     referents.append(self.generator_frames[object].return_value)
-                    # if object.gi_yieldfrom is not None:
-                    #     referents.append(object.gi_yieldfrom)
+                    if object.gi_yieldfrom is not None:
+                        referents.append(object.gi_yieldfrom)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
                     referents = [
                         value
@@ -351,7 +350,7 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator(self, frame, function):
+    def record_generator(self, frame):
         """
         """
         # TODO: Refactor this func
@@ -362,7 +361,6 @@ class MemoryState:
                 generator = object
         assert generator is not None
         self.generator_frames[generator] = frame
-        # self.generator_functs[generator] = function
         self.track(generator, enum.ObjectTypes.GENERATOR)
 
     def record_parent(self, pyagram_frame, function):
