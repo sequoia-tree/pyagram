@@ -12,7 +12,6 @@ class PyagramElement:
         self.opened_by = opened_by
         self.state = opened_by.state if state is None else state
         self.flags = []
-        self.is_new = True
 
     def step(self):
         """
@@ -33,13 +32,14 @@ class PyagramFlag(PyagramElement):
 
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
+        self.is_new_flag = True
+        self.hidden_from = math.inf
+        self.hide_subflags = False
         if banner is None:
             banner_elements, banner_bindings = [], []
         else:
             banner_elements, banner_bindings = banner
             utils.concatenate_adjacent_strings(banner_elements)
-        self.hidden_from = math.inf
-        self.hide_subflags = False
         self.has_processed_subflag_since_prev_eval = False
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
@@ -86,14 +86,14 @@ class PyagramFlag(PyagramElement):
 
         if not self.banner_is_complete:
             if self is self.state.program_state.curr_element:
-                if self.is_new or self.has_processed_subflag_since_prev_eval:
+                if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
                     self.evaluate_next_banner_bindings()
                 self.has_processed_subflag_since_prev_eval = False
             else:
                 self.has_processed_subflag_since_prev_eval = True
         if self.frame is not None:
             self.frame.step()
-        self.is_new = False
+        self.is_new_flag = False
         super().step()
 
     def snapshot(self):
@@ -128,7 +128,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         self.state.snapshot()
-        if not self.is_new:
+        if not self.is_new_flag:
             assert not skip_args
             self.evaluate_next_banner_binding(True)
         next_binding_might_not_be_call = True
@@ -179,11 +179,11 @@ class PyagramFlag(PyagramElement):
                     self.state.snapshot()
                 return True
 
-    def add_frame(self, frame, function, is_implicit):
+    def add_frame(self, frame, is_implicit):
         """
         """
         assert self.banner_is_complete
-        frame = PyagramFrame(self, frame, function, is_implicit)
+        frame = PyagramFrame(self, frame, is_implicit)
         self.frame = frame
         return frame
 
@@ -198,50 +198,56 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, function, is_implicit=False, *, state=None):
+    def __init__(self, opened_by, frame, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
-        self.frame = frame
-        self.function = function
+        self.is_new_frame = True
         self.is_implicit = is_implicit
+        self.frame = frame
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
+            self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
-            utils.fix_init_banner(self.opened_by.banner_elements, self.function)
-            var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
-            self.var_positional_index = var_positional_index
-            self.initial_var_pos_args = None if var_positional_name is None else [
-                self.state.encoder.reference_snapshot(positional_argument)
-                for positional_argument in frame.f_locals[var_positional_name]
-            ]
-            self.initial_var_keyword_args = None if var_keyword_name is None else {
-                key: self.state.encoder.reference_snapshot(value)
-                for key, value in frame.f_locals[var_keyword_name].items()
-            }
-            self.initial_bindings = {
-                key: self.state.encoder.reference_snapshot(value)
-                for key, value in self.get_bindings().items()
-            }
-            self.frame_number = self.state.program_state.frame_count
-            self.state.program_state.frame_count += 1
-            if is_implicit:
-                flag = self.opened_by
-                num_args = len(self.initial_bindings)
-                num_bindings = 1 + num_args
-                flag.banner_elements = [
-                    (
-                        self.function.__name__,
-                        [0],
-                    ),
-                    '(',
-                    (
-                        '...',
-                        list(range(1, num_bindings)),
-                    ),
-                    ')',
+            if utils.is_generator_frame(self):
+                self.hide_from(0)
+                self.state.memory_state.record_generator_frame(self)
+            else:
+                utils.fix_init_banner(self.opened_by.banner_elements, self.function)
+                var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
+                self.var_positional_index = var_positional_index
+                self.initial_var_pos_args = None if var_positional_name is None else [
+                    self.state.encoder.reference_snapshot(positional_argument)
+                    for positional_argument in frame.f_locals[var_positional_name]
                 ]
-                flag.banner_bindings = [(False, None)] * num_bindings
-                flag.evaluate_next_banner_bindings(skip_args=True)
+                self.initial_var_keyword_args = None if var_keyword_name is None else {
+                    key: self.state.encoder.reference_snapshot(value)
+                    for key, value in frame.f_locals[var_keyword_name].items()
+                }
+                self.initial_bindings = {
+                    key: self.state.encoder.reference_snapshot(value)
+                    for key, value in self.get_bindings().items()
+                }
+                self.frame_number = self.state.program_state.frame_count
+                self.state.program_state.frame_count += 1
+        if is_implicit:
+            flag = self.opened_by
+            num_args = len(self.initial_bindings)
+            num_bindings = 1 + num_args
+            flag.banner_elements = [
+                (
+                    self.function.__name__,
+                    [0],
+                ),
+                '(',
+                (
+                    '...',
+                    list(range(1, num_bindings)),
+                ),
+                ')',
+            ]
+            flag.banner_bindings = [(False, None)] * num_bindings
+            flag.evaluate_next_banner_bindings(skip_args=True)
+        self.is_exception = False
         self.has_returned = False
         self.return_value = None
 
@@ -256,6 +262,12 @@ class PyagramFrame(PyagramElement):
         """
         """
         return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
+
+    @property
+    def return_value_is_visible(self):
+        """
+        """
+        return self.has_returned and not self.is_exception
 
     def __repr__(self):
         """
@@ -281,7 +293,7 @@ class PyagramFrame(PyagramElement):
             referents = list(self.bindings.values())
             if not self.is_global_frame:
                 referents.append(self.function)
-            if self.has_returned:
+            if self.return_value_is_visible:
                 referents.append(self.return_value)
             for referent in referents:
                 self.state.memory_state.track(referent)
@@ -304,7 +316,7 @@ class PyagramFrame(PyagramElement):
             ),
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value)
-                if self.has_returned
+                if self.return_value_is_visible
                 else None,
             'from': None,
             'flags': [
@@ -334,10 +346,11 @@ class PyagramFrame(PyagramElement):
             for variable in sorted_binding_names
         }
 
-    def close(self, return_value):
+    def close(self, is_exception, return_value):
         """
         """
         if not self.is_global_frame:
+            self.is_exception = is_exception
             self.has_returned = True
             self.return_value = return_value
         self.state.step()

@@ -59,10 +59,11 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, None, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
-        self.exception_info = None # TODO: Rename to init_err_dat?
+        self.prev_trace_type = None
+        self.exception_info = None # TODO: Rename to init_error_info?
         self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 1
@@ -141,12 +142,20 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
+                overwrite_throw_flag = self.is_flag \
+                                   and self.curr_element.frame is not None \
+                                   and utils.is_generator_frame(self.curr_element.frame)
+                if overwrite_throw_flag:
+                    self.curr_element = self.curr_element.frame
                 def finish_step():
+                    if overwrite_throw_flag:
+                        self.curr_element = self.curr_element.opened_by
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
                 self.defer(finish_step)
             else:
                 self.process_exception(frame, frame_type)
+        self.prev_trace_type = trace_type
 
     def process_frame_open(self, frame, frame_type):
         """
@@ -154,12 +163,12 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
-                self.open_pyagram_flag(frame, None)
+                self.open_pyagram_flag(None)
             self.open_pyagram_frame(frame, is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            self.close_pyagram_flag(frame)
+            self.close_pyagram_flag()
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
@@ -171,9 +180,9 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-            self.close_pyagram_frame(frame, return_value)
+            self.close_pyagram_frame(return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_flag(frame, return_value)
+            self.open_pyagram_flag(return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
@@ -193,7 +202,7 @@ class ProgramState:
             self.curr_element.hide_subflags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, frame, banner):
+    def open_pyagram_flag(self, banner):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
@@ -203,11 +212,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        function = utils.get_function(frame)
-        if inspect.isgeneratorfunction(function):
-            self.state.memory_state.record_generator_frame(frame, function)
-        else:
-            self.curr_element = self.curr_element.add_frame(frame, function, is_implicit)
+        self.curr_element = self.curr_element.add_frame(frame, is_implicit)
 
     def open_class_frame(self, frame):
         """
@@ -215,24 +220,21 @@ class ProgramState:
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
-    def close_pyagram_flag(self, frame):
+    def close_pyagram_flag(self):
         """
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
 
-    def close_pyagram_frame(self, frame, return_value):
+    def close_pyagram_frame(self, return_value):
         """
         """
-        if frame in self.state.memory_state.generator_frames:
-            assert self.is_flag
-            self.state.memory_state.generator_frames[frame].close(return_value)
-        else:
-            assert self.is_ongoing_frame
-            is_implicit = self.curr_element.is_implicit
-            self.curr_element = self.curr_element.close(return_value)
-            if is_implicit:
-                self.curr_element = self.curr_element.close()
+        assert self.is_ongoing_frame
+        is_implicit = self.curr_element.is_implicit
+        is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
+        self.curr_element = self.curr_element.close(is_exception, return_value)
+        if is_implicit:
+            self.curr_element = self.curr_element.close()
 
     def close_class_frame(self, frame):
         """
@@ -263,6 +265,7 @@ class MemoryState:
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.generator_frames = {}
+        self.generator_functs = {} # TODO: Can't you get this from the generator frame's .function?
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 
@@ -292,10 +295,10 @@ class MemoryState:
                     iterable = utils.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
-                    referents = list(inspect.getgeneratorlocals(object.generator).values())
-                    if object.has_returned:
-                        referents.append(object.return_value)
-                    if object.generator.gi_yieldfrom is not None:
+                    referents = list(inspect.getgeneratorlocals(object).values())
+                    if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
+                        referents.append(self.generator_frames[object].return_value)
+                    if object.gi_yieldfrom is not None:
                         referents.append(object.gi_yieldfrom)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
                     referents = [
@@ -311,7 +314,7 @@ class MemoryState:
                     raise enum.ObjectTypes.illegal_enum(object_type)
                 for referent in referents:
                     self.track(referent)
-            curr_frame.is_new = False
+            curr_frame.is_new_frame = False
 
     def snapshot(self):
         """
@@ -327,18 +330,18 @@ class MemoryState:
     def track(self, object, object_type=None):
         """
         """
+        # TODO: Refactor this func
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
         is_unseen = id(object) not in self.obj_init_debuts
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
-            if inspect.isgenerator(object):
-                self.record_generator(object)
-            else:
-                debut_idx = len(self.state.snapshots)
-                self.objects.append(object)
-                self.obj_init_debuts[id(object)] = debut_idx
+            debut_idx = len(self.state.snapshots)
+            self.objects.append(object)
+            self.obj_init_debuts[id(object)] = debut_idx
+            if object_type is enum.ObjectTypes.GENERATOR:
+                self.generator_functs[object] = utils.get_function(object.gi_frame)
 
     def record_class_frame(self, frame_object, class_object):
         """
@@ -348,27 +351,20 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator_frame(self, frame, function):
+    def record_generator_frame(self, pyagram_frame):
         """
         """
+        # TODO: Refactor this func
         generator = None
-        for object in gc.get_referrers(frame):
+        for object in gc.get_referrers(pyagram_frame.frame):
             if inspect.isgenerator(object):
-                assert generator is None, f'multiple generators refer to frame object {frame}'
+                assert generator is None, f'multiple generators refer to frame object {pyagram_frame.frame}'
                 generator = object
         assert generator is not None
-        self.record_generator(generator, function)
-
-    def record_generator(self, generator, function=None):
-        """
-        """
-        generator_frame = generator.gi_frame
-        if generator_frame not in self.generator_frames:
-            self.generator_frames[generator_frame] = pyagram_wrapped_object.PyagramGenerator(
-                generator,
-                utils.get_function(generator_frame) if function is None else function,
-                state=self.state,
-            )
+        if generator in self.generator_frames:
+            assert self.generator_frames[generator].frame is pyagram_frame.frame
+        self.generator_frames[generator] = pyagram_frame
+        self.track(generator, enum.ObjectTypes.GENERATOR)
 
     def record_parent(self, pyagram_frame, function):
         """
@@ -376,7 +372,7 @@ class MemoryState:
         # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if not pyagram_frame.is_global_frame and pyagram_frame.is_new:
+            if not pyagram_frame.is_global_frame and pyagram_frame.is_new_frame:
                 parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by

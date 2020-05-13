@@ -35,21 +35,3 @@ class PyagramClassFrame(PyagramWrappedObject):
         self.frame = frame
         self.bindings = frame.f_locals
         self.parents = None
-
-class PyagramGenerator(PyagramWrappedObject):
-    """
-    """
-
-    def __init__(self, generator, function, *, state):
-        super().__init__(state, object_type=enum.ObjectTypes.GENERATOR)
-        self.wrap_object(generator)
-        self.generator = generator
-        self.function = function
-        self.has_returned = False
-        self.return_value = None
-
-    def close(self, return_value):
-        """
-        """
-        self.has_returned = True
-        self.return_value = return_value

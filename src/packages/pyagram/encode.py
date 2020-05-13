@@ -187,25 +187,35 @@ class Encoder:
     def encode_generator(self, object):
         """
         """
-        return {
+        generator_frames = self.state.memory_state.generator_frames
+        generator_functs = self.state.memory_state.generator_functs
+        encoding = {
             'type': 'generator',
-            'is_curr_element': False,
-            'name': object.generator.__name__,
-            'parent': repr(self.state.memory_state.function_parents[object.function]),
+            'name': object.__name__,
+            'parent': repr(self.state.memory_state.function_parents[generator_functs[object]]),
             'bindings': self.encode_mapping(
-                inspect.getgeneratorlocals(object.generator),
+                inspect.getgeneratorlocals(object),
                 is_bindings=True,
             ),
-            'return_value':
-                self.reference_snapshot(object.return_value)
-                if object.has_returned
-                else None,
-            'from':
-                None
-                if object.generator.gi_yieldfrom is None
-                else self.reference_snapshot(object.generator.gi_yieldfrom),
             'flags': [],
         }
+        if object in generator_frames:
+            frame = generator_frames[object]
+            encoding.update({
+                'is_curr_element': frame is self.state.program_state.curr_element,
+                'return_value':
+                    self.reference_snapshot(frame.return_value)
+                    if frame.return_value_is_visible
+                    else None,
+                'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
+            })
+        else:
+            encoding.update({
+                'is_curr_element': False,
+                'return_value': None,
+                'from': None,
+            })
+        return encoding
 
     def encode_obj_class(self, object):
         """
