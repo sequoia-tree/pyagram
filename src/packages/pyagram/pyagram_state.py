@@ -165,14 +165,17 @@ class ProgramState:
             if is_implicit:
                 self.open_pyagram_flag(None)
             self.open_pyagram_frame(frame, is_implicit)
+            print('open frame') # TODO: Delete these print statements ...
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             self.close_pyagram_flag()
+            print('close flag')
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.open_comprehension()
+            print('OPN')
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -181,14 +184,17 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(return_value)
+            print('close frame') # TODO: Delete these print statements ...
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(return_value)
+            print('open flag')
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.close_comprehension()
+            print('CLS', return_value)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -259,6 +265,18 @@ class ProgramState:
         assert self.is_ongoing_frame
         # self.curr_element.is_comprehension = False
         # TODO
+        # TODO: Only do stuff here if the return_value is not None.
+        # TODO: For proof, set it to print upon open_comp / close_comp and run this ...
+        # # def f():
+        # #     a = [1/x for x in range(-2, 2)]
+        # # y = f()
+        # a = [x for x in [0, 1, 2]]
+        # # a = [1/x for x in range(-2, 2)]
+        # def f(b):
+        #     a = [x + y for x in b for y in b]
+        #     return a
+        # c = f(a)
+        # TODO: Maybe upon open_comp you can start a hidden flag + fake frame, and upon close_comp you can close the hidden flag + fake frame; maybe this'll make error-catching easier.
 
     def defer(self, function):
         """
