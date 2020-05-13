@@ -327,7 +327,6 @@ class MemoryState:
     def track(self, object, object_type=None):
         """
         """
-        # TODO: Refactor this func
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
