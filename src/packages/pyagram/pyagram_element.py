@@ -12,6 +12,7 @@ class PyagramElement:
         self.opened_by = opened_by
         self.state = opened_by.state if state is None else state
         self.flags = []
+        self.is_new = True
 
     def step(self):
         """
@@ -32,14 +33,13 @@ class PyagramFlag(PyagramElement):
 
     def __init__(self, opened_by, banner, *, state=None):
         super().__init__(opened_by, state)
-        self.is_new_flag = True
-        self.hidden_from = math.inf
-        self.hide_subflags = False
         if banner is None:
             banner_elements, banner_bindings = [], []
         else:
             banner_elements, banner_bindings = banner
             utils.concatenate_adjacent_strings(banner_elements)
+        self.hidden_from = math.inf
+        self.hide_subflags = False
         self.has_processed_subflag_since_prev_eval = False
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
@@ -86,14 +86,14 @@ class PyagramFlag(PyagramElement):
 
         if not self.banner_is_complete:
             if self is self.state.program_state.curr_element:
-                if self.is_new_flag or self.has_processed_subflag_since_prev_eval:
+                if self.is_new or self.has_processed_subflag_since_prev_eval:
                     self.evaluate_next_banner_bindings()
                 self.has_processed_subflag_since_prev_eval = False
             else:
                 self.has_processed_subflag_since_prev_eval = True
         if self.frame is not None:
             self.frame.step()
-        self.is_new_flag = False
+        self.is_new = False
         super().step()
 
     def snapshot(self):
@@ -128,7 +128,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         self.state.snapshot()
-        if not self.is_new_flag:
+        if not self.is_new:
             assert not skip_args
             self.evaluate_next_banner_binding(True)
         next_binding_might_not_be_call = True
@@ -179,11 +179,11 @@ class PyagramFlag(PyagramElement):
                     self.state.snapshot()
                 return True
 
-    def add_frame(self, frame, is_implicit):
+    def add_frame(self, frame, function, is_implicit):
         """
         """
         assert self.banner_is_complete
-        frame = PyagramFrame(self, frame, is_implicit)
+        frame = PyagramFrame(self, frame, function, is_implicit)
         self.frame = frame
         return frame
 
@@ -198,15 +198,14 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, is_implicit=False, *, state=None):
+    def __init__(self, opened_by, frame, function, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
-        self.is_new_frame = True
-        self.is_implicit = is_implicit
         self.frame = frame
+        self.function = function
+        self.is_implicit = is_implicit
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         else:
-            self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
             utils.fix_init_banner(self.opened_by.banner_elements, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
@@ -225,24 +224,24 @@ class PyagramFrame(PyagramElement):
             }
             self.frame_number = self.state.program_state.frame_count
             self.state.program_state.frame_count += 1
-        if is_implicit:
-            flag = self.opened_by
-            num_args = len(self.initial_bindings)
-            num_bindings = 1 + num_args
-            flag.banner_elements = [
-                (
-                    self.function.__name__,
-                    [0],
-                ),
-                '(',
-                (
-                    '...',
-                    list(range(1, num_bindings)),
-                ),
-                ')',
-            ]
-            flag.banner_bindings = [(False, None)] * num_bindings
-            flag.evaluate_next_banner_bindings(skip_args=True)
+            if is_implicit:
+                flag = self.opened_by
+                num_args = len(self.initial_bindings)
+                num_bindings = 1 + num_args
+                flag.banner_elements = [
+                    (
+                        self.function.__name__,
+                        [0],
+                    ),
+                    '(',
+                    (
+                        '...',
+                        list(range(1, num_bindings)),
+                    ),
+                    ')',
+                ]
+                flag.banner_bindings = [(False, None)] * num_bindings
+                flag.evaluate_next_banner_bindings(skip_args=True)
         self.is_exception = False
         self.has_returned = False
         self.return_value = None

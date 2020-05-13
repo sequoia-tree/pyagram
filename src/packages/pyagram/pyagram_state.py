@@ -59,7 +59,7 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, None, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.prev_trace_type = None
@@ -209,8 +209,7 @@ class ProgramState:
         if inspect.isgeneratorfunction(function):
             self.state.memory_state.record_generator(frame, function)
         else:
-            # TODO: Pass function into add_frame.
-            self.curr_element = self.curr_element.add_frame(frame, is_implicit)
+            self.curr_element = self.curr_element.add_frame(frame, function, is_implicit)
 
     def open_class_frame(self, frame):
         """
@@ -315,7 +314,7 @@ class MemoryState:
                     raise enum.ObjectTypes.illegal_enum(object_type)
                 for referent in referents:
                     self.track(referent)
-            curr_frame.is_new_frame = False
+            curr_frame.is_new = False
 
     def snapshot(self):
         """
@@ -372,7 +371,7 @@ class MemoryState:
         # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if not pyagram_frame.is_global_frame and pyagram_frame.is_new_frame:
+            if not pyagram_frame.is_global_frame and pyagram_frame.is_new:
                 parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by
