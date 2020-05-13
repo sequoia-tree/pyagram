@@ -205,7 +205,7 @@ class ProgramState:
         assert self.is_ongoing_flag_sans_frame
         function = utils.get_function(frame)
         if inspect.isgeneratorfunction(function):
-            self.state.memory_state.record_generator(frame)
+            self.state.memory_state.record_generator(frame, function)
         else:
             self.curr_element = self.curr_element.add_frame(frame, function, is_implicit)
 
@@ -326,7 +326,7 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object, object_type=None):
+    def track(self, object, object_type=None, *, gen_func=None):
         """
         """
         # TODO: Refactor this func
@@ -340,7 +340,9 @@ class MemoryState:
             self.objects.append(object)
             self.obj_init_debuts[id(object)] = debut_idx
             if object_type is enum.ObjectTypes.GENERATOR:
-                self.generator_functs[object] = utils.get_function(object.gi_frame)
+                if gen_func is None:
+                    gen_func = utils.get_function(object.gi_frame)
+                self.generator_functs[object] = gen_func
 
     def record_class_frame(self, frame_object, class_object):
         """
@@ -350,7 +352,7 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator(self, frame):
+    def record_generator(self, frame, function):
         """
         """
         # TODO: Refactor this func
@@ -361,7 +363,7 @@ class MemoryState:
                 generator = object
         assert generator is not None
         self.generator_frames[generator] = frame
-        self.track(generator, enum.ObjectTypes.GENERATOR)
+        self.track(generator, enum.ObjectTypes.GENERATOR, gen_func=function)
 
     def record_parent(self, pyagram_frame, function):
         """
