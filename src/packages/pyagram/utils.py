@@ -54,11 +54,6 @@ def fix_init_banner(banner_elements, function):
         if function.__qualname__.endswith(f'{class_name}.__init__'):
             banner_elements[0] = ('__init__', binding_indices)
 
-def is_generator_frame(pyagram_frame):
-    """
-    """
-    return not pyagram_frame.is_global_frame and inspect.isgeneratorfunction(pyagram_frame.function)
-
 def assign_unique_code_object(function):
     """
     """

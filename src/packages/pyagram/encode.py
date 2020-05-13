@@ -188,13 +188,12 @@ class Encoder:
         """
         """
         generator_frames = self.state.memory_state.generator_frames
-        generator_functs = self.state.memory_state.generator_functs
         encoding = {
             'type': 'generator',
-            'name': object.__name__,
-            'parent': repr(self.state.memory_state.function_parents[generator_functs[object]]),
+            'name': object.generator.__name__,
+            'parent': repr(self.state.memory_state.function_parents[object.function]),
             'bindings': self.encode_mapping(
-                inspect.getgeneratorlocals(object),
+                inspect.getgeneratorlocals(object.generator),
                 is_bindings=True,
             ),
             'flags': [],

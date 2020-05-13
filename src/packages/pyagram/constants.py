@@ -57,9 +57,6 @@ ITERATOR_ANNOTATIONS = {
     type(iter({}.values())): 'values',
     type(iter({}.items())): 'items',
 }
-GENERATOR_TYPES = {
-    types.GeneratorType,
-}
 # TODO: Finish the above. Here are some ideas, but note they are not comprehensive ...
 # TODO:     odict, odict_keys, ordereddict, etc.
 # TODO:     types.MappingProxyType

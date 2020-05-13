@@ -205,7 +205,7 @@ class ProgramState:
         assert self.is_ongoing_flag_sans_frame
         function = utils.get_function(frame)
         if inspect.isgeneratorfunction(function):
-            self.state.memory_state.record_generator(frame, function)
+            self.state.memory_state.record_generator_frame(frame, function)
         else:
             self.curr_element = self.curr_element.add_frame(frame, function, is_implicit)
 
@@ -224,9 +224,9 @@ class ProgramState:
     def close_pyagram_frame(self, frame, return_value):
         """
         """
-        if frame in self.state.memory_state.generator_frames.values():
+        if frame in self.state.memory_state.generator_frames:
             assert self.is_flag
-            # TODO: Record the return value here!
+            self.state.memory_state.generator_frames[frame].close(return_value)
         else:
             assert self.is_ongoing_frame
             is_implicit = self.curr_element.is_implicit
@@ -263,7 +263,6 @@ class MemoryState:
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.generator_frames = {}
-        self.generator_functs = {} # TODO: Can't you get this from the generator frame's .function?
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 
@@ -293,11 +292,10 @@ class MemoryState:
                     iterable = utils.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
-                    referents = list(inspect.getgeneratorlocals(object).values())
-                    # TODO: Fix.
-                    # if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
-                    #     referents.append(self.generator_frames[object].return_value)
-                    if object.gi_yieldfrom is not None:
+                    referents = list(inspect.getgeneratorlocals(object.generator).values())
+                    if object.has_returned:
+                        referents.append(object.return_value)
+                    if object.generator.gi_yieldfrom is not None:
                         referents.append(object.gi_yieldfrom)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
                     referents = [
@@ -326,7 +324,7 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object, object_type=None, *, gen_func=None):
+    def track(self, object, object_type=None):
         """
         """
         # TODO: Refactor this func
@@ -336,13 +334,12 @@ class MemoryState:
         is_unseen = id(object) not in self.obj_init_debuts
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
-            debut_idx = len(self.state.snapshots)
-            self.objects.append(object)
-            self.obj_init_debuts[id(object)] = debut_idx
-            if object_type is enum.ObjectTypes.GENERATOR:
-                if gen_func is None:
-                    gen_func = utils.get_function(object.gi_frame)
-                self.generator_functs[object] = gen_func
+            if inspect.isgenerator(object):
+                self.record_generator(object)
+            else:
+                debut_idx = len(self.state.snapshots)
+                self.objects.append(object)
+                self.obj_init_debuts[id(object)] = debut_idx
 
     def record_class_frame(self, frame_object, class_object):
         """
@@ -352,18 +349,27 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator(self, frame, function):
+    def record_generator_frame(self, frame, function):
         """
         """
-        # TODO: Refactor this func
         generator = None
         for object in gc.get_referrers(frame):
             if inspect.isgenerator(object):
                 assert generator is None, f'multiple generators refer to frame object {frame}'
                 generator = object
         assert generator is not None
-        self.generator_frames[generator] = frame
-        self.track(generator, enum.ObjectTypes.GENERATOR, gen_func=function)
+        self.record_generator(generator, function)
+
+    def record_generator(self, generator, function=None):
+        """
+        """
+        generator_frame = generator.gi_frame
+        if generator_frame not in self.generator_frames:
+            self.generator_frames[generator_frame] = pyagram_wrapped_object.PyagramGenerator(
+                generator,
+                utils.get_function(generator_frame) if function is None else function,
+                state=self.state,
+            )
 
     def record_parent(self, pyagram_frame, function):
         """

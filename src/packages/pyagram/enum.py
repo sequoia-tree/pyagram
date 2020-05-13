@@ -82,7 +82,7 @@ class ObjectTypes(Enum):
             return ObjectTypes.MAPPING
         elif object_type in constants.ITERATOR_TYPES:
             return ObjectTypes.ITERATOR
-        elif object_type in constants.GENERATOR_TYPES:
+        elif object_type is pyagram_wrapped_object.PyagramGenerator:
             return ObjectTypes.GENERATOR
         elif object_type is pyagram_wrapped_object.PyagramClassFrame:
             return ObjectTypes.OBJ_CLASS
