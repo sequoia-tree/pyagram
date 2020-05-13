@@ -133,11 +133,9 @@ class ProgramState:
         elif trace_type is enum.TraceTypes.USER_RETURN:
             return_value, = step_info
             self.process_frame_close(frame, frame_type, return_value)
-            print('RET')
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             exception_info, = step_info
             _, _, traceback = exception_info
-            print('EXC', self.curr_element, traceback.tb_next)
             if traceback.tb_next is None:
 
                 # This is the original exception.

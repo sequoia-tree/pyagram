@@ -35,7 +35,6 @@ class Pyagram:
                         locals=bindings,
                     )
                 except Exception as exception:
-                    raise exception
                     assert state.program_state.curr_element is None
                     terminal_ex = True
                 else:
