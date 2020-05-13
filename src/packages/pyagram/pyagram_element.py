@@ -208,27 +208,23 @@ class PyagramFrame(PyagramElement):
         else:
             self.function = utils.get_function(frame)
             self.state.memory_state.record_parent(self, self.function)
-            if utils.is_generator_frame(self):
-                self.hide_from(0)
-                self.state.memory_state.record_generator_frame(self)
-            else:
-                utils.fix_init_banner(self.opened_by.banner_elements, self.function)
-                var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
-                self.var_positional_index = var_positional_index
-                self.initial_var_pos_args = None if var_positional_name is None else [
-                    self.state.encoder.reference_snapshot(positional_argument)
-                    for positional_argument in frame.f_locals[var_positional_name]
-                ]
-                self.initial_var_keyword_args = None if var_keyword_name is None else {
-                    key: self.state.encoder.reference_snapshot(value)
-                    for key, value in frame.f_locals[var_keyword_name].items()
-                }
-                self.initial_bindings = {
-                    key: self.state.encoder.reference_snapshot(value)
-                    for key, value in self.get_bindings().items()
-                }
-                self.frame_number = self.state.program_state.frame_count
-                self.state.program_state.frame_count += 1
+            utils.fix_init_banner(self.opened_by.banner_elements, self.function)
+            var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
+            self.var_positional_index = var_positional_index
+            self.initial_var_pos_args = None if var_positional_name is None else [
+                self.state.encoder.reference_snapshot(positional_argument)
+                for positional_argument in frame.f_locals[var_positional_name]
+            ]
+            self.initial_var_keyword_args = None if var_keyword_name is None else {
+                key: self.state.encoder.reference_snapshot(value)
+                for key, value in frame.f_locals[var_keyword_name].items()
+            }
+            self.initial_bindings = {
+                key: self.state.encoder.reference_snapshot(value)
+                for key, value in self.get_bindings().items()
+            }
+            self.frame_number = self.state.program_state.frame_count
+            self.state.program_state.frame_count += 1
         if is_implicit:
             flag = self.opened_by
             num_args = len(self.initial_bindings)

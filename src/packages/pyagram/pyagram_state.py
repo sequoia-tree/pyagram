@@ -142,14 +142,7 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
-                overwrite_throw_flag = self.is_flag \
-                                   and self.curr_element.frame is not None \
-                                   and utils.is_generator_frame(self.curr_element.frame)
-                if overwrite_throw_flag:
-                    self.curr_element = self.curr_element.frame
                 def finish_step():
-                    if overwrite_throw_flag:
-                        self.curr_element = self.curr_element.opened_by
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
                 self.defer(finish_step)
@@ -163,12 +156,12 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
-                self.open_pyagram_flag(None)
+                self.open_pyagram_flag(frame, None)
             self.open_pyagram_frame(frame, is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            self.close_pyagram_flag()
+            self.close_pyagram_flag(frame)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
@@ -180,9 +173,9 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-            self.close_pyagram_frame(return_value)
+            self.close_pyagram_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_flag(return_value)
+            self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
@@ -202,7 +195,7 @@ class ProgramState:
             self.curr_element.hide_subflags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, banner):
+    def open_pyagram_flag(self, frame, banner):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
@@ -212,7 +205,12 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        self.curr_element = self.curr_element.add_frame(frame, is_implicit)
+        function = utils.get_function(frame)
+        if inspect.isgeneratorfunction(function):
+            self.state.memory_state.record_generator(frame, function)
+        else:
+            # TODO: Pass function into add_frame.
+            self.curr_element = self.curr_element.add_frame(frame, is_implicit)
 
     def open_class_frame(self, frame):
         """
@@ -220,21 +218,24 @@ class ProgramState:
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
-    def close_pyagram_flag(self):
+    def close_pyagram_flag(self, frame):
         """
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
 
-    def close_pyagram_frame(self, return_value):
+    def close_pyagram_frame(self, frame, return_value):
         """
         """
-        assert self.is_ongoing_frame
-        is_implicit = self.curr_element.is_implicit
-        is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-        self.curr_element = self.curr_element.close(is_exception, return_value)
-        if is_implicit:
-            self.curr_element = self.curr_element.close()
+        if frame in self.state.memory_state.generator_frames.values():
+            assert self.is_flag
+        else:
+            assert self.is_ongoing_frame
+            is_implicit = self.curr_element.is_implicit
+            is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
+            self.curr_element = self.curr_element.close(is_exception, return_value)
+            if is_implicit:
+                self.curr_element = self.curr_element.close()
 
     def close_class_frame(self, frame):
         """
@@ -296,10 +297,10 @@ class MemoryState:
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     referents = list(inspect.getgeneratorlocals(object).values())
-                    if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
-                        referents.append(self.generator_frames[object].return_value)
-                    if object.gi_yieldfrom is not None:
-                        referents.append(object.gi_yieldfrom)
+                    # if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
+                    #     referents.append(self.generator_frames[object].return_value)
+                    # if object.gi_yieldfrom is not None:
+                    #     referents.append(object.gi_yieldfrom)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
                     referents = [
                         value
@@ -351,19 +352,18 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator_frame(self, pyagram_frame):
+    def record_generator(self, frame, function):
         """
         """
         # TODO: Refactor this func
         generator = None
-        for object in gc.get_referrers(pyagram_frame.frame):
+        for object in gc.get_referrers(frame):
             if inspect.isgenerator(object):
-                assert generator is None, f'multiple generators refer to frame object {pyagram_frame.frame}'
+                assert generator is None, f'multiple generators refer to frame object {frame}'
                 generator = object
         assert generator is not None
-        if generator in self.generator_frames:
-            assert self.generator_frames[generator].frame is pyagram_frame.frame
-        self.generator_frames[generator] = pyagram_frame
+        self.generator_frames[generator] = frame
+        # self.generator_functs[generator] = function
         self.track(generator, enum.ObjectTypes.GENERATOR)
 
     def record_parent(self, pyagram_frame, function):

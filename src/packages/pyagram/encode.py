@@ -199,7 +199,7 @@ class Encoder:
             ),
             'flags': [],
         }
-        if object in generator_frames:
+        if False and object in generator_frames: # TODO: Fix
             frame = generator_frames[object]
             encoding.update({
                 'is_curr_element': frame is self.state.program_state.curr_element,
