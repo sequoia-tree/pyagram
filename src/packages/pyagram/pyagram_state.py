@@ -133,9 +133,11 @@ class ProgramState:
         elif trace_type is enum.TraceTypes.USER_RETURN:
             return_value, = step_info
             self.process_frame_close(frame, frame_type, return_value)
+            print('RET')
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             exception_info, = step_info
             _, _, traceback = exception_info
+            print('EXC', self.curr_element, traceback.tb_next)
             if traceback.tb_next is None:
 
                 # This is the original exception.
@@ -172,7 +174,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            pass
+            self.open_comprehension()
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -188,7 +190,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            pass
+            self.close_comprehension()
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -220,6 +222,13 @@ class ProgramState:
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
+    def open_comprehension(self):
+        """
+        """
+        assert self.is_ongoing_frame
+        # self.curr_element.is_comprehension = True
+        # TODO
+
     def close_pyagram_flag(self):
         """
         """
@@ -245,6 +254,13 @@ class ProgramState:
             if class_name in parent_bindings:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
         self.defer(finish_step)
+
+    def close_comprehension(self):
+        """
+        """
+        assert self.is_ongoing_frame
+        # self.curr_element.is_comprehension = False
+        # TODO
 
     def defer(self, function):
         """
@@ -314,7 +330,7 @@ class MemoryState:
                     raise enum.ObjectTypes.illegal_enum(object_type)
                 for referent in referents:
                     self.track(referent)
-            curr_frame.is_new_frame = False
+            curr_frame.is_new = False
 
     def snapshot(self):
         """
@@ -372,7 +388,7 @@ class MemoryState:
         # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if not pyagram_frame.is_global_frame and pyagram_frame.is_new_frame:
+            if not pyagram_frame.is_global_frame and pyagram_frame.is_new:
                 parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by
