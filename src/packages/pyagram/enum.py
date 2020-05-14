@@ -1,3 +1,5 @@
+import inspect
+
 from . import constants
 from . import pyagram_wrapped_object
 
@@ -22,8 +24,8 @@ class FrameTypes(Enum):
     """
     """
 
-    SRC_CALL_PRECURSOR = object()
     SRC_CALL = object()
+    SRC_CALL_PRECURSOR = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
     COMPREHENSION = object()
@@ -44,6 +46,28 @@ class FrameTypes(Enum):
             return FrameTypes.COMPREHENSION
         else:
             raise FrameTypes.illegal_enum(step_code)
+
+class PyagramFrameTypes(Enum):
+    """
+    """
+
+    GLOBAL = object()
+    PLACEHOLDER = object()
+    GENERATOR = object()
+    FUNCTION = object()
+
+    @staticmethod
+    def identify_pyagram_frame_type(pyagram_frame):
+        """
+        """
+        if pyagram_frame.opened_by is None:
+            return PyagramFrameTypes.GLOBAL
+        elif pyagram_frame.function is None:
+            return PyagramFrameTypes.PLACEHOLDER
+        elif inspect.isgeneratorfunction(pyagram_frame.function):
+            return PyagramFrameTypes.GENERATOR
+        else:
+            return PyagramFrameTypes.FUNCTION
 
 class ObjectTypes(Enum):
     """

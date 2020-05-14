@@ -59,7 +59,7 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, None, state=state)
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.prev_trace_type = None
@@ -156,7 +156,7 @@ class ProgramState:
                 self.exception_index = len(self.state.snapshots)
                 overwrite_throw_flag = self.is_flag \
                                    and self.curr_element.frame is not None \
-                                   and utils.is_generator_frame(self.curr_element.frame)
+                                   and self.curr_element.frame.pframe_type is enum.PyagramFrameTypes.GENERATOR
                 if overwrite_throw_flag:
                     self.curr_element = self.curr_element.frame
                 def finish_step():
@@ -175,16 +175,17 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
-                self.open_pyagram_flag(None)
-            self.open_pyagram_frame(frame, is_implicit)
+                self.open_pyagram_flag(frame, None)
+            function = utils.get_function(frame)
+            self.open_pyagram_frame(frame, function, is_implicit=is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            self.close_pyagram_flag()
+            self.close_pyagram_flag(frame)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            self.open_comprehension()
+            self.open_comprehension(frame)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -192,15 +193,15 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-            self.close_pyagram_frame(return_value)
+            self.close_pyagram_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_flag(return_value)
+            self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
-            self.close_class_frame(frame)
+            self.close_class_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            self.close_comprehension()
+            self.close_comprehension(frame, return_value)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -214,17 +215,17 @@ class ProgramState:
             self.curr_element.hidden_subflags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, banner):
+    def open_pyagram_flag(self, frame, banner, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-        self.curr_element = self.curr_element.add_flag(banner)
+        self.curr_element = self.curr_element.add_flag(banner, **init_args)
 
-    def open_pyagram_frame(self, frame, is_implicit):
+    def open_pyagram_frame(self, frame, function, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        self.curr_element = self.curr_element.add_frame(frame, is_implicit)
+        self.curr_element = self.curr_element.add_frame(frame, function, **init_args)
 
     def open_class_frame(self, frame):
         """
@@ -232,20 +233,20 @@ class ProgramState:
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
-    def open_comprehension(self):
+    def open_comprehension(self, frame):
         """
         """
-        assert self.is_ongoing_frame
-        # self.curr_element.is_comprehension = True
-        # TODO
+        assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
+        self.open_pyagram_flag(frame, None, hidden_snapshot=0)
+        self.open_pyagram_frame(frame, None)
 
-    def close_pyagram_flag(self):
+    def close_pyagram_flag(self, frame):
         """
         """
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
 
-    def close_pyagram_frame(self, return_value):
+    def close_pyagram_frame(self, frame, return_value):
         """
         """
         assert self.is_ongoing_frame
@@ -255,7 +256,7 @@ class ProgramState:
         if is_implicit:
             self.curr_element = self.curr_element.close()
 
-    def close_class_frame(self, frame):
+    def close_class_frame(self, frame, return_value):
         """
         """
         assert self.is_ongoing_frame
@@ -265,10 +266,14 @@ class ProgramState:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
         self.defer(finish_step)
 
-    def close_comprehension(self):
+    def close_comprehension(self, frame, return_value):
         """
         """
+        # if return_value is None:
+        #     return
         assert self.is_ongoing_frame
+        self.close_pyagram_frame(frame, return_value)
+        self.close_pyagram_flag(frame)
         # self.curr_element.is_comprehension = False
         # TODO
         # TODO: Only do stuff here if the return_value is not None.

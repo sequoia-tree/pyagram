@@ -2,6 +2,7 @@ import inspect
 import math
 
 from . import constants
+from . import enum
 from . import utils
 
 class PyagramElement:
@@ -20,10 +21,10 @@ class PyagramElement:
         for flag in self.flags:
             flag.step()
 
-    def add_flag(self, banner):
+    def add_flag(self, banner, **init_args):
         """
         """
-        flag = PyagramFlag(self, banner)
+        flag = PyagramFlag(self, banner, **init_args)
         self.flags.append(flag)
         return flag
 
@@ -178,11 +179,11 @@ class PyagramFlag(PyagramElement):
                     self.state.snapshot()
                 return True
 
-    def add_frame(self, frame, is_implicit):
+    def add_frame(self, frame, function, **init_args):
         """
         """
         assert self.banner_is_complete
-        frame = PyagramFrame(self, frame, is_implicit)
+        frame = PyagramFrame(self, frame, function, **init_args)
         self.frame = frame
         return frame
 
@@ -197,54 +198,59 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, is_implicit=False, *, state=None):
+    def __init__(self, opened_by, frame, function, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
         self.frame = frame
+        self.function = function
         self.is_implicit = is_implicit
-        if self.is_global_frame:
+        self.pframe_type = enum.PyagramFrameTypes.identify_pyagram_frame_type(self)
+        if self.pframe_type is enum.PyagramFrameTypes.GLOBAL:
             del frame.f_globals['__builtins__']
-        else:
-            self.function = utils.get_function(frame)
+        elif self.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER:
+            pass
+        elif self.pframe_type is enum.PyagramFrameTypes.GENERATOR:
             self.state.memory_state.record_parent(self, self.function)
-            if utils.is_generator_frame(self):
-                self.hide_from(0)
-                self.state.memory_state.record_generator_frame(self)
-            else:
-                utils.fix_init_banner(self.opened_by.banner_elements, self.function)
-                var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
-                self.var_positional_index = var_positional_index
-                self.initial_var_pos_args = None if var_positional_name is None else [
-                    self.state.encoder.reference_snapshot(positional_argument)
-                    for positional_argument in frame.f_locals[var_positional_name]
+            self.state.memory_state.record_generator_frame(self)
+            self.hide_from(0)
+        elif self.pframe_type is enum.PyagramFrameTypes.FUNCTION:
+            self.state.memory_state.record_parent(self, self.function)
+            utils.fix_init_banner(self.opened_by.banner_elements, self.function)
+            var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
+            self.var_positional_index = var_positional_index
+            self.initial_var_pos_args = None if var_positional_name is None else [
+                self.state.encoder.reference_snapshot(positional_argument)
+                for positional_argument in frame.f_locals[var_positional_name]
+            ]
+            self.initial_var_keyword_args = None if var_keyword_name is None else {
+                key: self.state.encoder.reference_snapshot(value)
+                for key, value in frame.f_locals[var_keyword_name].items()
+            }
+            self.initial_bindings = {
+                key: self.state.encoder.reference_snapshot(value)
+                for key, value in self.get_bindings().items()
+            }
+            self.frame_number = self.state.program_state.frame_count
+            self.state.program_state.frame_count += 1
+            if is_implicit:
+                flag = self.opened_by
+                num_args = len(self.initial_bindings)
+                num_bindings = 1 + num_args
+                flag.banner_elements = [
+                    (
+                        self.function.__name__,
+                        [0],
+                    ),
+                    '(',
+                    (
+                        '...',
+                        list(range(1, num_bindings)),
+                    ),
+                    ')',
                 ]
-                self.initial_var_keyword_args = None if var_keyword_name is None else {
-                    key: self.state.encoder.reference_snapshot(value)
-                    for key, value in frame.f_locals[var_keyword_name].items()
-                }
-                self.initial_bindings = {
-                    key: self.state.encoder.reference_snapshot(value)
-                    for key, value in self.get_bindings().items()
-                }
-                self.frame_number = self.state.program_state.frame_count
-                self.state.program_state.frame_count += 1
-                if is_implicit:
-                    flag = self.opened_by
-                    num_args = len(self.initial_bindings)
-                    num_bindings = 1 + num_args
-                    flag.banner_elements = [
-                        (
-                            self.function.__name__,
-                            [0],
-                        ),
-                        '(',
-                        (
-                            '...',
-                            list(range(1, num_bindings)),
-                        ),
-                        ')',
-                    ]
-                    flag.banner_bindings = [(False, None)] * num_bindings
-                    flag.evaluate_next_banner_bindings(skip_args=True)
+                flag.banner_bindings = [(False, None)] * num_bindings
+                flag.evaluate_next_banner_bindings(skip_args=True)
+        else:
+            raise enum.PyagramFrameTypes.illegal_enum(self.pframe_type)
         self.raises_error = False
         self.has_returned = False
         self.return_value = None
@@ -258,7 +264,7 @@ class PyagramFrame(PyagramElement):
     def is_global_frame(self):
         """
         """
-        return self.opened_by is None
+        return self.pframe_type is enum.PyagramFrameTypes.GLOBAL
 
     @property
     def parent(self):
@@ -286,15 +292,16 @@ class PyagramFrame(PyagramElement):
     def step(self):
         """
         """
-        self.bindings = self.get_bindings()
-        if not self.is_hidden():
-            referents = list(self.bindings.values())
-            if not self.is_global_frame:
-                referents.append(self.function)
-            if self.return_value_is_visible:
-                referents.append(self.return_value)
-            for referent in referents:
-                self.state.memory_state.track(referent)
+        if self.pframe_type is not enum.PyagramFrameTypes.PLACEHOLDER:
+            self.bindings = self.get_bindings()
+            if not self.is_hidden():
+                referents = list(self.bindings.values())
+                if not self.is_global_frame:
+                    referents.append(self.function)
+                if self.return_value_is_visible:
+                    referents.append(self.return_value)
+                for referent in referents:
+                    self.state.memory_state.track(referent)
         super().step()
 
     def snapshot(self):
