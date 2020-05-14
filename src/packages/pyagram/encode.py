@@ -187,7 +187,7 @@ class Encoder:
     def encode_generator(self, object):
         """
         """
-        generator_frames = self.state.memory_state.generator_frames
+        latest_gen_frames = self.state.memory_state.latest_gen_frames
         generator_parents = self.state.memory_state.generator_parents
         encoding = {
             'type': 'generator',
@@ -199,8 +199,8 @@ class Encoder:
             ),
             'flags': [],
         }
-        if object in generator_frames:
-            frame = generator_frames[object]
+        if object in latest_gen_frames:
+            frame = latest_gen_frames[object]
             encoding.update({
                 'is_curr_element': frame is self.state.program_state.curr_element,
                 'return_value':

@@ -52,22 +52,22 @@ class PyagramFrameTypes(Enum):
     """
 
     GLOBAL = object()
-    PLACEHOLDER = object()
     GENERATOR = object()
     FUNCTION = object()
+    PLACEHOLDER = object()
 
     @staticmethod
-    def identify_pyagram_frame_type(opened_by, function, generator):
+    def identify_pyagram_frame_type(pyagram_frame):
         """
         """
-        if opened_by is None:
+        if pyagram_frame.opened_by is None:
             return PyagramFrameTypes.GLOBAL
-        elif generator is not None:
+        elif pyagram_frame.generator is not None:
             return PyagramFrameTypes.GENERATOR
-        elif function is None:
-            return PyagramFrameTypes.PLACEHOLDER
-        else:
+        elif pyagram_frame.function is not None:
             return PyagramFrameTypes.FUNCTION
+        else:
+            return PyagramFrameTypes.PLACEHOLDER
 
 class ObjectTypes(Enum):
     """
