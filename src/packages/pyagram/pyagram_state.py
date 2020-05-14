@@ -147,32 +147,7 @@ class ProgramState:
             self.process_frame_close(frame, frame_type, return_value)
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             exception_info, = step_info
-            _, _, traceback = exception_info
-            if traceback.tb_next is None:
-
-                # This is the original exception.
-
-                self.exception_info = exception_info
-                self.exception_index = len(self.state.snapshots)
-                is_placeholder = self.is_frame \
-                    and self.curr_element.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER
-                is_generator = self.is_flag \
-                    and self.curr_element.frame is not None \
-                    and self.curr_element.frame.pframe_type is enum.PyagramFrameTypes.GENERATOR
-                if is_placeholder:
-                    exception_element = self.curr_element
-                    self.curr_element = self.curr_element.opened_by.opened_by
-                if is_generator:
-                    exception_element = self.curr_element
-                    self.curr_element = self.curr_element.frame
-                def finish_step():
-                    if is_placeholder or is_generator:
-                        self.curr_element = exception_element
-                    self.process_exception(frame, frame_type)
-                    self.exception_info = None
-                self.defer(finish_step)
-            else:
-                self.process_exception(frame, frame_type)
+            self.process_exception(frame, frame_type, exception_info)
         self.prev_trace_type = trace_type
 
     def process_frame_open(self, frame, frame_type):
@@ -211,7 +186,37 @@ class ProgramState:
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
-    def process_exception(self, frame, frame_type):
+    def process_exception(self, frame, frame_type, exception_info):
+        """
+        """
+        _, _, traceback = exception_info
+        if traceback.tb_next is None:
+
+            # This is the original exception.
+
+            self.exception_info = exception_info
+            self.exception_index = len(self.state.snapshots)
+            is_placeholder = self.is_frame \
+                and self.curr_element.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER
+            is_generator = self.is_flag \
+                and self.curr_element.frame is not None \
+                and self.curr_element.frame.pframe_type is enum.PyagramFrameTypes.GENERATOR
+            if is_placeholder:
+                exception_element = self.curr_element
+                self.curr_element = self.curr_element.opened_by.opened_by
+            if is_generator:
+                exception_element = self.curr_element
+                self.curr_element = self.curr_element.frame
+            def finish_step():
+                if is_placeholder or is_generator:
+                    self.curr_element = exception_element
+                self.process_traceback(frame, frame_type)
+                self.exception_info = None
+            self.defer(finish_step)
+        else:
+            self.process_traceback(frame, frame_type)
+
+    def process_traceback(self, frame, frame_type):
         """
         """
         if self.is_frame:
