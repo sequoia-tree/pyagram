@@ -410,7 +410,8 @@ class MemoryState:
         # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if not pyagram_frame.is_global_frame and pyagram_frame.is_new:
+            # TODO: You might want to replace is_global_frame wherever it occurs with more appropriate logic. Eg here, maybe `if pyagram_frame.is_new and pyagram_frame.parent is not None`?
+            if pyagram_frame.is_new and not pyagram_frame.is_global_frame:
                 parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by
