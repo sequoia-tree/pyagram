@@ -1,6 +1,7 @@
 import gc
 import inspect
 import math
+import re
 import types
 
 from . import constants
@@ -108,6 +109,15 @@ def get_iterable(iterator):
             assert iterable is None
             iterable = referent
     return iterable
+
+def is_genuine_binding(variable):
+    """
+    """
+
+    # For comprehensions and generator comprehensions.
+    # Their frames sometimes has implicit variables named `.0`, `.1`, etc.
+
+    return re.fullmatch(r'\.\d+', variable) is None
 
 def concatenate_adjacent_strings(elements):
     """

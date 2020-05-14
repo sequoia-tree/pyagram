@@ -337,7 +337,11 @@ class MemoryState:
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     # TODO: Specially handle generator comprehensions, here and in encode.py.
                     # TODO: Pretend the implicit bindings (`.0`, `.1`, etc.) aren't there.
-                    referents = list(inspect.getgeneratorlocals(object).values())
+                    referents = [
+                        value
+                        for variable, value in inspect.getgeneratorlocals(object).items()
+                        if utils.is_genuine_binding(variable)
+                    ]
                     if object in self.latest_gen_frames and self.latest_gen_frames[object].return_value_is_visible:
                         referents.append(self.latest_gen_frames[object].return_value)
                     if object.gi_yieldfrom is not None:

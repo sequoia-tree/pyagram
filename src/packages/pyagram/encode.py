@@ -152,7 +152,7 @@ class Encoder:
             ],
         }
 
-    def encode_mapping(self, object, *, is_bindings=False, ignored=()):
+    def encode_mapping(self, object, *, is_bindings=False, take=lambda key: True):
         """
         """
         items = [
@@ -161,7 +161,7 @@ class Encoder:
                 'value': self.reference_snapshot(value),
             }
             for key, value in object.items()
-            if key not in ignored
+            if take(key)
         ]
         if is_bindings:
             return items
@@ -196,6 +196,7 @@ class Encoder:
             'bindings': self.encode_mapping(
                 inspect.getgeneratorlocals(object),
                 is_bindings=True,
+                take=utils.is_genuine_binding,
             ),
             'flags': [],
         }
@@ -228,7 +229,7 @@ class Encoder:
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,
-                ignored=pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS,
+                take=lambda key: key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS,
             ),
             'return_value': None,
             'from': None,

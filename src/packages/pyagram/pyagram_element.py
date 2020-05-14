@@ -306,9 +306,9 @@ class PyagramFrame(PyagramElement):
             if not self.is_hidden():
                 referents = list(self.bindings.values())
                 if self.function is not None:
-                    referents.append(self.function, enum.ObjectTypes.FUNCTION)
+                    referents.append(self.function)
                 if self.generator is not None:
-                    referents.append(self.generator, enum.ObjectTypes.GENERATOR)
+                    referents.append(self.generator)
                 if self.return_value_is_visible:
                     referents.append(self.return_value)
                 for referent in referents:
