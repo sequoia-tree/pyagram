@@ -244,8 +244,8 @@ class ProgramState:
         """
         assert self.is_ongoing_frame
         is_implicit = self.curr_element.is_implicit
-        is_exception = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-        self.curr_element = self.curr_element.close(is_exception, return_value)
+        raises_error = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
+        self.curr_element = self.curr_element.close(raises_error, return_value)
         if is_implicit:
             self.curr_element = self.curr_element.close()
 

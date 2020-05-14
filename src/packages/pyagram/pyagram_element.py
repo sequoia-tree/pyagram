@@ -84,7 +84,6 @@ class PyagramFlag(PyagramElement):
 
         # Fill in every banner binding up to the next one that is obtained through a function call.
 
-        # if not self.is_hidden: # TODO ?
         if not self.banner_is_complete:
             if self is self.state.program_state.curr_element:
                 if self.is_new or self.has_processed_subflag_since_prev_eval:
@@ -94,9 +93,6 @@ class PyagramFlag(PyagramElement):
                 self.has_processed_subflag_since_prev_eval = True
         if self.frame is not None:
             self.frame.step()
-
-
-
         self.is_new = False
         super().step()
 
@@ -116,17 +112,16 @@ class PyagramFlag(PyagramElement):
                 if self.hidden_subflags
                 else [
                     flag.snapshot()
-                    for flag in (
-                        self.flags + self.frame.flags
+                    for flag in self.flags + (
+                        self.frame.flags
                         if is_hidden and self.frame is not None
-                        else self.flags
+                        else []
                     )
                 ],
             'self': self, # For postprocessing.
             'banner_binding_index': self.banner_binding_index, # For postprocessing.
             'snapshot_index': len(self.state.snapshots), # For postprocessing.
         }
-        # TODO: For a call like `f(x=VALUE)`, the bottom half of the banner should show "[POINTER](x=VALUE)", not "[POINTER](VALUE)". The easiest place to do it might be in postprocess.py, where you append (code, bindings). You could just replace bindings -> (name or None, bindings).
 
     def evaluate_next_banner_bindings(self, *, skip_args=False):
         """
@@ -250,9 +245,14 @@ class PyagramFrame(PyagramElement):
                     ]
                     flag.banner_bindings = [(False, None)] * num_bindings
                     flag.evaluate_next_banner_bindings(skip_args=True)
-        self.is_exception = False
+        self.raises_error = False
         self.has_returned = False
         self.return_value = None
+
+    def __repr__(self):
+        """
+        """
+        return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
 
     @property
     def is_global_frame(self):
@@ -267,15 +267,10 @@ class PyagramFrame(PyagramElement):
         return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
 
     @property
-    def return_value_is_visible(self):
+    def return_value_is_visible(self): # TODO: Rename to show_return. (Do you still need this?)
         """
         """
-        return self.has_returned and not self.is_exception
-
-    def __repr__(self):
-        """
-        """
-        return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
+        return self.has_returned and not self.raises_error
 
     def hide_from(self, snapshot_index):
         """
@@ -349,11 +344,11 @@ class PyagramFrame(PyagramElement):
             for variable in sorted_binding_names
         }
 
-    def close(self, is_exception, return_value):
+    def close(self, raises_error, return_value):
         """
         """
         if not self.is_global_frame:
-            self.is_exception = is_exception
+            self.raises_error = raises_error
             self.has_returned = True
             self.return_value = return_value
         self.state.step()
