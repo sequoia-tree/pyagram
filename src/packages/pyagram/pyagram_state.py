@@ -63,7 +63,7 @@ class ProgramState:
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.prev_trace_type = None
-        self.exception_info = None # TODO: Rename to init_error_info?
+        self.exception_info = None # TODO: Rename to init_error_info.
         self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 1
@@ -75,16 +75,28 @@ class ProgramState:
         return isinstance(self.curr_element, pyagram_element.PyagramFlag)
 
     @property
-    def is_frame(self):
-        """
-        """
-        return isinstance(self.curr_element, pyagram_element.PyagramFrame)
-
-    @property
     def is_ongoing_flag_sans_frame(self):
         """
         """
         return self.is_flag and self.curr_element.frame is None
+
+    @property
+    def is_ongoing_flag_with_frame(self):
+        """
+        """
+        return self.is_flag and self.curr_element.frame is not None
+
+    @property
+    def is_complete_flag(self):
+        """
+        """
+        return self.is_flag and self.curr_element.has_returned
+
+    @property
+    def is_frame(self):
+        """
+        """
+        return isinstance(self.curr_element, pyagram_element.PyagramFrame)
 
     @property
     def is_ongoing_frame(self):
@@ -93,10 +105,10 @@ class ProgramState:
         return self.is_frame and not self.curr_element.has_returned
 
     @property
-    def is_complete_flag(self):
+    def is_complete_frame(self):
         """
         """
-        return self.is_flag and self.curr_element.has_returned
+        return self.is_frame and self.curr_element.has_returned
 
     def step(self):
         """
@@ -165,17 +177,14 @@ class ProgramState:
             if is_implicit:
                 self.open_pyagram_flag(None)
             self.open_pyagram_frame(frame, is_implicit)
-            print('open frame') # TODO: Delete these print statements ...
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             self.close_pyagram_flag()
-            print('close flag')
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.open_comprehension()
-            print('OPN')
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -184,17 +193,14 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(return_value)
-            print('close frame') # TODO: Delete these print statements ...
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(return_value)
-            print('open flag')
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.close_comprehension()
-            print('CLS', return_value)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
