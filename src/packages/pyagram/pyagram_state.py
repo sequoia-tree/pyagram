@@ -154,14 +154,20 @@ class ProgramState:
 
                 self.exception_info = exception_info
                 self.exception_index = len(self.state.snapshots)
-                overwrite_throw_flag = self.is_flag \
-                                   and self.curr_element.frame is not None \
-                                   and self.curr_element.frame.pframe_type is enum.PyagramFrameTypes.GENERATOR
-                if overwrite_throw_flag:
+                is_placeholder = self.is_frame \
+                    and self.curr_element.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER
+                is_generator = self.is_flag \
+                    and self.curr_element.frame is not None \
+                    and self.curr_element.frame.pframe_type is enum.PyagramFrameTypes.GENERATOR
+                if is_placeholder:
+                    exception_element = self.curr_element
+                    self.curr_element = self.curr_element.opened_by.opened_by
+                if is_generator:
+                    exception_element = self.curr_element
                     self.curr_element = self.curr_element.frame
                 def finish_step():
-                    if overwrite_throw_flag:
-                        self.curr_element = self.curr_element.opened_by
+                    if is_placeholder or is_generator:
+                        self.curr_element = exception_element
                     self.process_exception(frame, frame_type)
                     self.exception_info = None
                 self.defer(finish_step)
@@ -269,25 +275,12 @@ class ProgramState:
     def close_comprehension(self, frame, return_value):
         """
         """
-        # if return_value is None:
-        #     return
+        raises_error = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
+        if return_value is None and not raises_error:
+            return
         assert self.is_ongoing_frame
         self.close_pyagram_frame(frame, return_value)
         self.close_pyagram_flag(frame)
-        # self.curr_element.is_comprehension = False
-        # TODO
-        # TODO: Only do stuff here if the return_value is not None.
-        # TODO: For proof, set it to print upon open_comp / close_comp and run this ...
-        # # def f():
-        # #     a = [1/x for x in range(-2, 2)]
-        # # y = f()
-        # a = [x for x in [0, 1, 2]]
-        # # a = [1/x for x in range(-2, 2)]
-        # def f(b):
-        #     a = [x + y for x in b for y in b]
-        #     return a
-        # c = f(a)
-        # TODO: Maybe upon open_comp you can start a hidden flag + fake frame, and upon close_comp you can close the hidden flag + fake frame; maybe this'll make error-catching easier.
 
     def defer(self, function):
         """
