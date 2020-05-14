@@ -172,15 +172,3 @@ class CodeWrapper(ast.NodeTransformer):
         )
         self.generic_visit(node)
         return node
-
-    def visit_GeneratorExp(self, node):
-        """
-        """
-        node.lineno = utils.encode_lineno(
-            node.lineno,
-            constants.GENXP_COMP_LINENO,
-            False,
-            max_lineno=self.preprocessor.num_lines,
-        )
-        self.generic_visit(node)
-        return node

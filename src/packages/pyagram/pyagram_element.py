@@ -201,15 +201,21 @@ class PyagramFrame(PyagramElement):
     def __init__(self, opened_by, frame, function, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
         self.frame = frame
-        self.function = function
+        self.function = function # TODO: Do utils.get_function here, and add is_placeholder=False.
+        self.generator = utils.get_generator(frame)
         self.is_implicit = is_implicit
-        self.pframe_type = enum.PyagramFrameTypes.identify_pyagram_frame_type(self)
+
+        self.pframe_type = enum.PyagramFrameTypes.identify_pyagram_frame_type(
+            opened_by,
+            self.function,
+            self.generator,
+        )
+
         if self.pframe_type is enum.PyagramFrameTypes.GLOBAL:
             del frame.f_globals['__builtins__']
         elif self.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER:
             pass
         elif self.pframe_type is enum.PyagramFrameTypes.GENERATOR:
-            self.state.memory_state.record_parent(self, self.function)
             self.state.memory_state.record_generator_frame(self)
             self.hide_from(0)
         elif self.pframe_type is enum.PyagramFrameTypes.FUNCTION:
@@ -270,7 +276,16 @@ class PyagramFrame(PyagramElement):
     def parent(self):
         """
         """
-        return None if self.is_global_frame else self.state.memory_state.function_parents[self.function]
+        if self.pframe_type is enum.PyagramFrameTypes.GLOBAL:
+            return None
+        elif self.pframe_type is enum.PyagramFrameTypes.PLACEHOLDER:
+            return None
+        elif self.pframe_type is enum.PyagramFrameTypes.GENERATOR:
+            return self.state.memory_state.generator_parents[self.generator]
+        elif self.pframe_type is enum.PyagramFrameTypes.FUNCTION:
+            return self.state.memory_state.function_parents[self.function]
+        else:
+            raise enum.PyagramFrameTypes.illegal_enum(self.pframe_type)
 
     @property
     def return_value_is_visible(self): # TODO: Rename to show_return. (Do you still need this?)
@@ -296,8 +311,10 @@ class PyagramFrame(PyagramElement):
             self.bindings = self.get_bindings()
             if not self.is_hidden():
                 referents = list(self.bindings.values())
-                if not self.is_global_frame:
-                    referents.append(self.function)
+                if self.function is not None:
+                    referents.append(self.function, enum.ObjectTypes.FUNCTION)
+                if self.generator is not None:
+                    referents.append(self.generator, enum.ObjectTypes.GENERATOR)
                 if self.return_value_is_visible:
                     referents.append(self.return_value)
                 for referent in referents:
@@ -333,7 +350,7 @@ class PyagramFrame(PyagramElement):
     def get_bindings(self):
         """
         """
-        sorted_binding_names = [] if self.is_global_frame else list(
+        sorted_binding_names = [] if self.function is None else list(
             inspect.signature(self.function).parameters.keys(),
         )
         for variable, value in self.frame.f_locals.items():

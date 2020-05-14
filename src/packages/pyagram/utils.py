@@ -43,8 +43,17 @@ def get_function(frame):
         if enum.ObjectTypes.identify_object_type(referrer) is enum.ObjectTypes.FUNCTION:
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer
-    assert function is not None
     return function
+
+def get_generator(frame):
+    """
+    """
+    generator = None
+    for referrer in gc.get_referrers(frame):
+        if inspect.isgenerator(referrer) and referrer.gi_frame is frame:
+            assert generator is None, f'multiple generators refer to frame object {frame}'
+            generator = referrer
+    return generator
 
 def fix_init_banner(banner_elements, function):
     """

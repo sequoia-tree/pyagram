@@ -306,7 +306,8 @@ class MemoryState:
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.generator_frames = {}
-        self.generator_functs = {} # TODO: Can't you get this from the generator frame's .function?
+        self.generator_parents = {} # TODO: Can't you get this from the generator frame's .parent?
+        #self.generator_functs = {} # TODO: Can't you get this from the generator frame's .function?
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 
@@ -336,6 +337,8 @@ class MemoryState:
                     iterable = utils.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
+                    # TODO: Specially handle generator comprehensions, here and in encode.py.
+                    # TODO: Pretend the implicit bindings aren't there.
                     referents = list(inspect.getgeneratorlocals(object).values())
                     if object in self.generator_frames and self.generator_frames[object].return_value_is_visible:
                         referents.append(self.generator_frames[object].return_value)
@@ -371,7 +374,6 @@ class MemoryState:
     def track(self, object, object_type=None):
         """
         """
-        # TODO: Refactor this func
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
@@ -382,7 +384,15 @@ class MemoryState:
             self.objects.append(object)
             self.obj_init_debuts[id(object)] = debut_idx
             if object_type is enum.ObjectTypes.GENERATOR:
-                self.generator_functs[object] = utils.get_function(object.gi_frame)
+                generator_function = utils.get_function(object.gi_frame)
+                if generator_function is None:
+                    # TODO: What if it's in a flag?
+                    # TODO: Consider for example f((x for x in [1, 2, 3]), (y for y in [4, 5, 6])).
+                    parent = self.state.program_state.curr_element
+                else:
+                    parent = self.function_parents[generator_function]
+                self.generator_parents[object] = parent
+                # TODO: In theory it always tracks the generator (ie inserts into generator_parents) before we make a generator frame. So you can tell a frame is a generator frame bc its .frame be the .gi_frame of a generator in generator_parents. You don't need is_placeholder.
 
     def record_class_frame(self, frame_object, class_object):
         """
@@ -395,17 +405,7 @@ class MemoryState:
     def record_generator_frame(self, pyagram_frame):
         """
         """
-        # TODO: Refactor this func
-        generator = None
-        for object in gc.get_referrers(pyagram_frame.frame):
-            if inspect.isgenerator(object):
-                assert generator is None, f'multiple generators refer to frame object {pyagram_frame.frame}'
-                generator = object
-        assert generator is not None
-        if generator in self.generator_frames:
-            assert self.generator_frames[generator].frame is pyagram_frame.frame
-        self.generator_frames[generator] = pyagram_frame
-        self.track(generator, enum.ObjectTypes.GENERATOR)
+        self.generator_frames[pyagram_frame.generator] = pyagram_frame
 
     def record_parent(self, pyagram_frame, function):
         """
