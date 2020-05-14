@@ -205,7 +205,7 @@ class ProgramState:
             self.curr_element.hide_from(self.exception_index + 1)
         while self.is_flag:
             self.curr_element.hide_from(self.exception_index + 1)
-            self.curr_element.hide_subflags = True
+            self.curr_element.hidden_subflags = True
             self.curr_element = self.curr_element.opened_by
 
     def open_pyagram_flag(self, banner):

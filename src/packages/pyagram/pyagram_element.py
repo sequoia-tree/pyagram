@@ -31,20 +31,20 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, banner, *, state=None):
+    def __init__(self, opened_by, banner, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        self.hidden_from = math.inf
-        self.hide_subflags = False
         if banner is None:
             banner_elements, banner_bindings = [], []
         else:
             banner_elements, banner_bindings = banner
             utils.concatenate_adjacent_strings(banner_elements)
-        self.has_processed_subflag_since_prev_eval = False
+        self.hidden_snapshot = hidden_snapshot
+        self.hidden_subflags = False
         self.banner_elements = banner_elements
         self.banner_bindings = banner_bindings
         self.banner_binding_index = 0
         self.positional_arg_index = 0
+        self.has_processed_subflag_since_prev_eval = False
         self.frame = None
 
     @property
@@ -69,14 +69,14 @@ class PyagramFlag(PyagramElement):
     def hide_from(self, snapshot_index):
         """
         """
-        self.hidden_from = min(self.hidden_from, snapshot_index)
+        self.hidden_snapshot = min(self.hidden_snapshot, snapshot_index)
 
     def is_hidden(self, snapshot_index=None):
         """
         """
         if snapshot_index is None:
             snapshot_index = len(self.state.snapshots)
-        return self.hidden_from <= snapshot_index
+        return self.hidden_snapshot <= snapshot_index
 
     def step(self):
         """
@@ -84,6 +84,7 @@ class PyagramFlag(PyagramElement):
 
         # Fill in every banner binding up to the next one that is obtained through a function call.
 
+        # if not self.is_hidden: # TODO ?
         if not self.banner_is_complete:
             if self is self.state.program_state.curr_element:
                 if self.is_new or self.has_processed_subflag_since_prev_eval:
@@ -93,6 +94,9 @@ class PyagramFlag(PyagramElement):
                 self.has_processed_subflag_since_prev_eval = True
         if self.frame is not None:
             self.frame.step()
+
+
+
         self.is_new = False
         super().step()
 
@@ -109,7 +113,7 @@ class PyagramFlag(PyagramElement):
                 else self.frame.snapshot(),
             'flags':
                 []
-                if self.hide_subflags
+                if self.hidden_subflags
                 else [
                     flag.snapshot()
                     for flag in (
