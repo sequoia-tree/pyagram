@@ -208,11 +208,11 @@ class PyagramFrame(PyagramElement):
         if self.frame_type is enum.PyagramFrameTypes.GLOBAL:
             del frame.f_globals['__builtins__']
         elif self.frame_type is enum.PyagramFrameTypes.GENERATOR:
-            self.state.memory_state.record_generator_frame(self)
+            self.state.memory_state.record_generator(self, self.generator)
             self.hide_from(0)
         elif self.frame_type is enum.PyagramFrameTypes.FUNCTION:
-            self.state.memory_state.record_parent(self, self.function)
-            utils.fix_init_banner(self.opened_by.banner_elements, self.function)
+            self.state.memory_state.record_function(self, self.function)
+            utils.fix_init_banner(opened_by.banner_elements, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [
@@ -230,7 +230,7 @@ class PyagramFrame(PyagramElement):
             self.frame_number = self.state.program_state.frame_count
             self.state.program_state.frame_count += 1
             if is_implicit:
-                flag = self.opened_by
+                flag = opened_by
                 num_args = len(self.initial_bindings)
                 num_bindings = 1 + num_args
                 flag.banner_elements = [
@@ -261,7 +261,7 @@ class PyagramFrame(PyagramElement):
         return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
 
     @property
-    def is_global_frame(self):
+    def is_global_frame(self): # TODO: Consider an is_global, is_generator, is_function, and is_placeholder.
         """
         """
         return self.frame_type is enum.PyagramFrameTypes.GLOBAL
@@ -282,7 +282,7 @@ class PyagramFrame(PyagramElement):
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
     @property
-    def return_value_is_visible(self): # TODO: Rename to show_return. (Do you still need this?)
+    def return_value_is_visible(self): # TODO: Rename, eg to show_return. (Do you still need this?)
         """
         """
         return self.has_returned and not self.raises_error

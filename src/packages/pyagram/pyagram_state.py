@@ -319,7 +319,7 @@ class MemoryState:
                 if object_type is enum.ObjectTypes.PRIMITIVE:
                     referents = []
                 elif object_type is enum.ObjectTypes.FUNCTION:
-                    self.record_parent(curr_frame, object)
+                    self.record_function(curr_frame, object)
                     referents = utils.get_defaults(object)
                 elif object_type is enum.ObjectTypes.BUILTIN:
                     referents = []
@@ -336,7 +336,7 @@ class MemoryState:
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
                     # TODO: Specially handle generator comprehensions, here and in encode.py.
-                    # TODO: Pretend the implicit bindings aren't there.
+                    # TODO: Pretend the implicit bindings (`.0`, `.1`, etc.) aren't there.
                     referents = list(inspect.getgeneratorlocals(object).values())
                     if object in self.latest_gen_frames and self.latest_gen_frames[object].return_value_is_visible:
                         referents.append(self.latest_gen_frames[object].return_value)
@@ -390,7 +390,6 @@ class MemoryState:
                 else:
                     parent = self.function_parents[generator_function]
                 self.generator_parents[object] = parent
-                # TODO: In theory it always tracks the generator (ie inserts into generator_parents) before we make a generator frame. So you can tell a frame is a generator frame bc its .frame be the .gi_frame of a generator in generator_parents. You don't need is_placeholder.
 
     def record_class_frame(self, frame_object, class_object):
         """
@@ -400,12 +399,12 @@ class MemoryState:
         pyagram_class_frame.bindings = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__
 
-    def record_generator_frame(self, pyagram_frame):
+    def record_generator(self, pyagram_frame, generator):
         """
         """
-        self.latest_gen_frames[pyagram_frame.generator] = pyagram_frame # TODO: still need this?
+        self.latest_gen_frames[generator] = pyagram_frame
 
-    def record_parent(self, pyagram_frame, function):
+    def record_function(self, pyagram_frame, function):
         """
         """
         # TODO: Refactor this func
