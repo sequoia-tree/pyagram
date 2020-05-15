@@ -98,7 +98,7 @@ Split.split(
         SPLIT_PANEL_STACK_ID,
         SPLIT_PANEL_HEAP_ID,
     ],
-    [60, 40],
+    [55, 45],
     [0, 0],
 );
 

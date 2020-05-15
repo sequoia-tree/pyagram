@@ -253,3 +253,4 @@ function drawPointer(SVGCanvas, reference, object) {
     document.getElementById(POINTERS_SVG_GROUP_ID).appendChild(pointer);
 }
 // TODO: I think the buffer in the x-axis should be 100, and the buffer in the y-axis should be 50.
+// TODO: Bigger arrowheads too, and make sure the arrowheads are offset from the end just a bit.

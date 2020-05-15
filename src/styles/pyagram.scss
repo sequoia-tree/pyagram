@@ -7,6 +7,12 @@
   white-space: nowrap;
 }
 
+// TODO: You should extend the builtin bootstrap padding map.
+// TODO: By default it's p-0..p-5, but even p-5 is not enough.
+.pyagram-midspace {
+  padding-left: 10rem;
+}
+
 .pyagram-flag {
   @include fit-to-text();
   @include border-left();
