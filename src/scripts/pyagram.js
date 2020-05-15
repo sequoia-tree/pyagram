@@ -11,10 +11,9 @@ const REFERENCE_CLASS_NAME = 'pyagram-reference';
 
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
-const POINTER_BUFFER = 100;
-const LEFTPTR_BUFFER = 50;
-const POINTER_BUFFER_X = 100;
-const POINTER_BUFFER_Y = 0;
+const LEFT_VPTR_MARGIN = 50;
+const POINTER_BUFFER_X = 25;
+const POINTER_BUFFER_Y = 25;
 
 var snapshots;
 var globalData;
@@ -151,8 +150,8 @@ function drawPointer(SVGCanvas, reference, object) {
     // });
     var endCoordinateTL = {
         pre: {
-            x: -POINTER_BUFFER,
-            y: -POINTER_BUFFER,
+            x: -POINTER_BUFFER_X,
+            y: -POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left,
@@ -161,7 +160,7 @@ function drawPointer(SVGCanvas, reference, object) {
     };
     var endCoordinateL = {
         pre: {
-            x: -POINTER_BUFFER,
+            x: -POINTER_BUFFER_X,
             y: 0,
         },
         loc: {
@@ -171,8 +170,8 @@ function drawPointer(SVGCanvas, reference, object) {
     };
     var endCoordinateBL = {
         pre: {
-            x: -POINTER_BUFFER,
-            y: +POINTER_BUFFER,
+            x: -POINTER_BUFFER_X,
+            y: +POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left,
@@ -182,7 +181,7 @@ function drawPointer(SVGCanvas, reference, object) {
     var endCoordinateT = {
         pre: {
             x: 0,
-            y: -POINTER_BUFFER,
+            y: -POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left + object.width() / 2,
@@ -192,7 +191,7 @@ function drawPointer(SVGCanvas, reference, object) {
     var endCoordinateB = {
         pre: {
             x: 0,
-            y: +POINTER_BUFFER,
+            y: +POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left + object.width() / 2,
@@ -201,7 +200,7 @@ function drawPointer(SVGCanvas, reference, object) {
     };
     var endCoordinateR = {
         pre: {
-            x: +POINTER_BUFFER,
+            x: +POINTER_BUFFER_X,
             y: 0,
         },
         loc: {
@@ -217,9 +216,9 @@ function drawPointer(SVGCanvas, reference, object) {
     var endCoordinate;
     if (isR) {
         endCoordinate = endCoordinateR;
-    } else if (isL && !isB && startCoordinate.y + LEFTPTR_BUFFER > endCoordinateT.loc.y) {
+    } else if (isL && !isB && startCoordinate.y + LEFT_VPTR_MARGIN > endCoordinateT.loc.y) {
         endCoordinate = endCoordinateL;
-    } else if (isL && !isT && startCoordinate.y - LEFTPTR_BUFFER < endCoordinateB.loc.y) {
+    } else if (isL && !isT && startCoordinate.y - LEFT_VPTR_MARGIN < endCoordinateB.loc.y) {
         endCoordinate = endCoordinateL;
     } else if (isL && isT) {
         endCoordinate = endCoordinateTL;
