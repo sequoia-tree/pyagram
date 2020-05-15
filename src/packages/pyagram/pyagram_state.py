@@ -420,6 +420,7 @@ class MemoryState:
         """
         """
         self.latest_gen_frames[generator] = pyagram_frame
+        self.track(generator, enum.ObjectTypes.GENERATOR)
 
     def record_function(self, pyagram_frame, function):
         """
@@ -433,3 +434,4 @@ class MemoryState:
             else:
                 parent = pyagram_frame
             self.function_parents[function] = parent
+        self.track(function, enum.ObjectTypes.FUNCTION)
