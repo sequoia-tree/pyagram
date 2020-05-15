@@ -17,7 +17,7 @@ const SLIDER_LABEL_ID = 'slider-snapshots-label';
 const SLIDER_L_BUTTON_ID = 'slider-snapshots-l';
 const SLIDER_R_BUTTON_ID = 'slider-snapshots-r';
 const VIS_OPTIONS_TEXT_POINTERS_ID = 'options-vis-option-text-ptrs';
-const VIS_OPTIONS_HIDE_FLAGS_ID = 'options-vis-option-hide-flags';
+const VIS_OPTIONS_SHOW_FLAGS_ID = 'options-vis-option-show-flags';
 const OUTPUT_OVERLAY_ID = 'overlay-output';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw';
 const PYAGRAM_STACK_HEAP_SWITCH_ID = 'switch-vm';
@@ -38,7 +38,7 @@ var sliderLabel = document.getElementById(SLIDER_LABEL_ID);
 var sliderButtonL = document.getElementById(SLIDER_L_BUTTON_ID);
 var sliderButtonR = document.getElementById(SLIDER_R_BUTTON_ID);
 var visOptionsTextPointers = document.getElementById(VIS_OPTIONS_TEXT_POINTERS_ID);
-var visOptionsHideFlags = document.getElementById(VIS_OPTIONS_HIDE_FLAGS_ID);
+var visOptionsShowFlags = document.getElementById(VIS_OPTIONS_SHOW_FLAGS_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
 var pyagramStackHeapSwitch = document.getElementById(PYAGRAM_STACK_HEAP_SWITCH_ID);
@@ -54,7 +54,7 @@ var pyagramHeap = unifiedViewPyagramHeap;
 
 var visOptions = {
     'textPointers': visOptionsTextPointers,
-    'hideFlags': visOptionsHideFlags,
+    'showFlags': visOptionsShowFlags,
 };
 
 function drawSnapshot(snapshotIndex) {
