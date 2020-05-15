@@ -270,10 +270,16 @@ class ProgramState:
             )
             if is_implicit:
                 self.curr_element = self.curr_element.close()
-        if self.curr_element.is_global_frame or self.curr_element.is_generator_frame:
+        if self.curr_element.is_global_frame:
+            pass
+        elif self.curr_element.is_generator_frame:
             self.defer(finish_step)
-        else:
+        elif self.curr_element.is_function_frame:
             finish_step()
+        elif self.curr_element.is_placeholder_frame:
+            finish_step()
+        else:
+            raise enum.PyagramFrameTypes.illegal_enum(self.curr_element.frame_type)
 
     def close_class_frame(self, frame, return_value):
         """
