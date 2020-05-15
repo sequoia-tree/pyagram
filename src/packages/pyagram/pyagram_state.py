@@ -195,19 +195,19 @@ class ProgramState:
 
             self.exception_info = exception_info
             self.exception_index = len(self.state.snapshots)
-            is_placeholder = self.is_frame \
-                and self.curr_element.frame_type is enum.PyagramFrameTypes.PLACEHOLDER
-            is_generator = self.is_flag \
+            is_placeholder_exception = self.is_frame \
+                and self.curr_element.is_placeholder_frame
+            is_generator_exception = self.is_flag \
                 and self.curr_element.frame is not None \
-                and self.curr_element.frame.frame_type is enum.PyagramFrameTypes.GENERATOR
-            if is_placeholder:
+                and self.curr_element.frame.is_generator_frame
+            if is_placeholder_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.opened_by.opened_by
-            if is_generator:
+            if is_generator_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.frame
             def finish_step():
-                if is_placeholder or is_generator:
+                if is_placeholder_exception or is_generator_exception:
                     self.curr_element = exception_element
                 self.process_traceback(frame, frame_type)
                 self.exception_info = None
@@ -335,8 +335,6 @@ class MemoryState:
                     iterable = utils.get_iterable(object)
                     referents = [] if iterable is None else [iterable]
                 elif object_type is enum.ObjectTypes.GENERATOR:
-                    # TODO: Specially handle generator comprehensions, here and in encode.py.
-                    # TODO: Pretend the implicit bindings (`.0`, `.1`, etc.) aren't there.
                     referents = [
                         value
                         for variable, value in inspect.getgeneratorlocals(object).items()
@@ -388,8 +386,6 @@ class MemoryState:
             if object_type is enum.ObjectTypes.GENERATOR:
                 generator_function = utils.get_function(object.gi_frame)
                 if generator_function is None:
-                    # TODO: What if it's in a flag?
-                    # TODO: Consider for example f((x for x in [1, 2, 3]), (y for y in [4, 5, 6])).
                     parent = self.state.program_state.curr_element
                 else:
                     parent = self.function_parents[generator_function]
@@ -414,8 +410,7 @@ class MemoryState:
         # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            # TODO: You might want to replace is_global_frame wherever it occurs with more appropriate logic. Eg here, maybe `if pyagram_frame.is_new and pyagram_frame.parent is not None`?
-            if pyagram_frame.is_new and not pyagram_frame.is_global_frame:
+            if pyagram_frame.is_new and pyagram_frame.opened_by is not None:
                 parent = pyagram_frame.opened_by
                 while isinstance(parent, pyagram_element.PyagramFlag):
                     parent = parent.opened_by

@@ -261,10 +261,28 @@ class PyagramFrame(PyagramElement):
         return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
 
     @property
-    def is_global_frame(self): # TODO: Consider an is_global, is_generator, is_function, and is_placeholder.
+    def is_global_frame(self):
         """
         """
         return self.frame_type is enum.PyagramFrameTypes.GLOBAL
+
+    @property
+    def is_generator_frame(self):
+        """
+        """
+        return self.frame_type is enum.PyagramFrameTypes.GENERATOR
+
+    @property
+    def is_function_frame(self):
+        """
+        """
+        return self.frame_type is enum.PyagramFrameTypes.FUNCTION
+
+    @property
+    def is_placeholder_frame(self):
+        """
+        """
+        return self.frame_type is enum.PyagramFrameTypes.PLACEHOLDER
 
     @property
     def parent(self):
@@ -290,13 +308,13 @@ class PyagramFrame(PyagramElement):
     def hide_from(self, snapshot_index):
         """
         """
-        if not self.is_global_frame:
+        if self.opened_by is not None:
             self.opened_by.hide_from(snapshot_index)
 
     def is_hidden(self, snapshot_index=None):
         """
         """
-        return not self.is_global_frame and self.opened_by.is_hidden(snapshot_index)
+        return self.opened_by is not None and self.opened_by.is_hidden(snapshot_index)
 
     def step(self):
         """
