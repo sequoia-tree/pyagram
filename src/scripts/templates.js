@@ -9,13 +9,13 @@ export const STACK_TEMPLATE = compile(`
 <div class="font-family-monospace">
   {{decodeFrameSnapshot this}}
 </div>
-`)
+`);
 
 export const ELEMENT_TEMPLATE = compile(`
 {{#each flags}}
   {{decodeFlagSnapshot this}}
 {{/each}}
-`)
+`);
 
 export const FLAG_TEMPLATE = compile(`
 <div class="pyagram-flag m-3">
@@ -69,7 +69,7 @@ export const FLAG_TEMPLATE = compile(`
     {{decodeFrameSnapshot frame}}
   {{/if}}
 </div>
-`)
+`);
 
 export const FRAME_TEMPLATE = compile(`
 <div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} {{#if (isEqual type 'generator')}} mb-3 {{else}} my-3 {{/if}} {{#if is_curr_element}} curr-element {{/if}}">
@@ -145,7 +145,7 @@ export const FRAME_TEMPLATE = compile(`
   </table>
 </div>
 {{decodeElementSnapshot this}}
-`)
+`);
 
 export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
 <table class="border-collapse font-family-monospace">
@@ -162,7 +162,7 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
     </tr>
   {{/each}}
 </table>
-`)
+`);
 
 export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
 <table class="border-collapse font-family-monospace">
@@ -176,27 +176,27 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
     </tr>
   {{/each}}
 </table>
-`)
+`);
 
 export const UNKNOWN_TEMPLATE = compile(`
 <span class="pyagram-unknown">(?)</span>
-`)
+`);
 
 export const PRIMITIVE_TEMPLATE = compile(`
 {{this}}
-`)
+`);
 
 export const REFERENT_TEMPLATE_TEXTPOINTERS_T = compile(`
 <span class="font-family-sans-serif">@{{decodeObjectIdSnapshot this}}</span>
-`)
+`);
 
 export const REFERENT_TEMPLATE_TEXTPOINTERS_F = compile(`
 <span class="pyagram-placeholder pyagram-reference reference-{{decodeObjectIdSnapshot this}}">-</span>
-`)
+`);
 
 export const OBJECT_ID_TEMPLATE = compile(`
 {{this}}
-`)
+`);
 
 export const FUNCTION_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
@@ -225,14 +225,14 @@ export const FUNCTION_TEMPLATE = compile(`
 <div class="font-family-sans-serif">
   [parent: {{parent}}]
 </div>
-`)
+`);
 
 export const BUILTIN_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   function
 </span>
 {{this}}(...)
-`)
+`);
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`
 {{#if (isEmpty elements)}}
@@ -253,7 +253,7 @@ export const ORDERED_COLLECTION_TEMPLATE = compile(`
     </table>
   </div>
 {{/if}}
-`)
+`);
 
 export const UNORDERED_COLLECTION_TEMPLATE = compile(`
 {{#if (isEmpty elements)}}
@@ -274,7 +274,7 @@ export const UNORDERED_COLLECTION_TEMPLATE = compile(`
     </table>
   </div>
 {{/if}}
-`)
+`);
 
 export const MAPPING_TEMPLATE = compile(`
 {{#if (isEmpty items)}}
@@ -300,7 +300,7 @@ export const MAPPING_TEMPLATE = compile(`
     </table>
   </div>
 {{/if}}
-`)
+`);
 
 export const ITERATOR_TEMPLATE = compile(`
 {{#if (isNull this)}}
@@ -323,7 +323,7 @@ export const ITERATOR_TEMPLATE = compile(`
     [next index: {{index}}]
   </div>
 {{/if}}
-`)
+`);
 
 export const GENERATOR_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
@@ -331,11 +331,11 @@ export const GENERATOR_TEMPLATE = compile(`
 </span>
 {{~name~}}
 {{decodeFrameSnapshot frame}}
-`)
+`);
 
 export const OTHER_TEMPLATE = compile(`
 {{this}}
-`)
+`);
 
 export const EXCEPTION_TEMPLATE = Handlebars.compile(`
 {{#unless (isNull this)}}
@@ -343,10 +343,10 @@ export const EXCEPTION_TEMPLATE = Handlebars.compile(`
     {{~this~}}
   </div>
 {{/unless}}
-`)
+`);
 
 export const PRINT_OUTPUT_TEMPLATE = Handlebars.compile(`
 <div class="print-output font-family-monospace">
   {{~this~}}
 </div>
-`)
+`);
