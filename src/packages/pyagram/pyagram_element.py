@@ -308,7 +308,7 @@ class PyagramFrame(PyagramElement):
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
     @property
-    def return_value_is_visible(self): # TODO: Rename, eg to show_return. (Do you still need this?)
+    def shows_return_value(self):
         """
         """
         return self.has_returned and not (self.is_generator_frame and self.throws_exc)
@@ -335,7 +335,7 @@ class PyagramFrame(PyagramElement):
                     referents.append(self.function)
                 if self.generator is not None:
                     referents.append(self.generator)
-                if self.return_value_is_visible:
+                if self.shows_return_value:
                     referents.append(self.return_value)
                 for referent in referents:
                     self.state.memory_state.track(referent)
@@ -358,7 +358,7 @@ class PyagramFrame(PyagramElement):
             ),
             'return_value':
                 self.state.encoder.reference_snapshot(self.return_value)
-                if self.return_value_is_visible
+                if self.shows_return_value
                 else None,
             'from': None,
             'flags': [

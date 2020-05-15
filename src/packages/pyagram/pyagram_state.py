@@ -356,7 +356,7 @@ class MemoryState:
                         for variable, value in inspect.getgeneratorlocals(object).items()
                         if utils.is_genuine_binding(variable)
                     ]
-                    if object in self.latest_gen_frames and self.latest_gen_frames[object].return_value_is_visible:
+                    if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
                         referents.append(self.latest_gen_frames[object].return_value)
                     if object.gi_yieldfrom is not None:
                         referents.append(object.gi_yieldfrom)

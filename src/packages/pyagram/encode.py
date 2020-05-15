@@ -207,7 +207,7 @@ class Encoder:
                 'is_curr_element': frame is self.state.program_state.curr_element,
                 'return_value':
                     self.reference_snapshot(frame.return_value)
-                    if frame.return_value_is_visible
+                    if frame.shows_return_value
                     else None,
                 'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
             })
