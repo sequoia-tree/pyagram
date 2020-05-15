@@ -12,6 +12,7 @@ const REFERENCE_CLASS_NAME = 'pyagram-reference';
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
 const POINTER_BUFFER = 100;
+const LEFTPTR_BUFFER = 50;
 const POINTER_BUFFER_X = 100;
 const POINTER_BUFFER_Y = 0;
 
@@ -148,6 +149,16 @@ function drawPointer(SVGCanvas, reference, object) {
     //     pre: {x: Infinity, y: Infinity},
     //     loc: {x: Infinity, y: Infinity}
     // });
+    var endCoordinateTL = {
+        pre: {
+            x: -POINTER_BUFFER,
+            y: -POINTER_BUFFER,
+        },
+        loc: {
+            x: object.offset().left,
+            y: object.offset().top,
+        },
+    };
     var endCoordinateL = {
         pre: {
             x: -POINTER_BUFFER,
@@ -158,17 +169,17 @@ function drawPointer(SVGCanvas, reference, object) {
             y: object.offset().top + object.height() / 2,
         },
     };
-    var endCoordinateR = {
+    var endCoordinateBL = {
         pre: {
-            x: POINTER_BUFFER,
-            y: 0,
+            x: -POINTER_BUFFER,
+            y: +POINTER_BUFFER,
         },
         loc: {
-            x: object.offset().left + object.width(),
-            y: object.offset().top + object.height() / 2,
+            x: object.offset().left,
+            y: object.offset().top + object.height(),
         },
     };
-    var endCoordinateU = {
+    var endCoordinateT = {
         pre: {
             x: 0,
             y: -POINTER_BUFFER,
@@ -178,25 +189,50 @@ function drawPointer(SVGCanvas, reference, object) {
             y: object.offset().top,
         },
     };
-    var endCoordinateD = {
+    var endCoordinateB = {
         pre: {
             x: 0,
-            y: POINTER_BUFFER,
+            y: +POINTER_BUFFER,
         },
         loc: {
             x: object.offset().left + object.width() / 2,
             y: object.offset().top + object.height(),
         },
     };
+    var endCoordinateR = {
+        pre: {
+            x: +POINTER_BUFFER,
+            y: 0,
+        },
+        loc: {
+            x: object.offset().left + object.width(),
+            y: object.offset().top + object.height() / 2,
+        },
+    };
+    var isL = startCoordinate.x < endCoordinateL.loc.x;
+    var isR = endCoordinateR.loc.x < startCoordinate.x;
+    var isT = startCoordinate.y < endCoordinateT.loc.y;
+    var isB = endCoordinateB.loc.y < startCoordinate.y;
+    var isM = startCoordinate.x < endCoordinateT.loc.x;
     var endCoordinate;
-    if (startCoordinate.x >= endCoordinateR.loc.x) {
+    if (isR) {
         endCoordinate = endCoordinateR;
-    } else if (startCoordinate.y < endCoordinateU.loc.y) {
-        endCoordinate = endCoordinateU;
-    } else if (startCoordinate.y > endCoordinateD.loc.y) {
-        endCoordinate = endCoordinateD;
-    } else {
+    } else if (isL && !isB && startCoordinate.y + LEFTPTR_BUFFER > endCoordinateT.loc.y) {
         endCoordinate = endCoordinateL;
+    } else if (isL && !isT && startCoordinate.y - LEFTPTR_BUFFER < endCoordinateB.loc.y) {
+        endCoordinate = endCoordinateL;
+    } else if (isL && isT) {
+        endCoordinate = endCoordinateTL;
+    } else if (isL && isB) {
+        endCoordinate = endCoordinateBL;
+    } else if (isT) {
+        endCoordinate = endCoordinateT;
+    } else if (isB) {
+        endCoordinate = endCoordinateB;
+    } else if (isM) {
+        endCoordinate = endCoordinateT;
+    } else {
+        endCoordinate = endCoordinateB;
     }
     startCoordinate.x -= nullCoordinate.x;
     startCoordinate.y -= nullCoordinate.y;
