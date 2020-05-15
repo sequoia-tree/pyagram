@@ -11,6 +11,7 @@ const REFERENCE_CLASS_NAME = 'pyagram-reference';
 
 const ARROWHEAD_WIDTH = 10;
 const ARROWHEAD_PADDING = 2;
+const POINTER_BUFFER = 100;
 const POINTER_BUFFER_X = 100;
 const POINTER_BUFFER_Y = 0;
 
@@ -98,22 +99,121 @@ function drawPointer(SVGCanvas, reference, object) {
         x: reference.offset().left + reference.width() / 2,
         y: reference.offset().top + reference.height() / 2,
     };
-    var endCoordinate = {
-        x: object.offset().left,
-        y: object.offset().top + object.height() / 2,
+    // var endCoordinate = [
+    //     {
+    //         pre: {
+    //             x: -POINTER_BUFFER,
+    //             y: 0,
+    //         },
+    //         loc: {
+    //             x: object.offset().left,
+    //             y: object.offset().top + object.height() / 2,
+    //         },
+    //     },
+    //     {
+    //         pre: {
+    //             x: POINTER_BUFFER,
+    //             y: 0,
+    //         },
+    //         loc: {
+    //             x: object.offset().left + object.width(),
+    //             y: object.offset().top + object.height() / 2,
+    //         },
+    //     },
+    //     {
+    //         pre: {
+    //             x: 0,
+    //             y: -POINTER_BUFFER,
+    //         },
+    //         loc: {
+    //             x: object.offset().left + object.width() / 2,
+    //             y: object.offset().top,
+    //         },
+    //     },
+    //     {
+    //         pre: {
+    //             x: 0,
+    //             y: POINTER_BUFFER,
+    //         },
+    //         loc: {
+    //             x: object.offset().left + object.width() / 2,
+    //             y: object.offset().top + object.height(),
+    //         },
+    //     },
+    // ].reduce(function(bestCoordinate, currCoordinate) {
+    //     var toBest = manhattanDistance(startCoordinate, bestCoordinate.loc);
+    //     var toCurr = manhattanDistance(startCoordinate, currCoordinate.loc);
+    //     return toBest < toCurr ? bestCoordinate : currCoordinate;
+    // }, {
+    //     pre: {x: Infinity, y: Infinity},
+    //     loc: {x: Infinity, y: Infinity}
+    // });
+    var endCoordinateL = {
+        pre: {
+            x: -POINTER_BUFFER,
+            y: 0,
+        },
+        loc: {
+            x: object.offset().left,
+            y: object.offset().top + object.height() / 2,
+        },
     };
+    var endCoordinateR = {
+        pre: {
+            x: POINTER_BUFFER,
+            y: 0,
+        },
+        loc: {
+            x: object.offset().left + object.width(),
+            y: object.offset().top + object.height() / 2,
+        },
+    };
+    var endCoordinateU = {
+        pre: {
+            x: 0,
+            y: -POINTER_BUFFER,
+        },
+        loc: {
+            x: object.offset().left + object.width() / 2,
+            y: object.offset().top,
+        },
+    };
+    var endCoordinateD = {
+        pre: {
+            x: 0,
+            y: POINTER_BUFFER,
+        },
+        loc: {
+            x: object.offset().left + object.width() / 2,
+            y: object.offset().top + object.height(),
+        },
+    };
+    var endCoordinate;
+    if (startCoordinate.x >= endCoordinateR.loc.x) {
+        endCoordinate = endCoordinateR;
+    } else if (startCoordinate.y < endCoordinateU.loc.y) {
+        endCoordinate = endCoordinateU;
+    } else if (startCoordinate.y > endCoordinateD.loc.y) {
+        endCoordinate = endCoordinateD;
+    } else {
+        endCoordinate = endCoordinateL;
+    }
     startCoordinate.x -= nullCoordinate.x;
     startCoordinate.y -= nullCoordinate.y;
-    endCoordinate.x -= nullCoordinate.x;
-    endCoordinate.y -= nullCoordinate.y;
+    endCoordinate.loc.x -= nullCoordinate.x;
+    endCoordinate.loc.y -= nullCoordinate.y;
     var pathStr =
         'M' +
-        startCoordinate.x + ',' + startCoordinate.y + ' ' +
+        startCoordinate.x + ',' +
+        startCoordinate.y + ' ' +
         'Q' +
-        (endCoordinate.x - POINTER_BUFFER_X) + ',' + (endCoordinate.y + POINTER_BUFFER_Y) + ' ' +
-        (endCoordinate.x - (ARROWHEAD_WIDTH - ARROWHEAD_PADDING)) + ',' + endCoordinate.y;
+        (endCoordinate.loc.x + endCoordinate.pre.x) + ',' +
+        (endCoordinate.loc.y + endCoordinate.pre.y) + ' ' +
+        (endCoordinate.loc.x) + ',' + (endCoordinate.loc.y);
+    //  (endCoordinate.x - (ARROWHEAD_WIDTH - ARROWHEAD_PADDING)) + ',' + endCoordinate.y;
     var pointer = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     pointer.setAttribute('class', POINTER_CLASS_NAME);
     pointer.setAttribute('d', pathStr);
     document.getElementById(POINTERS_SVG_GROUP_ID).appendChild(pointer);
 }
+// TODO: I think the buffer in the x-axis should be 100, and the buffer in the y-axis should be 50.
