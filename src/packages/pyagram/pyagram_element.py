@@ -210,6 +210,7 @@ class PyagramFrame(PyagramElement):
         elif self.is_generator_frame:
             self.state.memory_state.record_generator(self, self.generator)
             self.hide_from(0)
+            self.throws_exc = False
         elif self.is_function_frame:
             self.state.memory_state.record_function(self, self.function)
             self.frame_number = self.state.program_state.register_frame()
@@ -250,7 +251,6 @@ class PyagramFrame(PyagramElement):
             pass
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
-        self.raises_error = False
         self.has_returned = False
         self.return_value = None
 
@@ -311,7 +311,7 @@ class PyagramFrame(PyagramElement):
     def return_value_is_visible(self): # TODO: Rename, eg to show_return. (Do you still need this?)
         """
         """
-        return self.has_returned and not self.raises_error
+        return self.has_returned and not (self.is_generator_frame and self.throws_exc)
 
     def hide_from(self, snapshot_index):
         """
@@ -388,11 +388,12 @@ class PyagramFrame(PyagramElement):
             for variable in sorted_binding_names
         }
 
-    def close(self, raises_error, return_value):
+    def close(self, return_value, *, is_gen_exc=False):
         """
         """
         if not self.is_global_frame:
-            self.raises_error = raises_error
+            if self.is_generator_frame:
+                self.throws_exc = is_gen_exc
             self.has_returned = True
             self.return_value = return_value
         self.state.step()

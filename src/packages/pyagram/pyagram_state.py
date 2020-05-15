@@ -63,6 +63,7 @@ class ProgramState:
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.prev_trace_type = None
+        self.curr_trace_type = None
         self.exception_info = None # TODO: Rename to init_error_info.
         self.finish_prev = None
         self.frame_types = {}
@@ -127,6 +128,7 @@ class ProgramState:
     def process_trace_event(self, frame, trace_type, *step_info):
         """
         """
+        self.curr_trace_type = trace_type
         if self.finish_prev is not None:
             self.finish_prev()
             self.finish_prev = None
@@ -260,11 +262,18 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_frame
-        is_implicit = self.curr_element.is_implicit
-        raises_error = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-        self.curr_element = self.curr_element.close(raises_error, return_value)
-        if is_implicit:
-            self.curr_element = self.curr_element.close()
+        def finish_step():
+            is_implicit = self.curr_element.is_implicit
+            self.curr_element = self.curr_element.close(
+                return_value,
+                is_gen_exc=self.curr_trace_type is enum.TraceTypes.USER_EXCEPTION,
+            )
+            if is_implicit:
+                self.curr_element = self.curr_element.close()
+        if self.curr_element.is_generator_frame:
+            self.defer(finish_step)
+        else:
+            finish_step()
 
     def close_class_frame(self, frame, return_value):
         """
@@ -310,8 +319,8 @@ class MemoryState:
         self.obj_init_debuts = {}
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
-        self.latest_gen_frames = {}
-        self.generator_numbers = {}
+        self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?
+        self.generator_numbers = {} # TODO: You should combine gen_numbers and gen_parents into one.
         self.generator_parents = {}
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
@@ -415,7 +424,6 @@ class MemoryState:
     def record_function(self, pyagram_frame, function):
         """
         """
-        # TODO: Refactor this func
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
             if pyagram_frame.is_new and pyagram_frame.opened_by is not None:
