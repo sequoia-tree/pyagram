@@ -270,7 +270,7 @@ class ProgramState:
             )
             if is_implicit:
                 self.curr_element = self.curr_element.close()
-        if self.curr_element.is_generator_frame:
+        if self.curr_element.is_global_frame or self.curr_element.is_generator_frame:
             self.defer(finish_step)
         else:
             finish_step()

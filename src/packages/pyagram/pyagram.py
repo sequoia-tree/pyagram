@@ -35,7 +35,7 @@ class Pyagram:
                         locals=bindings,
                     )
                 except Exception as exception:
-                    assert state.program_state.curr_element is None
+                    assert state.program_state.curr_element.is_global_frame
                     terminal_ex = True
                 else:
                     terminal_ex = False
