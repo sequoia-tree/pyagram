@@ -92,7 +92,7 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
         case 'iterator':
             return Templates.ITERATOR_TEMPLATE(encodedObjectSnapshot.data);
         case 'generator':
-            return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
+            return Templates.GENERATOR_TEMPLATE(encodedObjectSnapshot.data);
         case 'obj_class':
             return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
         case 'obj_inst':

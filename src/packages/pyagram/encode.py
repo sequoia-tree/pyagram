@@ -188,10 +188,11 @@ class Encoder:
         """
         """
         latest_gen_frames = self.state.memory_state.latest_gen_frames
+        generator_numbers = self.state.memory_state.generator_numbers
         generator_parents = self.state.memory_state.generator_parents
-        encoding = {
+        frame_encoding = {
             'type': 'generator',
-            'name': object.__name__,
+            'name': f'Frame {generator_numbers[object]}',
             'parent': repr(generator_parents[object]),
             'bindings': self.encode_mapping(
                 inspect.getgeneratorlocals(object),
@@ -202,7 +203,7 @@ class Encoder:
         }
         if object in latest_gen_frames:
             frame = latest_gen_frames[object]
-            encoding.update({
+            frame_encoding.update({
                 'is_curr_element': frame is self.state.program_state.curr_element,
                 'return_value':
                     self.reference_snapshot(frame.return_value)
@@ -211,12 +212,15 @@ class Encoder:
                 'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
             })
         else:
-            encoding.update({
+            frame_encoding.update({
                 'is_curr_element': False,
                 'return_value': None,
                 'from': None,
             })
-        return encoding
+        return {
+            'name': object.__name__,
+            'frame': frame_encoding,
+        }
 
     def encode_obj_class(self, object):
         """

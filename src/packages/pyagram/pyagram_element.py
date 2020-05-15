@@ -205,13 +205,14 @@ class PyagramFrame(PyagramElement):
         self.generator = None if is_placeholder else utils.get_generator(frame)
         self.frame_type = enum.PyagramFrameTypes.identify_pyagram_frame_type(self)
         self.is_implicit = is_implicit
-        if self.frame_type is enum.PyagramFrameTypes.GLOBAL:
+        if self.is_global_frame:
             del frame.f_globals['__builtins__']
-        elif self.frame_type is enum.PyagramFrameTypes.GENERATOR:
+        elif self.is_generator_frame:
             self.state.memory_state.record_generator(self, self.generator)
             self.hide_from(0)
-        elif self.frame_type is enum.PyagramFrameTypes.FUNCTION:
+        elif self.is_function_frame:
             self.state.memory_state.record_function(self, self.function)
+            self.frame_number = self.state.program_state.register_frame()
             utils.fix_init_banner(opened_by.banner_elements, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
@@ -227,8 +228,6 @@ class PyagramFrame(PyagramElement):
                 key: self.state.encoder.reference_snapshot(value)
                 for key, value in self.get_bindings().items()
             }
-            self.frame_number = self.state.program_state.frame_count
-            self.state.program_state.frame_count += 1
             if is_implicit:
                 flag = opened_by
                 num_args = len(self.initial_bindings)
@@ -247,7 +246,7 @@ class PyagramFrame(PyagramElement):
                 ]
                 flag.banner_bindings = [(False, None)] * num_bindings
                 flag.evaluate_next_banner_bindings(skip_args=True)
-        elif self.frame_type is enum.PyagramFrameTypes.PLACEHOLDER:
+        elif self.is_placeholder_frame:
             pass
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
@@ -258,7 +257,16 @@ class PyagramFrame(PyagramElement):
     def __repr__(self):
         """
         """
-        return 'Global Frame' if self.is_global_frame else f'Frame {self.frame_number}'
+        if self.frame_type is enum.PyagramFrameTypes.GLOBAL:
+            return 'Global Frame'
+        elif self.frame_type is enum.PyagramFrameTypes.GENERATOR:
+            return f'Frame {self.state.memory_state.generator_numbers[self.generator]}'
+        elif self.frame_type is enum.PyagramFrameTypes.FUNCTION:
+            return f'Frame {self.frame_number}'
+        elif self.frame_type is enum.PyagramFrameTypes.PLACEHOLDER:
+            return ''
+        else:
+            raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
     @property
     def is_global_frame(self):
@@ -288,13 +296,13 @@ class PyagramFrame(PyagramElement):
     def parent(self):
         """
         """
-        if self.frame_type is enum.PyagramFrameTypes.GLOBAL:
+        if self.is_global_frame:
             return None
-        elif self.frame_type is enum.PyagramFrameTypes.GENERATOR:
+        elif self.is_generator_frame:
             return self.state.memory_state.generator_parents[self.generator]
-        elif self.frame_type is enum.PyagramFrameTypes.FUNCTION:
+        elif self.is_function_frame:
             return self.state.memory_state.function_parents[self.function]
-        elif self.frame_type is enum.PyagramFrameTypes.PLACEHOLDER:
+        elif self.is_placeholder_frame:
             return None
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)

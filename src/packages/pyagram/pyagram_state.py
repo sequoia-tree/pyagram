@@ -66,7 +66,7 @@ class ProgramState:
         self.exception_info = None # TODO: Rename to init_error_info.
         self.finish_prev = None
         self.frame_types = {}
-        self.frame_count = 1
+        self.frame_count = 0
 
     @property
     def is_flag(self):
@@ -292,6 +292,12 @@ class ProgramState:
         assert self.finish_prev is None
         self.finish_prev = function
 
+    def register_frame(self):
+        """
+        """
+        self.frame_count += 1
+        return self.frame_count
+
 class MemoryState:
     """
     """
@@ -305,6 +311,7 @@ class MemoryState:
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.latest_gen_frames = {}
+        self.generator_numbers = {}
         self.generator_parents = {}
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
@@ -389,6 +396,7 @@ class MemoryState:
                     parent = self.state.program_state.curr_element
                 else:
                     parent = self.function_parents[generator_function]
+                self.generator_numbers[object] = self.state.program_state.register_frame()
                 self.generator_parents[object] = parent
 
     def record_class_frame(self, frame_object, class_object):

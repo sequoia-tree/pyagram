@@ -72,7 +72,7 @@ export const FLAG_TEMPLATE = compile(`
 `)
 
 export const FRAME_TEMPLATE = compile(`
-<div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} my-3 {{#if is_curr_element}} curr-element {{/if}}">
+<div class="pyagram-frame {{#if (isEqual type 'function')}} mx-3 {{else}} mr-3 {{/if}} {{#if (isEqual type 'generator')}} mb-3 {{else}} my-3 {{/if}} {{#if is_curr_element}} curr-element {{/if}}">
   <div class="pyagram-frame-name">
     {{#if (isEqual type 'function')}}
       <span class="font-family-sans-serif">
@@ -83,11 +83,7 @@ export const FRAME_TEMPLATE = compile(`
       </span>
     {{else if (isEqual type 'generator')}}
       <span class="font-family-sans-serif">
-        generator
-      </span>
-      {{~name~}}
-      <span class="font-family-sans-serif">
-        [parent: {{parent}}]
+        {{name}} [parent: {{parent}}]
       </span>
     {{else if (isEqual type 'class')}}
       <span class="font-family-sans-serif">
@@ -327,6 +323,14 @@ export const ITERATOR_TEMPLATE = compile(`
     [next index: {{index}}]
   </div>
 {{/if}}
+`)
+
+export const GENERATOR_TEMPLATE = compile(`
+<span class="font-family-sans-serif">
+  generator
+</span>
+{{~name~}}
+{{decodeFrameSnapshot frame}}
 `)
 
 export const OTHER_TEMPLATE = compile(`
