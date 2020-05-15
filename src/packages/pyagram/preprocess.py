@@ -142,7 +142,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
         node.lineno = utils.encode_lineno(
             node.lineno,
-            constants.GENXP_COMP_LINENO,
+            constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
@@ -154,7 +154,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
         node.lineno = utils.encode_lineno(
             node.lineno,
-            constants.GENXP_COMP_LINENO,
+            constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
@@ -166,7 +166,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
         node.lineno = utils.encode_lineno(
             node.lineno,
-            constants.GENXP_COMP_LINENO,
+            constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )

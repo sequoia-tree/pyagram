@@ -42,7 +42,7 @@ class FrameTypes(Enum):
             return FrameTypes.SRC_CALL_SUCCESSOR
         elif step_code == constants.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
-        elif step_code == constants.GENXP_COMP_LINENO:
+        elif step_code == constants.CNTNR_COMP_LINENO:
             return FrameTypes.COMPREHENSION
         else:
             raise FrameTypes.illegal_enum(step_code)
