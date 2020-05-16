@@ -59,10 +59,14 @@
 .pyagram-mapping {
   @include border();
   .pyagram-mapping-key {
-    @include border();
+    @include border-top();
+    @include border-left();
+    @include border-right();
   }
   .pyagram-mapping-value {
-    @include border();
+    @include border-left();
+    @include border-right();
+    @include border-bottom();
   }
 }
 
