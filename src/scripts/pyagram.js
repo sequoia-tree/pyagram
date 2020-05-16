@@ -107,7 +107,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left - ARROWHEAD_DIAG_PADDING,
-            y: object.offset().top - ARROWHEAD_DIAG_PADDING + DIAGONAL_PADDING,
+            y: object.offset().top + DIAGONAL_PADDING - ARROWHEAD_DIAG_PADDING,
         },
     };
     var endCoordinateL = {
@@ -127,7 +127,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left - ARROWHEAD_DIAG_PADDING,
-            y: object.offset().top + object.height() + ARROWHEAD_DIAG_PADDING - DIAGONAL_PADDING,
+            y: object.offset().top + object.height() - DIAGONAL_PADDING + ARROWHEAD_DIAG_PADDING,
         },
     };
     var endCoordinateT = {
