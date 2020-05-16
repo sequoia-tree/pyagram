@@ -13,6 +13,7 @@ const ARROWHEAD_PADDING = 12;
 const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);
 const DIAGONAL_PADDING = 10;
 const LEFT_VPTR_MARGIN = 50;
+const RIGHT_PTR_MARGIN = 50;
 const POINTER_BUFFER_X = 25;
 const POINTER_BUFFER_Y = 25;
 
@@ -175,7 +176,7 @@ function drawPointer(SVGCanvas, reference, object) {
     var isT = startCoordinate.y < endCoordinateT.loc.y;
     var isB = endCoordinateB.loc.y < startCoordinate.y;
     var endCoordinate;
-    if (isR) {
+    if (startCoordinate.x + RIGHT_PTR_MARGIN > endCoordinateR.loc.x) {
         endCoordinate = endCoordinateR;
     } else if (isL && !isB && startCoordinate.y + LEFT_VPTR_MARGIN > endCoordinateT.loc.y) {
         endCoordinate = endCoordinateL;
