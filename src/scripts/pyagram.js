@@ -9,8 +9,9 @@ const POINTER_CLASS_NAME = 'pyagram-pointer';
 const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
 const REFERENCE_CLASS_NAME = 'pyagram-reference';
 
-const ARROWHEAD_WIDTH = 10;
-const ARROWHEAD_PADDING = 2;
+const ARROWHEAD_PADDING = 12;
+const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);
+const DIAGONAL_PADDING = 10;
 const LEFT_VPTR_MARGIN = 50;
 const POINTER_BUFFER_X = 25;
 const POINTER_BUFFER_Y = 25;
@@ -99,63 +100,14 @@ function drawPointer(SVGCanvas, reference, object) {
         x: reference.offset().left + reference.width() / 2,
         y: reference.offset().top + reference.height() / 2,
     };
-    // var endCoordinate = [
-    //     {
-    //         pre: {
-    //             x: -POINTER_BUFFER,
-    //             y: 0,
-    //         },
-    //         loc: {
-    //             x: object.offset().left,
-    //             y: object.offset().top + object.height() / 2,
-    //         },
-    //     },
-    //     {
-    //         pre: {
-    //             x: POINTER_BUFFER,
-    //             y: 0,
-    //         },
-    //         loc: {
-    //             x: object.offset().left + object.width(),
-    //             y: object.offset().top + object.height() / 2,
-    //         },
-    //     },
-    //     {
-    //         pre: {
-    //             x: 0,
-    //             y: -POINTER_BUFFER,
-    //         },
-    //         loc: {
-    //             x: object.offset().left + object.width() / 2,
-    //             y: object.offset().top,
-    //         },
-    //     },
-    //     {
-    //         pre: {
-    //             x: 0,
-    //             y: POINTER_BUFFER,
-    //         },
-    //         loc: {
-    //             x: object.offset().left + object.width() / 2,
-    //             y: object.offset().top + object.height(),
-    //         },
-    //     },
-    // ].reduce(function(bestCoordinate, currCoordinate) {
-    //     var toBest = manhattanDistance(startCoordinate, bestCoordinate.loc);
-    //     var toCurr = manhattanDistance(startCoordinate, currCoordinate.loc);
-    //     return toBest < toCurr ? bestCoordinate : currCoordinate;
-    // }, {
-    //     pre: {x: Infinity, y: Infinity},
-    //     loc: {x: Infinity, y: Infinity}
-    // });
     var endCoordinateTL = {
         pre: {
             x: -POINTER_BUFFER_X,
             y: -POINTER_BUFFER_Y,
         },
         loc: {
-            x: object.offset().left,
-            y: object.offset().top,
+            x: object.offset().left - ARROWHEAD_DIAG_PADDING,
+            y: object.offset().top - ARROWHEAD_DIAG_PADDING + DIAGONAL_PADDING,
         },
     };
     var endCoordinateL = {
@@ -164,7 +116,7 @@ function drawPointer(SVGCanvas, reference, object) {
             y: 0,
         },
         loc: {
-            x: object.offset().left,
+            x: object.offset().left - ARROWHEAD_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
@@ -174,8 +126,8 @@ function drawPointer(SVGCanvas, reference, object) {
             y: +POINTER_BUFFER_Y,
         },
         loc: {
-            x: object.offset().left,
-            y: object.offset().top + object.height(),
+            x: object.offset().left - ARROWHEAD_DIAG_PADDING,
+            y: object.offset().top + object.height() + ARROWHEAD_DIAG_PADDING - DIAGONAL_PADDING,
         },
     };
     var endCoordinateT = {
@@ -185,7 +137,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top,
+            y: object.offset().top - ARROWHEAD_PADDING,
         },
     };
     var endCoordinateB = {
@@ -195,16 +147,26 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top + object.height(),
+            y: object.offset().top + object.height() + ARROWHEAD_PADDING,
         },
     };
+    var endCoordinateM = {
+        pre: {
+            x: 0,
+            y: +POINTER_BUFFER_Y,
+        },
+        loc: {
+            x: object.offset().left + object.width() / 3,
+            y: object.offset().top + object.height() + ARROWHEAD_PADDING,
+        },
+    }
     var endCoordinateR = {
         pre: {
             x: +POINTER_BUFFER_X,
             y: 0,
         },
         loc: {
-            x: object.offset().left + object.width(),
+            x: object.offset().left + object.width() + ARROWHEAD_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
@@ -212,7 +174,6 @@ function drawPointer(SVGCanvas, reference, object) {
     var isR = endCoordinateR.loc.x < startCoordinate.x;
     var isT = startCoordinate.y < endCoordinateT.loc.y;
     var isB = endCoordinateB.loc.y < startCoordinate.y;
-    var isM = startCoordinate.x < endCoordinateT.loc.x;
     var endCoordinate;
     if (isR) {
         endCoordinate = endCoordinateR;
@@ -228,10 +189,8 @@ function drawPointer(SVGCanvas, reference, object) {
         endCoordinate = endCoordinateT;
     } else if (isB) {
         endCoordinate = endCoordinateB;
-    } else if (isM) {
-        endCoordinate = endCoordinateT;
     } else {
-        endCoordinate = endCoordinateB;
+        endCoordinate = endCoordinateM;
     }
     startCoordinate.x -= nullCoordinate.x;
     startCoordinate.y -= nullCoordinate.y;
@@ -244,12 +203,10 @@ function drawPointer(SVGCanvas, reference, object) {
         'Q' +
         (endCoordinate.loc.x + endCoordinate.pre.x) + ',' +
         (endCoordinate.loc.y + endCoordinate.pre.y) + ' ' +
-        (endCoordinate.loc.x) + ',' + (endCoordinate.loc.y);
-    //  (endCoordinate.x - (ARROWHEAD_WIDTH - ARROWHEAD_PADDING)) + ',' + endCoordinate.y;
+        (endCoordinate.loc.x) + ',' +
+        (endCoordinate.loc.y);
     var pointer = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     pointer.setAttribute('class', POINTER_CLASS_NAME);
     pointer.setAttribute('d', pathStr);
     document.getElementById(POINTERS_SVG_GROUP_ID).appendChild(pointer);
 }
-// TODO: I think the buffer in the x-axis should be 100, and the buffer in the y-axis should be 50.
-// TODO: Bigger arrowheads too, and make sure the arrowheads are offset from the end just a bit.
