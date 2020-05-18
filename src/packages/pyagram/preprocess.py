@@ -55,10 +55,12 @@ class CodeWrapper(ast.NodeTransformer):
         """
         """
 
-        # f(...) --> (lambda banner, call: call)(
-        #                (lambda: flag_info)(),
-        #                f(...),
-        #            )
+        # f(x) --> (lambda info, call: call)(
+        #              (lambda: flag_info)(),
+        #              (lambda: f)()(x),
+        #          )
+
+        # TODO: Rename wrapper_lambda -> func_lambda, inner_lambda -> banner_lambda, and outer_lambda -> wrapper_lambda.
 
         inner_lambda = ast.Lambda(
             args=ast.arguments(
@@ -72,11 +74,24 @@ class CodeWrapper(ast.NodeTransformer):
             ),
             body=banner.Banner(self.preprocessor.code, node).banner,
         )
+        wrapper_lambda = ast.Lambda(
+            args=ast.arguments(
+                posonlyargs=[],
+                args=[],
+                vararg=None,
+                kwonlyargs=[],
+                kwarg=None,
+                defaults=[],
+                kw_defaults=[],
+            ),
+            body=node.func,
+        )
         outer_lambda = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=[],
                 args=[
-                    ast.arg(arg='banner', annotation=None),
+                    # TODO: What if the user has a function which defers to its parent frame to look up variables named `info` or `call`? Maybe make these posonlyargs?
+                    ast.arg(arg='info', annotation=None),
                     ast.arg(arg='call', annotation=None),
                 ],
                 vararg=None,
@@ -98,11 +113,27 @@ class CodeWrapper(ast.NodeTransformer):
                 max_lineno=self.preprocessor.num_lines,
             ),
         )
+        wrapper_call = ast.Call(
+            func=ast.Call(
+                func=wrapper_lambda,
+                args=[],
+                keywords=[],
+                lineno=utils.encode_lineno(
+                    node.lineno,
+                    constants.FN_WRAPPER_LINENO,
+                    False,
+                    max_lineno=self.preprocessor.num_lines,
+                )
+            ),
+            args=node.args,
+            keywords=node.keywords,
+            lineno=node.lineno,
+        )
         outer_call = ast.Call(
             func=outer_lambda,
             args=[
                 inner_call,
-                node,
+                wrapper_call,
             ],
             keywords=[],
             lineno=utils.encode_lineno(

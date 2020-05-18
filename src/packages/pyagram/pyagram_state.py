@@ -156,13 +156,19 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            print('OPEN CALL')
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
             self.open_pyagram_frame(frame, is_implicit=is_implicit)
+        elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
+            print('OPEN WRAPPER')
+            pass # TODO
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
+            print('OPEN PRECURSOR')
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+            print('OPEN SUCCESSOR')
             self.close_pyagram_flag(frame)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
@@ -175,10 +181,16 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            print('CLOSE CALL')
             self.close_pyagram_frame(frame, return_value)
+        elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
+            print('CLOSE WRAPPER')
+            pass # TODO
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
+            print('CLOSE PRECURSOR')
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+            print('CLOSE SUCCESSOR')
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
