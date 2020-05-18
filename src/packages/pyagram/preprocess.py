@@ -60,9 +60,7 @@ class CodeWrapper(ast.NodeTransformer):
         #              (lambda: f)()(x),
         #          )
 
-        # TODO: Rename wrapper_lambda -> func_lambda, inner_lambda -> banner_lambda, and outer_lambda -> wrapper_lambda.
-
-        inner_lambda = ast.Lambda(
+        banner_lambda = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=[],
                 args=[],
@@ -74,7 +72,7 @@ class CodeWrapper(ast.NodeTransformer):
             ),
             body=banner.Banner(self.preprocessor.code, node).banner,
         )
-        wrapper_lambda = ast.Lambda(
+        function_lambda = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=[],
                 args=[],
@@ -86,7 +84,7 @@ class CodeWrapper(ast.NodeTransformer):
             ),
             body=node.func,
         )
-        outer_lambda = ast.Lambda(
+        wrapper_lambda = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=[],
                 args=[
@@ -102,8 +100,8 @@ class CodeWrapper(ast.NodeTransformer):
             ),
             body=ast.Name(id='call', ctx=ast.Load()),
         )
-        inner_call = ast.Call(
-            func=inner_lambda,
+        banner_call = ast.Call(
+            func=banner_lambda,
             args=[],
             keywords=[],
             lineno=utils.encode_lineno(
@@ -113,9 +111,9 @@ class CodeWrapper(ast.NodeTransformer):
                 max_lineno=self.preprocessor.num_lines,
             ),
         )
-        wrapper_call = ast.Call(
+        function_call = ast.Call(
             func=ast.Call(
-                func=wrapper_lambda,
+                func=function_lambda,
                 args=[],
                 keywords=[],
                 lineno=utils.encode_lineno(
@@ -129,11 +127,11 @@ class CodeWrapper(ast.NodeTransformer):
             keywords=node.keywords,
             lineno=node.lineno,
         )
-        outer_call = ast.Call(
-            func=outer_lambda,
+        wrapper_call = ast.Call(
+            func=wrapper_lambda,
             args=[
-                inner_call,
-                wrapper_call,
+                banner_call,
+                function_call,
             ],
             keywords=[],
             lineno=utils.encode_lineno(
@@ -144,7 +142,7 @@ class CodeWrapper(ast.NodeTransformer):
             ),
         )
         self.generic_visit(node)
-        return outer_call
+        return wrapper_call
 
     def visit_ClassDef(self, node):
         """
