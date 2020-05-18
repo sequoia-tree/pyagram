@@ -261,13 +261,18 @@ class ProgramState:
         # TODO: Clutter isn't an issue since by default, you'll close flags once completed.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
-        self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
+        self.open_pyagram_frame(
+            frame,
+            enum.PyagramFrameTypes.PLACEHOLDER,
+            placeholder_type=enum.PyagramFrameTypes.COMPREHENSION,
+        )
 
     def close_pyagram_flag(self, frame):
         """
         """
         if self.is_frame:
-            assert self.curr_element.is_builtin_frame
+            assert self.curr_element.is_placeholder_frame
+            assert self.curr_element.placeholder_type is enum.PyagramFrameTypes.BUILTIN
             self.close_pyagram_frame(frame, None)
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
@@ -286,8 +291,6 @@ class ProgramState:
                 self.curr_element = self.curr_element.close()
         if self.curr_element.is_global_frame:
             pass
-        elif self.curr_element.is_builtin_frame:
-            finish_step()
         elif self.curr_element.is_function_frame:
             finish_step()
         elif self.curr_element.is_generator_frame:
@@ -322,17 +325,15 @@ class ProgramState:
         """
         assert self.is_ongoing_flag_sans_frame
         if type(callable) is type:
-                self.curr_element.fix_obj_instantiation_banner()
-                callable = callable.__init__
+            self.curr_element.fix_obj_instantiation_banner()
+            callable = callable.__init__
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
-
             # TODO: Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
-
-            self.curr_element.hide_from(0) # TODO: Delete this.
-            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
-            # TODO: The flags should be visible. You'll have to change the banner specially.
-            # TODO: Change the banner to simply [FUNCTION](...).
-            # TODO: How will you make sure the frame appears under the flag's subflags? For example, if you write print(f(x)), f(x) should happen before you open print's frame.
+            self.open_pyagram_frame(
+                frame,
+                enum.PyagramFrameTypes.PLACEHOLDER,
+                placeholder_type=enum.PyagramFrameTypes.BUILTIN,
+            )
         pass # TODO
         # TODO: Do self.curr_element.function = function. Right now PyagramFlag.function is unused.
         # TODO: You may be able to avoid the necessity of giving each func a unique code object.
