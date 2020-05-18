@@ -180,6 +180,13 @@ class PyagramFlag(PyagramElement):
                     self.state.snapshot()
                 return True
 
+    def fix_obj_instantiation_banner(self):
+        """
+        """
+        if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
+            _, binding_indices = self.banner_elements[0]
+            self.banner_elements[0] = ('__init__', binding_indices)
+
     def add_frame(self, frame, **init_args):
         """
         """
@@ -215,7 +222,6 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             self.state.memory_state.record_function(self, self.function)
             self.frame_number = self.state.program_state.register_frame()
-            utils.fix_init_banner(opened_by.banner_elements, self.function)
             var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
             self.var_positional_index = var_positional_index
             self.initial_var_pos_args = None if var_positional_name is None else [

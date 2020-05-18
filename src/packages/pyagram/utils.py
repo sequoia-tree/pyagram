@@ -57,14 +57,6 @@ def get_generator(frame):
             generator = referrer
     return generator
 
-def fix_init_banner(banner_elements, function):
-    """
-    """
-    if 0 < len(banner_elements) and isinstance(banner_elements[0], tuple):
-        class_name, binding_indices = banner_elements[0]
-        if function.__qualname__.endswith(f'{class_name}.__init__'):
-            banner_elements[0] = ('__init__', binding_indices)
-
 def assign_unique_code_object(function):
     """
     """
