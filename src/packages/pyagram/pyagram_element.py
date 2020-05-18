@@ -190,7 +190,7 @@ class PyagramFlag(PyagramElement):
     def add_frame(self, frame, **init_args):
         """
         """
-        assert self.banner_is_complete
+        # assert self.banner_is_complete # TODO: ?
         frame = PyagramFrame(self, frame, **init_args)
         self.frame = frame
         return frame
@@ -318,7 +318,16 @@ class PyagramFrame(PyagramElement):
     def shows_return_value(self):
         """
         """
-        return self.has_returned and not (self.is_generator_frame and self.throws_exc)
+        if self.is_global_frame:
+            return False
+        elif self.is_generator_frame:
+            return self.has_returned and not self.throws_exc
+        elif self.is_function_frame:
+            return self.has_returned
+        elif self.is_placeholder_frame:
+            return False
+        else:
+            raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
     def hide_from(self, snapshot_index):
         """
@@ -334,7 +343,7 @@ class PyagramFrame(PyagramElement):
     def step(self):
         """
         """
-        if self.frame_type is not enum.PyagramFrameTypes.PLACEHOLDER:
+        if not self.is_placeholder_frame:
             self.bindings = self.get_bindings()
             if not self.is_hidden():
                 referents = list(self.bindings.values())
@@ -360,7 +369,7 @@ class PyagramFrame(PyagramElement):
                 if self.parent is None
                 else repr(self.parent),
             'bindings': self.state.encoder.encode_mapping(
-                self.bindings,
+                {} if self.is_placeholder_frame else self.bindings,
                 is_bindings=True,
             ),
             'return_value':
