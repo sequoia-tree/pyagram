@@ -334,9 +334,10 @@ class ProgramState:
                 enum.PyagramFrameTypes.PLACEHOLDER,
                 placeholder_type=enum.PyagramFrameTypes.BUILTIN,
             )
-        pass # TODO
-        # TODO: Do self.curr_element.function = function. Right now PyagramFlag.function is unused.
-        # TODO: You may be able to avoid the necessity of giving each func a unique code object.
+        else:
+            pass # TODO
+            # TODO: Do self.curr_element.function = function. Rn PyagramFlag.function is unused.
+            # TODO: You may be able to avoid the necessity of giving each func a unique code object.
 
     def register_frame(self):
         """
