@@ -41,6 +41,7 @@ def get_function(frame):
     """
     function = None
     for referrer in gc.get_referrers(frame.f_code):
+        # TODO: What if you call a non-function, like a user-defined slot wrapper or bound method? Perhaps those, and other callable types, should be included in constants.FUNCTION_TYPES. Consider these scenarios elsewhere in your code, too.
         if enum.ObjectTypes.identify_object_type(referrer) is enum.ObjectTypes.FUNCTION:
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer

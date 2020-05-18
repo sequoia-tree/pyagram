@@ -314,6 +314,7 @@ class ProgramState:
             pass # TODO: Change the banner to say __init__ instead.
             # TODO: Then rebind callable = callable.__init__, and continue as in the general case?
         elif callable_type is enum.ObjectTypes.BUILTIN:
+            self.close_pyagram_flag(frame) # TODO: ?
             pass # TODO
         else:
             pass # TODO
@@ -385,6 +386,8 @@ class MemoryState:
                         referents.append(self.latest_gen_frames[object].return_value)
                     if object.gi_yieldfrom is not None:
                         referents.append(object.gi_yieldfrom)
+                elif object_type is enum.ObjectTypes.BUILTIN_CLASS:
+                    referents = [] # TODO: Finish this. (See also BUILTIN_CLASS in encode.py.)
                 elif object_type is enum.ObjectTypes.OBJ_CLASS:
                     referents = [
                         value
