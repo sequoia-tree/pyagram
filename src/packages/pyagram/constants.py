@@ -32,9 +32,6 @@ BUILTIN_TYPES = {
     types.BuiltinFunctionType,
     types.BuiltinMethodType,
 }
-CLASS_TYPES = {
-    type,
-}
 ORDERED_COLLECTION_TYPES = {
     list,
     tuple,

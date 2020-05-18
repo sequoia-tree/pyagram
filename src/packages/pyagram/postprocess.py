@@ -75,7 +75,7 @@ class Postprocessor:
         for object_snapshot in memory_snapshot:
             encoding = object_snapshot['object']['encoding']
             snapshot = object_snapshot['object']['data']
-            if encoding == 'obj_class' and 'self' in snapshot:
+            if encoding == 'obj_class':
                 class_frame = snapshot.pop('self')
                 snapshot['parents'] = None if class_frame.parents is None else [parent.__name__ for parent in class_frame.parents]
 

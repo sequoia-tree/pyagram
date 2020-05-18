@@ -63,9 +63,6 @@ class Encoder:
         elif object_type is enum.ObjectTypes.GENERATOR:
             encoding = 'generator'
             data = self.encode_generator(object)
-        elif object_type is enum.ObjectTypes.BUILTIN_CLASS:
-            encoding = 'obj_class'
-            data = self.encode_builtin_class(object)
         elif object_type is enum.ObjectTypes.OBJ_CLASS:
             encoding = 'obj_class'
             data = self.encode_obj_class(object)
@@ -223,23 +220,6 @@ class Encoder:
         return {
             'name': object.__name__,
             'frame': frame_encoding,
-        }
-
-    def encode_builtin_class(self, object):
-        """
-        """
-        return {
-            'type': 'class',
-            'is_curr_element': False,
-            'name': object.__name__,
-            'parents': [
-                parent.__name__
-                for parent in object.__bases__
-            ],
-            'bindings': [], # TODO: Perhaps use the __dict__ but omit slot wrappers and etc?
-            'return_value': None,
-            'from': None,
-            'flags': [],
         }
 
     def encode_obj_class(self, object):
