@@ -161,7 +161,7 @@ class ProgramState:
                 self.open_pyagram_flag(frame, None)
             self.open_pyagram_frame(frame, is_implicit=is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
-            pass # TODO
+            pass
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
@@ -179,7 +179,7 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
-            pass # TODO
+            self.register_callable(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
@@ -305,17 +305,32 @@ class ProgramState:
         self.close_pyagram_frame(frame, return_value)
         self.close_pyagram_flag(frame)
 
-    def defer(self, function):
+    def register_callable(self, frame, callable):
         """
         """
-        assert self.finish_prev is None
-        self.finish_prev = function
+        assert self.is_ongoing_flag_sans_frame and self.curr_element.function is None
+        callable_type = enum.ObjectTypes.identify_object_type(callable)
+        if callable_type is enum.ObjectTypes.OBJ_CLASS: # TODO: Also account for the case when the callable is a builtin class. Consider adding a BUILTIN_CLASS enum to enum.ObjectTypes. You'd be able to tell because `type(object) is type` should evaluate to True.
+            pass # TODO: Change the banner to say __init__ instead.
+            # TODO: Then rebind callable = callable.__init__, and continue as in the general case?
+        elif callable_type is enum.ObjectTypes.BUILTIN:
+            pass # TODO
+        else:
+            pass # TODO
+            # TODO: Perhaps, self.curr_element.function = function ?
+            # TODO: But then, what?
 
     def register_frame(self):
         """
         """
         self.frame_count += 1
         return self.frame_count
+
+    def defer(self, function):
+        """
+        """
+        assert self.finish_prev is None
+        self.finish_prev = function
 
 class MemoryState:
     """

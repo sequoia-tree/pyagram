@@ -46,6 +46,7 @@ class PyagramFlag(PyagramElement):
         self.banner_binding_index = 0
         self.positional_arg_index = 0
         self.has_processed_subflag_since_prev_eval = False
+        self.function = None
         self.frame = None
 
     @property
