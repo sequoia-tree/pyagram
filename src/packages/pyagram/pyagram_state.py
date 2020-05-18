@@ -59,7 +59,12 @@ class ProgramState:
 
     def __init__(self, state, global_frame):
         self.state = state
-        self.global_frame = pyagram_element.PyagramFrame(None, global_frame, state=state)
+        self.global_frame = pyagram_element.PyagramFrame(
+            None,
+            global_frame,
+            enum.PyagramFrameTypes.GLOBAL,
+            state=state,
+        )
         self.curr_element = self.global_frame
         self.curr_line_no = 0
         self.prev_trace_type = None
@@ -159,7 +164,7 @@ class ProgramState:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
-            self.open_pyagram_frame(frame, is_implicit=is_implicit)
+            self.open_pyagram_frame(frame, None, is_implicit=is_implicit)
         elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
@@ -237,11 +242,11 @@ class ProgramState:
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.curr_element = self.curr_element.add_flag(banner, **init_args)
 
-    def open_pyagram_frame(self, frame, **init_args):
+    def open_pyagram_frame(self, frame, frame_type, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        self.curr_element = self.curr_element.add_frame(frame, **init_args)
+        self.curr_element = self.curr_element.add_frame(frame, frame_type, **init_args)
 
     def open_class_frame(self, frame):
         """
@@ -252,16 +257,15 @@ class ProgramState:
     def open_comprehension(self, frame):
         """
         """
-        # TODO: Change the way comprehensions work. Right now they're broken, or at the very least, they'll make the frame number skip ahead one more than it ought to.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
-        self.open_pyagram_frame(frame, is_placeholder=True)
+        self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
 
     def close_pyagram_flag(self, frame):
         """
         """
         if self.is_frame:
-            assert self.curr_element.is_placeholder_frame
+            assert self.curr_element.is_builtin_frame
             self.close_pyagram_frame(frame, None)
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
@@ -280,10 +284,12 @@ class ProgramState:
                 self.curr_element = self.curr_element.close()
         if self.curr_element.is_global_frame:
             pass
-        elif self.curr_element.is_generator_frame:
-            self.defer(finish_step)
+        elif self.curr_element.is_builtin_frame:
+            finish_step()
         elif self.curr_element.is_function_frame:
             finish_step()
+        elif self.curr_element.is_generator_frame:
+            self.defer(finish_step)
         elif self.curr_element.is_placeholder_frame:
             finish_step()
         else:
@@ -313,22 +319,20 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
-            # TODO: Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
-            # TODO: Change the banner to simply [FUNCTION](...).
-            self.curr_element.hide_from(0) # TODO: Delete this.
-            # TODO: The flags should be visible. You'll have to change the banner specially.
-            self.open_pyagram_frame(frame, is_placeholder=True)
-            # self.close_pyagram_frame(frame, None) # TODO: HERE!
-        else:
-            if type(callable) is type:
+        if type(callable) is type:
                 self.curr_element.fix_obj_instantiation_banner()
                 callable = callable.__init__
-            pass # TODO
-            # TODO: Perhaps, self.curr_element.function = function ?
-            # TODO: But, then what? Where will that be used?
-            # TODO: You may be able to avoid the necessity of giving each func a unique code object.
-            pass # TODO
+        if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
+
+            # TODO: Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
+
+            self.curr_element.hide_from(0) # TODO: Delete this.
+            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
+            # TODO: The flags should be visible. You'll have to change the banner specially.
+            # TODO: Change the banner to simply [FUNCTION](...).
+        pass # TODO
+        # TODO: Do self.curr_element.function = function. Right now PyagramFlag.function is unused.
+        # TODO: You may be able to avoid the necessity of giving each func a unique code object.
 
     def register_frame(self):
         """
