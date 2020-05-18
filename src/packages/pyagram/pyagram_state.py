@@ -257,6 +257,8 @@ class ProgramState:
     def open_comprehension(self, frame):
         """
         """
+        # TODO: You should make a flag and frame for comprehensions.
+        # TODO: Clutter isn't an issue since by default, you'll close flags once completed.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
         self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
@@ -330,6 +332,7 @@ class ProgramState:
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
             # TODO: The flags should be visible. You'll have to change the banner specially.
             # TODO: Change the banner to simply [FUNCTION](...).
+            # TODO: How will you make sure the frame appears under the flag's subflags? For example, if you write print(f(x)), f(x) should happen before you open print's frame.
         pass # TODO
         # TODO: Do self.curr_element.function = function. Right now PyagramFlag.function is unused.
         # TODO: You may be able to avoid the necessity of giving each func a unique code object.
