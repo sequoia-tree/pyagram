@@ -108,3 +108,24 @@ class ObjectTypes(Enum):
             return ObjectTypes.OBJ_INST
         else:
             return ObjectTypes.OTHER
+
+class UnpackingTypes(Enum):
+    """
+    """
+
+    NORMAL = object()
+    SINGLY_UNPACKED = object()
+    DOUBLY_UNPACKED = object()
+
+    @staticmethod
+    def identify_unpacking_type(unpacking_code):
+        """
+        """
+        if unpacking_code == constants.NORMAL_ARG:
+            return UnpackingTypes.NORMAL
+        elif unpacking_code == constants.SINGLY_UNPACKED_ARG:
+            return UnpackingTypes.SINGLY_UNPACKED
+        elif unpacking_code == constants.DOUBLY_UNPACKED_ARG:
+            return UnpackingTypes.DOUBLY_UNPACKED
+        else:
+            raise UnpackingTypes.illegal_enum(unpacking_code)

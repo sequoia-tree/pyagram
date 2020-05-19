@@ -48,7 +48,7 @@ export const FLAG_TEMPLATE = compile(`
                 {{#if (isNull this)}}
                   -
                 {{else}}
-                  {{decodeReferenceSnapshot this}}
+                  {{decodeReferenceSnapshot value}}
                 {{/if}}
               </td>
               {{#unless @last}}

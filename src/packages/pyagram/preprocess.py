@@ -102,7 +102,7 @@ class CodeWrapper(ast.NodeTransformer):
 
         banner_call = self.preprocessor.wrap_node(
             constants.INNER_CALL_LINENO,
-            banner.Banner(self.preprocessor.code, node).banner,
+            banner.Banner(self.preprocessor.code, node).symbols,
             lineno=node.lineno,
         )
         function_call = ast.Call(

@@ -1,5 +1,7 @@
 import ast
 
+from . import constants
+
 OPEN_PARENTHESIS, CLOSE_PARENTHESIS = ast.Str('('), ast.Str(')')
 OPEN_STARRED_LIST, CLOSE_STARRED_LIST = ast.Str('*['), ast.Str(']')
 OPEN_STARRED_TUPLE, CLOSE_STARRED_TUPLE = ast.Str('*('), ast.Str(')')
@@ -21,16 +23,8 @@ class Banner:
         self.add_args_info(node.args)
         self.add_kwds_info(node.keywords)
         self.symbols.append(CLOSE_PARENTHESIS)
-
-    @property
-    def banner(self):
-        """
-        """
-        return ast.Tuple(
-            elts=[
-                ast.Constant(value=self.val_idx, kind=None),
-                ast.List(elts=self.symbols, ctx=ast.Load()),
-            ],
+        self.symbols = ast.List(
+            elts=self.symbols,
             ctx=ast.Load(),
         )
 
@@ -38,9 +32,9 @@ class Banner:
         """
         """
         if isinstance(func, ast.Lambda):
-            self.add_bindings(func, code_prefix='(', code_suffix=')')
+            self.add_bindings(func, constants.NORMAL_ARG, code_prefix='(', code_suffix=')')
         else:
-            self.add_bindings(func)
+            self.add_bindings(func, constants.NORMAL_ARG)
 
     def add_args_info(self, args):
         """
@@ -49,7 +43,10 @@ class Banner:
             if self.has_prev_input:
                 self.symbols.append(COMMA)
             is_unpacked = isinstance(arg, ast.Starred)
-            self.add_bindings(arg, is_unpacked)
+            self.add_bindings(
+                arg,
+                constants.SINGLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
+            )
             self.has_prev_input = True
 
     def add_kwds_info(self, keywords):
@@ -59,10 +56,13 @@ class Banner:
             is_unpacked = keyword.arg is None
             if not is_unpacked:
                 self.symbols.append(ast.Str(f'{keyword.arg}='))
-            self.add_bindings(keyword.value, is_unpacked)
+            self.add_bindings(
+                keyword.value,
+                constants.DOUBLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
+            )
             self.has_prev_input = True
 
-    def add_bindings(self, node, is_unpacked=False, *, code_prefix=None, code_suffix=None):
+    def add_bindings(self, node, unpacking_code, *, code_prefix=None, code_suffix=None):
         """
         """
         code = ast.get_source_segment(self.code, node).strip('\n')
@@ -81,7 +81,7 @@ class Banner:
                     kind=None,
                 ),
                 ast.Constant(
-                    value=is_unpacked,
+                    value=unpacking_code,
                     kind=None,
                 ),
             ],

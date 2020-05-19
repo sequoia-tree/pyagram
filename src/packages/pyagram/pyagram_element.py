@@ -32,28 +32,19 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, banner, hidden_snapshot=math.inf, *, state=None):
+    def __init__(self, opened_by, banner_symbols, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        if banner is None:
+        if banner_symbols is None:
             # TODO: This is totally broken now.
-            banner_symbols, banner_bindings = [], []
+            # TODO: Do you even need this if clause anymore?
+            banner_symbols = []
         else:
-            num_args, banner_symbols = banner
             utils.concatenate_adjacent_strings(banner_symbols)
-            banner_bindings = [None] * num_args
         self.banner_symbols = banner_symbols
-        self.banner_bindings = banner_bindings
-        self.next_banner_idx = 0
+        self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
-        self.function = None
         self.frame = None
-
-    @property
-    def banner_is_complete(self):
-        """
-        """
-        return self.next_banner_idx == len(self.banner_bindings)
 
     @property
     def has_returned(self):
@@ -83,6 +74,14 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
+
+        # TODO: Temporary! If you choose to keep this here, reconsider how it meshes w the below.
+        if not self.is_hidden():
+            referents = self.banner_bindings
+            for referent in referents:
+                self.state.memory_state.track(referent)
+
+
         if self.frame is not None:
             self.frame.step()
         self.is_new = False # TODO: Do you still need this?
@@ -127,83 +126,108 @@ class PyagramFlag(PyagramElement):
             code = banner_symbol
             bindings = []
         else:
-            code, binding_idx, is_unpacked = banner_symbol
-            bindings = [
-                None
-                if self.banner_bindings[binding_idx] is None
-                else self.state.encoder.reference_snapshot(self.banner_bindings[binding_idx])
-            ]
+            code, binding_idx, unpacking_code = banner_symbol # TODO: Rename to banner_element?
+            if binding_idx < len(self.banner_bindings):
+                binding = self.banner_bindings[binding_idx]
+                unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                if unpacking_type is enum.UnpackingTypes.NORMAL:
+                    bindings = [{
+                        'key': None,
+                        'value': self.state.encoder.reference_snapshot(binding)
+                    }]
+                elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                    bindings = [
+                        {
+                            'key': None,
+                            'value': self.state.encoder.reference_snapshot(value)
+                        }
+                        for value in [*binding]
+                    ]
+                elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                    bindings = [
+                        {
+                            'key': key,
+                            'value': self.state.encoder.reference_snapshot(value)
+                        }
+                        for key, value in {**binding}
+                    ]
+                else:
+                    raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+            else:
+                bindings = [None]
+        # TODO: What if you try f(**{1: 2})? Perhaps it'd be wise to use encode_mapping with is_bindings=True.
         return {
             'code': code,
             'bindings': bindings,
         }
 
-    def evaluate_next_banner_bindings(self, *, skip_args=False):
-        """
-        """
-        self.state.snapshot()
-        if not self.is_new:
-            assert not skip_args
-            self.evaluate_next_banner_binding(True)
-        next_binding_might_not_be_call = True
-        while next_binding_might_not_be_call and not self.banner_is_complete:
-            next_binding_might_not_be_call = self.evaluate_next_banner_binding(
-                False,
-                skip_args=skip_args,
-            )
+    # def evaluate_next_banner_bindings(self, *, skip_args=False):
+    #     """
+    #     """
+    #     self.state.snapshot()
+    #     if not self.is_new:
+    #         assert not skip_args
+    #         self.evaluate_next_banner_binding(True)
+    #     next_binding_might_not_be_call = True
+    #     while next_binding_might_not_be_call and not self.banner_is_complete:
+    #         next_binding_might_not_be_call = self.evaluate_next_banner_binding(
+    #             False,
+    #             skip_args=skip_args,
+    #         )
 
-    def evaluate_next_banner_binding(self, expect_call, *, skip_args=False):
-        """
-        """
+    # def evaluate_next_banner_binding(self, expect_call, *, skip_args=False):
+    #     """
+    #     """
 
-        # Examine the next binding.
-        # If it turns out to be a call:
-        # (*) DON'T evaluate it.
-        # (*) Return False.
-        # Else:
-        # (*) Evaluate the binding.
-        # (*) Return True.
-        # Return False if the banner gets completed.
+    #     # Examine the next binding.
+    #     # If it turns out to be a call:
+    #     # (*) DON'T evaluate it.
+    #     # (*) Return False.
+    #     # Else:
+    #     # (*) Evaluate the binding.
+    #     # (*) Return True.
+    #     # Return False if the banner gets completed.
 
-        binding = self.banner_bindings[self.banner_binding_index]
-        is_unsupported_binding = binding is None
-        if is_unsupported_binding:
-            while not self.banner_is_complete:
-                self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
-                self.banner_binding_index += 1
-            self.state.snapshot()
-            return False
-        else:
-            is_call, param_if_known = binding
-            if is_call and not expect_call:
-                return False
-            else:
-                is_func_binding = self.banner_binding_index == 0
-                if param_if_known is None:
-                    if is_func_binding:
-                        self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
-                    else:
-                        self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
-                        self.positional_arg_index += 1
-                else:
-                    assert not is_func_binding
-                    self.banner_bindings[self.banner_binding_index] = param_if_known
-                self.banner_binding_index += 1
-                if not skip_args or is_func_binding or self.banner_is_complete:
-                    self.state.snapshot()
-                return True
+    #     binding = self.banner_bindings[self.banner_binding_index]
+    #     is_unsupported_binding = binding is None
+    #     if is_unsupported_binding:
+    #         while not self.banner_is_complete:
+    #             self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
+    #             self.banner_binding_index += 1
+    #         self.state.snapshot()
+    #         return False
+    #     else:
+    #         is_call, param_if_known = binding
+    #         if is_call and not expect_call:
+    #             return False
+    #         else:
+    #             is_func_binding = self.banner_binding_index == 0
+    #             if param_if_known is None:
+    #                 if is_func_binding:
+    #                     self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
+    #                 else:
+    #                     self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
+    #                     self.positional_arg_index += 1
+    #             else:
+    #                 assert not is_func_binding
+    #                 self.banner_bindings[self.banner_binding_index] = param_if_known
+    #             self.banner_binding_index += 1
+    #             if not skip_args or is_func_binding or self.banner_is_complete:
+    #                 self.state.snapshot()
+    #             return True
 
     def fix_obj_instantiation_banner(self):
         """
         """
-        if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
-            _, binding_indices = self.banner_elements[0]
-            self.banner_elements[0] = ('__init__', binding_indices)
+        pass # TODO
+        # if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
+        #     _, binding_indices = self.banner_elements[0]
+        #     self.banner_elements[0] = ('__init__', binding_indices)
 
     def add_frame(self, frame, frame_type, **init_args):
         """
         """
-        assert self.banner_is_complete
+        # assert self.banner_is_complete
         frame = PyagramFrame(self, frame, frame_type, **init_args)
         self.frame = frame
         return frame
@@ -258,6 +282,7 @@ class PyagramFrame(PyagramElement):
                 for key, value in self.get_bindings().items()
             }
             if is_implicit:
+                # TODO: This is broken now.
                 flag = opened_by
                 num_args = len(self.initial_bindings)
                 num_bindings = 1 + num_args
