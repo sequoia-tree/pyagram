@@ -15,16 +15,16 @@ class Banner:
 
     def __init__(self, code, node):
         self.code = code
-        self.symbols = []
-        self.val_idx = 0
+        self.elements = []
+        self.val_idx = 0 # TODO: Rename
         self.has_prev_input = False
         self.add_func_info(node.func)
-        self.symbols.append(OPEN_PARENTHESIS)
+        self.elements.append(OPEN_PARENTHESIS)
         self.add_args_info(node.args)
         self.add_kwds_info(node.keywords)
-        self.symbols.append(CLOSE_PARENTHESIS)
-        self.symbols = ast.List(
-            elts=self.symbols,
+        self.elements.append(CLOSE_PARENTHESIS)
+        self.elements = ast.List(
+            elts=self.elements,
             ctx=ast.Load(),
         )
 
@@ -41,7 +41,7 @@ class Banner:
         """
         for arg in args:
             if self.has_prev_input:
-                self.symbols.append(COMMA)
+                self.elements.append(COMMA)
             is_unpacked = isinstance(arg, ast.Starred)
             self.add_bindings(
                 arg,
@@ -55,7 +55,7 @@ class Banner:
         for keyword in keywords:
             is_unpacked = keyword.arg is None
             if not is_unpacked:
-                self.symbols.append(ast.Str(f'{keyword.arg}='))
+                self.elements.append(ast.Str(f'{keyword.arg}='))
             self.add_bindings(
                 keyword.value,
                 constants.DOUBLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
@@ -70,7 +70,7 @@ class Banner:
             code = ''.join((code_prefix, code))
         if code_suffix is not None:
             code = ''.join((code, code_suffix))
-        self.symbols.append(ast.Tuple(
+        self.elements.append(ast.Tuple(
             elts=[
                 ast.Constant(
                     value=code,

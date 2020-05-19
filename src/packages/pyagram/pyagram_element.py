@@ -32,15 +32,15 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, banner_symbols, hidden_snapshot=math.inf, *, state=None):
+    def __init__(self, opened_by, banner_elements, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        if banner_symbols is None:
+        if banner_elements is None:
             # TODO: This is totally broken now.
             # TODO: Do you even need this if clause anymore?
-            banner_symbols = []
+            banner_elements = []
         else:
-            utils.concatenate_adjacent_strings(banner_symbols)
-        self.banner_symbols = banner_symbols
+            utils.concatenate_adjacent_strings(banner_elements)
+        self.banner_elements = banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
@@ -74,14 +74,27 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-
-        # TODO: Temporary! If you choose to keep this here, reconsider how it meshes w the below.
         if not self.is_hidden():
-            referents = self.banner_bindings
+            referents = []
+            for banner_element in self.banner_elements:
+                if type(banner_element) is tuple:
+                    _, binding_idx, unpacking_code = banner_element
+                    if binding_idx < len(self.banner_bindings):
+                        binding = self.banner_bindings[binding_idx]
+                        unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                        if unpacking_type is enum.UnpackingTypes.NORMAL:
+                            referents.append(binding)
+                        elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                            for element in [*binding]:
+                                referents.append(element)
+                        elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                            for key, value in {**binding}:
+                                # TODO: Should you also track the key? In case of f(**{1: 2})?
+                                referents.append(value)
+                        else:
+                            raise enum.UnpackingTypes.illegal_enum(unpacking_type)
             for referent in referents:
                 self.state.memory_state.track(referent)
-
-
         if self.frame is not None:
             self.frame.step()
         self.is_new = False # TODO: Do you still need this?
@@ -97,8 +110,8 @@ class PyagramFlag(PyagramElement):
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'banner': [
-                self.encode_banner_symbol(banner_symbol)
-                for banner_symbol in self.banner_symbols
+                self.encode_banner_element(banner_element)
+                for banner_element in self.banner_elements
             ],
             'frame':
                 None
@@ -118,15 +131,12 @@ class PyagramFlag(PyagramElement):
             'self': self, # For postprocessing.
         }
 
-    def encode_banner_symbol(self, banner_symbol):
+    def encode_banner_element(self, banner_element):
         """
         """
         # TODO: This should not be a function, or at least not here. Maybe move it to encode.py?
-        if isinstance(banner_symbol, str):
-            code = banner_symbol
-            bindings = []
-        else:
-            code, binding_idx, unpacking_code = banner_symbol # TODO: Rename to banner_element?
+        if type(banner_element) is tuple:
+            code, binding_idx, unpacking_code = banner_element
             if binding_idx < len(self.banner_bindings):
                 binding = self.banner_bindings[binding_idx]
                 unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
@@ -155,6 +165,9 @@ class PyagramFlag(PyagramElement):
                     raise enum.UnpackingTypes.illegal_enum(unpacking_type)
             else:
                 bindings = [None]
+        else:
+            code = banner_element
+            bindings = []
         # TODO: What if you try f(**{1: 2})? Perhaps it'd be wise to use encode_mapping with is_bindings=True.
         return {
             'code': code,
