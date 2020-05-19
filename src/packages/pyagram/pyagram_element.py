@@ -39,6 +39,7 @@ class PyagramFlag(PyagramElement):
         else:
             banner_elements, banner_bindings = banner
             utils.concatenate_adjacent_strings(banner_elements)
+            banner_bindings = [None] * len(banner_bindings) # TODO: Obviously this is sloppy.
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
         self.banner_elements = banner_elements
@@ -83,19 +84,9 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-
-        # Fill in every banner binding up to the next one that is obtained through a function call.
-
-        if not self.banner_is_complete:
-            if self is self.state.program_state.curr_element:
-                if self.is_new or self.has_processed_subflag_since_prev_eval:
-                    self.evaluate_next_banner_bindings()
-                self.has_processed_subflag_since_prev_eval = False
-            else:
-                self.has_processed_subflag_since_prev_eval = True
         if self.frame is not None:
             self.frame.step()
-        self.is_new = False
+        self.is_new = False # TODO: Do you still need this?
         super().step()
 
     def snapshot(self):
@@ -104,7 +95,14 @@ class PyagramFlag(PyagramElement):
         is_hidden = self.is_hidden()
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
-            'banner': None, # Placeholder.
+            'banner': [
+                (
+                    {'code': banner_element, 'bindings': []}
+                    if isinstance(banner_element, str)
+                    else self.encode_banner_element(banner_element)
+                )
+                for banner_element in self.banner_elements
+            ],
             'frame':
                 None
                 if self.frame is None or is_hidden
@@ -121,8 +119,25 @@ class PyagramFlag(PyagramElement):
                     )
                 ],
             'self': self, # For postprocessing.
-            'banner_binding_index': self.banner_binding_index, # For postprocessing.
-            'snapshot_index': len(self.state.snapshots), # For postprocessing.
+        }
+
+    def encode_banner_element(self, banner_element):
+        """
+        """
+        # TODO: This should not be a function, or at least not here. Maybe move it to encode.py?
+        # TODO: Also this is sloppy.
+        assert isinstance(banner_element, tuple)
+        code, binding_indices = banner_element
+        return {
+            'code': code,
+            'bindings': [
+                (
+                    None
+                    if self.banner_bindings[i] is None
+                    else self.state.encoder.reference_snapshot(self.banner_bindings[i])
+                )
+                for i in binding_indices
+            ]
         }
 
     def evaluate_next_banner_bindings(self, *, skip_args=False):
@@ -190,7 +205,7 @@ class PyagramFlag(PyagramElement):
     def add_frame(self, frame, frame_type, **init_args):
         """
         """
-        # assert self.banner_is_complete # TODO: ?
+        assert self.banner_is_complete
         frame = PyagramFrame(self, frame, frame_type, **init_args)
         self.frame = frame
         return frame

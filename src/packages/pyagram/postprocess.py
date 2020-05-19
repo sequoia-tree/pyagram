@@ -58,7 +58,7 @@ class Postprocessor:
                 raise exception.HiddenSnapshotException()
             else:
                 return constants.HIDDEN_FLAG_CODE
-        self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
+        # self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:
             self.postprocess_frame_snapshot(snapshot_index, frame_snapshot)

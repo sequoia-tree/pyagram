@@ -261,9 +261,6 @@ class ProgramState:
     def open_comprehension(self, frame):
         """
         """
-        # TODO: You should make a flag and frame for comprehensions.
-        # TODO: Clutter isn't an issue since by default, you'll close flags once completed.
-        # TODO: Replace the PLACEHOLDER PyagramFrameTypes enum with COMPREHENSION instead.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
         self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
@@ -325,10 +322,8 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
-        return # TODO: Delete this.
         assert self.is_ongoing_flag_sans_frame
         if type(callable) is type:
-            # TODO: Make sure this works.
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
@@ -352,10 +347,14 @@ class ProgramState:
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
+        self.curr_element.banner_binding_index += 1
 
     def register_argument(self, frame, return_value):
         """
         """
+        assert self.is_ongoing_flag_sans_frame
+        self.curr_element.banner_bindings[self.curr_element.banner_binding_index] = return_value
+        self.curr_element.banner_binding_index += 1
         return # TODO
 
     def register_frame(self):
