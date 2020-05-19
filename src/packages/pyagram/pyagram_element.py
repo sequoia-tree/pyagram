@@ -35,18 +35,17 @@ class PyagramFlag(PyagramElement):
     def __init__(self, opened_by, banner, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
         if banner is None:
-            banner_elements, banner_bindings = [], []
+            # TODO: This is totally broken now.
+            banner_symbols, banner_bindings = [], []
         else:
-            banner_elements, banner_bindings = banner
-            utils.concatenate_adjacent_strings(banner_elements)
-            banner_bindings = [None] * len(banner_bindings) # TODO: Obviously this is sloppy.
+            num_args, banner_symbols = banner
+            utils.concatenate_adjacent_strings(banner_symbols)
+            banner_bindings = [None] * num_args
+        self.banner_symbols = banner_symbols
+        self.banner_bindings = banner_bindings
+        self.next_banner_idx = 0
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
-        self.banner_elements = banner_elements
-        self.banner_bindings = banner_bindings
-        self.banner_binding_index = 0
-        self.positional_arg_index = 0
-        self.has_processed_subflag_since_prev_eval = False
         self.function = None
         self.frame = None
 
@@ -54,7 +53,7 @@ class PyagramFlag(PyagramElement):
     def banner_is_complete(self):
         """
         """
-        return self.banner_binding_index == len(self.banner_bindings)
+        return self.next_banner_idx == len(self.banner_bindings)
 
     @property
     def has_returned(self):
@@ -92,16 +91,15 @@ class PyagramFlag(PyagramElement):
     def snapshot(self):
         """
         """
+        # TODO: Make sure *args and **kwargs show up properly on the banner.
+        # TODO: Make sure *dict and **dict behave how they respectively ought.
+        # TODO: Make sure f(x=...) makes x= show up on the bottom of the banner.
         is_hidden = self.is_hidden()
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
             'banner': [
-                (
-                    {'code': banner_element, 'bindings': []}
-                    if isinstance(banner_element, str)
-                    else self.encode_banner_element(banner_element)
-                )
-                for banner_element in self.banner_elements
+                self.encode_banner_symbol(banner_symbol)
+                for banner_symbol in self.banner_symbols
             ],
             'frame':
                 None
@@ -121,23 +119,23 @@ class PyagramFlag(PyagramElement):
             'self': self, # For postprocessing.
         }
 
-    def encode_banner_element(self, banner_element):
+    def encode_banner_symbol(self, banner_symbol):
         """
         """
         # TODO: This should not be a function, or at least not here. Maybe move it to encode.py?
-        # TODO: Also this is sloppy.
-        assert isinstance(banner_element, tuple)
-        code, binding_indices = banner_element
+        if isinstance(banner_symbol, str):
+            code = banner_symbol
+            bindings = []
+        else:
+            code, binding_idx, is_unpacked = banner_symbol
+            bindings = [
+                None
+                if self.banner_bindings[binding_idx] is None
+                else self.state.encoder.reference_snapshot(self.banner_bindings[binding_idx])
+            ]
         return {
             'code': code,
-            'bindings': [
-                (
-                    None
-                    if self.banner_bindings[i] is None
-                    else self.state.encoder.reference_snapshot(self.banner_bindings[i])
-                )
-                for i in binding_indices
-            ]
+            'bindings': bindings,
         }
 
     def evaluate_next_banner_bindings(self, *, skip_args=False):

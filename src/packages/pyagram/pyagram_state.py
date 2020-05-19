@@ -347,14 +347,15 @@ class ProgramState:
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
-        self.curr_element.banner_binding_index += 1
+        self.curr_element.next_banner_idx += 1
 
     def register_argument(self, frame, return_value):
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        self.curr_element.banner_bindings[self.curr_element.banner_binding_index] = return_value
-        self.curr_element.banner_binding_index += 1
+        print('new arg:', return_value)
+        self.curr_element.banner_bindings[self.curr_element.next_banner_idx] = return_value # TODO: Instead of setting this to the return_value, set it to encode_reference(return_value).
+        self.curr_element.next_banner_idx += 1
         return # TODO
 
     def register_frame(self):

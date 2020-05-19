@@ -49,9 +49,11 @@ class Preprocessor:
                     max_lineno=self.num_lines,
                 )
 
-    def wrap_node(self, lineno, frame_code, return_node, params=[], args=[], keywords=[]):
+    def wrap_node(self, frame_code, return_node, *, lineno=None, params=[], args=[], keywords=[]):
         """
         """
+        if lineno is None:
+            lineno = return_node.lineno
         function = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=params,
@@ -98,40 +100,49 @@ class CodeWrapper(ast.NodeTransformer):
         #                    ),
         #                )
 
-        wrap_node = lambda *args, **kwargs: self.preprocessor.wrap_node(
-            node.lineno,
-            *args,
-            **kwargs,
-        )
-
-        banner_call = wrap_node(
+        banner_call = self.preprocessor.wrap_node(
             constants.INNER_CALL_LINENO,
             banner.Banner(self.preprocessor.code, node).banner,
+            lineno=node.lineno,
         )
         function_call = ast.Call(
-            func=wrap_node(
+            func=self.preprocessor.wrap_node(
                 constants.FN_WRAPPER_LINENO,
                 node.func,
             ),
             args=[
-                wrap_node(
-                    constants.RG_WRAPPER_LINENO,
-                    arg,
+                (
+                    ast.Starred(
+                        value=self.preprocessor.wrap_node(
+                            constants.RG_WRAPPER_LINENO,
+                            arg.value,
+                        ),
+                        ctx=ast.Load(),
+                    )
+                    if isinstance(arg, ast.Starred)
+                    else self.preprocessor.wrap_node(
+                        constants.RG_WRAPPER_LINENO,
+                        arg,
+                    )
                 )
                 for arg in node.args
             ],
             keywords=[
-                ast.keyword(arg=keyword.arg, value=wrap_node(
-                    constants.RG_WRAPPER_LINENO,
-                    keyword.value,
-                ))
+                ast.keyword(
+                    arg=keyword.arg,
+                    value=self.preprocessor.wrap_node(
+                        constants.RG_WRAPPER_LINENO,
+                        keyword.value,
+                    )
+                )
                 for keyword in node.keywords
             ],
             lineno=node.lineno,
         )
-        wrapper_call = wrap_node(
+        wrapper_call = self.preprocessor.wrap_node(
             constants.OUTER_CALL_LINENO,
             ast.Name(id='call', ctx=ast.Load()),
+            lineno=node.lineno,
             params=[
                 ast.arg(arg='info', annotation=None),
                 ast.arg(arg='call', annotation=None),
