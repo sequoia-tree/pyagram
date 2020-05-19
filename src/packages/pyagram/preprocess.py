@@ -55,10 +55,14 @@ class CodeWrapper(ast.NodeTransformer):
         """
         """
 
-        # f(x) --> (lambda info, call: call)(
-        #              (lambda: flag_info)(),
-        #              (lambda: f)()(x),
-        #          )
+        # f(x, y, z) --> (lambda info, call: call)(
+        #                    (lambda: flag_info)(),
+        #                    (lambda: f)()(
+        #                        (lambda: x)(),
+        #                        (lambda: y)(),
+        #                        (lambda: z)(),
+        #                    ),
+        #                )
 
         banner_lambda = ast.Lambda(
             args=ast.arguments(
