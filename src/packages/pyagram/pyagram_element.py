@@ -161,61 +161,6 @@ class PyagramFlag(PyagramElement):
             'bindings': bindings,
         }
 
-    # def evaluate_next_banner_bindings(self, *, skip_args=False):
-    #     """
-    #     """
-    #     self.state.snapshot()
-    #     if not self.is_new:
-    #         assert not skip_args
-    #         self.evaluate_next_banner_binding(True)
-    #     next_binding_might_not_be_call = True
-    #     while next_binding_might_not_be_call and not self.banner_is_complete:
-    #         next_binding_might_not_be_call = self.evaluate_next_banner_binding(
-    #             False,
-    #             skip_args=skip_args,
-    #         )
-
-    # def evaluate_next_banner_binding(self, expect_call, *, skip_args=False):
-    #     """
-    #     """
-
-    #     # Examine the next binding.
-    #     # If it turns out to be a call:
-    #     # (*) DON'T evaluate it.
-    #     # (*) Return False.
-    #     # Else:
-    #     # (*) Evaluate the binding.
-    #     # (*) Return True.
-    #     # Return False if the banner gets completed.
-
-    #     binding = self.banner_bindings[self.banner_binding_index]
-    #     is_unsupported_binding = binding is None
-    #     if is_unsupported_binding:
-    #         while not self.banner_is_complete:
-    #             self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
-    #             self.banner_binding_index += 1
-    #         self.state.snapshot()
-    #         return False
-    #     else:
-    #         is_call, param_if_known = binding
-    #         if is_call and not expect_call:
-    #             return False
-    #         else:
-    #             is_func_binding = self.banner_binding_index == 0
-    #             if param_if_known is None:
-    #                 if is_func_binding:
-    #                     self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
-    #                 else:
-    #                     self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
-    #                     self.positional_arg_index += 1
-    #             else:
-    #                 assert not is_func_binding
-    #                 self.banner_bindings[self.banner_binding_index] = param_if_known
-    #             self.banner_binding_index += 1
-    #             if not skip_args or is_func_binding or self.banner_is_complete:
-    #                 self.state.snapshot()
-    #             return True
-
     def fix_obj_instantiation_banner(self):
         """
         """
