@@ -16,12 +16,16 @@ class Preprocessor:
 
     @property
     def summary(self):
+        """
+        """
         return (
             self.num_lines,
             {line: len(lambdas) for line, lambdas in self.lambdas_by_line.items()},
         )
 
     def preprocess(self):
+        """
+        """
         code_wrapper = CodeWrapper(self)
         self.ast = code_wrapper.visit(self.ast)
         self.encode_lambdas()
@@ -33,6 +37,8 @@ class Preprocessor:
         )
 
     def encode_lambdas(self):
+        """
+        """
         for lineno in self.lambdas_by_line:
             sorted_lambdas = sorted(self.lambdas_by_line[lineno], key=lambda node: node.col_offset)
             for i, node in enumerate(sorted_lambdas):
@@ -42,6 +48,34 @@ class Preprocessor:
                     True,
                     max_lineno=self.num_lines,
                 )
+
+    def wrap_node(self, lineno, frame_code, return_node, params=[], args=[], keywords=[]):
+        """
+        """
+        function = ast.Lambda(
+            args=ast.arguments(
+                posonlyargs=params,
+                args=[],
+                vararg=None,
+                kwonlyargs=[],
+                kwarg=None,
+                defaults=[],
+                kw_defaults=[],
+            ),
+            body=return_node,
+        )
+        function_call = ast.Call(
+            func=function,
+            args=args,
+            keywords=keywords,
+            lineno=utils.encode_lineno(
+                lineno,
+                frame_code,
+                False,
+                max_lineno=self.num_lines,
+            ),
+        )
+        return function_call
 
 class CodeWrapper(ast.NodeTransformer):
     """
@@ -55,95 +89,57 @@ class CodeWrapper(ast.NodeTransformer):
         """
         """
 
-        # f(x, y, z) --> (lambda info, call: call)(
-        #                    (lambda: flag_info)(),
-        #                    (lambda: f)()(
-        #                        (lambda: x)(),
-        #                        (lambda: y)(),
-        #                        (lambda: z)(),
+        # f(x, y, z) --> (lambda info, call: call)( # wrapper
+        #                    (lambda: flag_info)(), # banner
+        #                    (lambda: f)()(         # function
+        #                        (lambda: x)(),     # arg
+        #                        (lambda: y)(),     # arg
+        #                        (lambda: z)(),     # arg
         #                    ),
         #                )
 
-        banner_lambda = ast.Lambda(
-            args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                vararg=None,
-                kwonlyargs=[],
-                kwarg=None,
-                defaults=[],
-                kw_defaults=[],
-            ),
-            body=banner.Banner(self.preprocessor.code, node).banner,
+        wrap_node = lambda *args, **kwargs: self.preprocessor.wrap_node(
+            node.lineno,
+            *args,
+            **kwargs,
         )
-        function_lambda = ast.Lambda(
-            args=ast.arguments(
-                posonlyargs=[],
-                args=[],
-                vararg=None,
-                kwonlyargs=[],
-                kwarg=None,
-                defaults=[],
-                kw_defaults=[],
-            ),
-            body=node.func,
-        )
-        wrapper_lambda = ast.Lambda(
-            args=ast.arguments(
-                posonlyargs=[],
-                args=[
-                    # TODO: What if the user has a function which defers to its parent frame to look up variables named `info` or `call`? Maybe make these posonlyargs?
-                    ast.arg(arg='info', annotation=None),
-                    ast.arg(arg='call', annotation=None),
-                ],
-                vararg=None,
-                kwonlyargs=[],
-                kwarg=None,
-                defaults=[],
-                kw_defaults=[],
-            ),
-            body=ast.Name(id='call', ctx=ast.Load()),
-        )
-        banner_call = ast.Call(
-            func=banner_lambda,
-            args=[],
-            keywords=[],
-            lineno=utils.encode_lineno(
-                node.lineno,
-                constants.INNER_CALL_LINENO,
-                False,
-                max_lineno=self.preprocessor.num_lines,
-            ),
+
+        banner_call = wrap_node(
+            constants.INNER_CALL_LINENO,
+            banner.Banner(self.preprocessor.code, node).banner,
         )
         function_call = ast.Call(
-            func=ast.Call(
-                func=function_lambda,
-                args=[],
-                keywords=[],
-                lineno=utils.encode_lineno(
-                    node.lineno,
-                    constants.FN_WRAPPER_LINENO,
-                    False,
-                    max_lineno=self.preprocessor.num_lines,
-                )
+            func=wrap_node(
+                constants.FN_WRAPPER_LINENO,
+                node.func,
             ),
-            args=node.args,
-            keywords=node.keywords,
+            args=[
+                wrap_node(
+                    constants.RG_WRAPPER_LINENO,
+                    arg,
+                )
+                for arg in node.args
+            ],
+            keywords=[
+                ast.keyword(arg=keyword.arg, value=wrap_node(
+                    constants.RG_WRAPPER_LINENO,
+                    keyword.value,
+                ))
+                for keyword in node.keywords
+            ],
             lineno=node.lineno,
         )
-        wrapper_call = ast.Call(
-            func=wrapper_lambda,
+        wrapper_call = wrap_node(
+            constants.OUTER_CALL_LINENO,
+            ast.Name(id='call', ctx=ast.Load()),
+            params=[
+                ast.arg(arg='info', annotation=None),
+                ast.arg(arg='call', annotation=None),
+            ],
             args=[
                 banner_call,
                 function_call,
             ],
-            keywords=[],
-            lineno=utils.encode_lineno(
-                node.lineno,
-                constants.OUTER_CALL_LINENO,
-                False,
-                max_lineno=self.preprocessor.num_lines,
-            ),
         )
         self.generic_visit(node)
         return wrapper_call

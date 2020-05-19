@@ -25,7 +25,8 @@ class FrameTypes(Enum):
     """
 
     SRC_CALL = object()
-    SRC_CALL_F_WRAPPER = object()
+    SRC_CALL_FN_WRAPPER = object()
+    SRC_CALL_RG_WRAPPER = object()
     SRC_CALL_PRECURSOR = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
@@ -38,7 +39,9 @@ class FrameTypes(Enum):
         if step_code == constants.UNMODIFIED_LINENO:
             return FrameTypes.SRC_CALL
         elif step_code == constants.FN_WRAPPER_LINENO:
-            return FrameTypes.SRC_CALL_F_WRAPPER
+            return FrameTypes.SRC_CALL_FN_WRAPPER
+        elif step_code == constants.RG_WRAPPER_LINENO:
+            return FrameTypes.SRC_CALL_RG_WRAPPER
         elif step_code == constants.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
         elif step_code == constants.OUTER_CALL_LINENO:
