@@ -52,7 +52,7 @@ export const FLAG_TEMPLATE = compile(`
                 {{/if}}
               </td>
               {{#unless @last}}
-                <td>,</td>
+                <td class="argument-separator">,</td>
               {{/unless}}
             {{/each}}
           {{/if}}

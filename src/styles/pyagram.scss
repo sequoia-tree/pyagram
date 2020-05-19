@@ -20,6 +20,9 @@
     @include border-top();
     @include border-bottom();
     @include border-right();
+    .argument-separator {
+      width: 1ch;
+    }
   }
 }
 
