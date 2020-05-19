@@ -206,7 +206,7 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, placeholder_type=None):
+    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None):
         super().__init__(opened_by, state)
         self.frame = frame
         if frame_type is None:
@@ -223,6 +223,10 @@ class PyagramFrame(PyagramElement):
         self.is_implicit = is_implicit
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
+        elif self.is_builtin_frame:
+            assert function is not None
+            self.function = function
+            self.frame_number = self.state.program_state.register_frame()
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
             self.state.memory_state.record_function(self, self.function)
@@ -263,9 +267,7 @@ class PyagramFrame(PyagramElement):
             self.hide_from(0)
             self.throws_exc = False
         elif self.is_placeholder_frame:
-            assert placeholder_type is not None
-            self.placeholder_type = placeholder_type
-            self.hide_from(0)
+            pass
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
         self.has_returned = False
@@ -276,6 +278,8 @@ class PyagramFrame(PyagramElement):
         """
         if self.is_global_frame:
             return 'Global Frame'
+        elif self.is_builtin_frame:
+            return f'Frame {self.frame_number}'
         elif self.is_function_frame:
             return f'Frame {self.frame_number}'
         elif self.is_generator_frame:
@@ -290,6 +294,12 @@ class PyagramFrame(PyagramElement):
         """
         """
         return self.frame_type is enum.PyagramFrameTypes.GLOBAL
+
+    @property
+    def is_builtin_frame(self):
+        """
+        """
+        return self.frame_type is enum.PyagramFrameTypes.BUILTIN
 
     @property
     def is_function_frame(self):
@@ -315,6 +325,8 @@ class PyagramFrame(PyagramElement):
         """
         if self.is_global_frame:
             return None
+        elif self.is_builtin_frame:
+            return self.state.program_state.global_frame
         elif self.is_function_frame:
             return self.state.memory_state.function_parents[self.function]
         elif self.is_generator_frame:
@@ -338,6 +350,8 @@ class PyagramFrame(PyagramElement):
         """
         if self.is_global_frame:
             return False
+        elif self.is_builtin_frame:
+            return self.has_returned
         elif self.is_function_frame:
             return self.has_returned
         elif self.is_generator_frame:

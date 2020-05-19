@@ -259,20 +259,16 @@ class ProgramState:
         """
         # TODO: You should make a flag and frame for comprehensions.
         # TODO: Clutter isn't an issue since by default, you'll close flags once completed.
+        # TODO: Replace the PLACEHOLDER PyagramFrameTypes enum with COMPREHENSION instead.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
-        self.open_pyagram_frame(
-            frame,
-            enum.PyagramFrameTypes.PLACEHOLDER,
-            placeholder_type=enum.PyagramFrameTypes.COMPREHENSION,
-        )
+        self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
 
     def close_pyagram_flag(self, frame):
         """
         """
         if self.is_frame:
-            assert self.curr_element.is_placeholder_frame
-            assert self.curr_element.placeholder_type is enum.PyagramFrameTypes.BUILTIN
+            assert self.curr_element.is_builtin_frame
             self.close_pyagram_frame(frame, None)
         assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.close()
@@ -291,6 +287,8 @@ class ProgramState:
                 self.curr_element = self.curr_element.close()
         if self.curr_element.is_global_frame:
             pass
+        elif self.curr_element.is_builtin_frame:
+            finish_step()
         elif self.curr_element.is_function_frame:
             finish_step()
         elif self.curr_element.is_generator_frame:
@@ -323,20 +321,32 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
+        return # TODO: Delete this.
         assert self.is_ongoing_flag_sans_frame
         if type(callable) is type:
+            # TODO: Make sure this works.
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
-            # TODO: Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
-            self.open_pyagram_frame(
-                frame,
-                enum.PyagramFrameTypes.PLACEHOLDER,
-                placeholder_type=enum.PyagramFrameTypes.BUILTIN,
-            )
+
+            # Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
+
+            raise NotImplementedError() # TODO
+
+            # TODO: (1) Also modify the banner. It should just have 2 components that get evaluated: FUNCTION(...). Here, you should take the snapshot where the function is evaluated, and before opening the builtin frame, you should take the snapshot where the rest gets filled in with '...'.
+            # TODO: (2) Actually, don't open the frame here. Instead, just mark the flag as a builtin flag and give it the function. Then, before opening an implicit frame or closing a flag, check if the curr_element is a builtin flag. If so, Add the placeholder builtin frame, take a snapshot, close the placeholder frame, and continue.
+            # TODO: (3) To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
+
+            # print(self.curr_element.banner_elements)
+            # print(self.curr_element.banner_bindings)
+            # from . import constants
+            # self.curr_element.banner_elements[1:] = ['(', ('f(a), key=f', [1]), ')']
+            # self.curr_element.banner_bindings[1:] = constants.BANNER_ELLIPSIS_CODE
+
+            # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
         else:
             pass # TODO
-            # TODO: Do self.curr_element.function = function. Rn PyagramFlag.function is unused.
+            # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
 
     def register_frame(self):

@@ -55,12 +55,10 @@ class PyagramFrameTypes(Enum):
     """
 
     GLOBAL = object()
+    BUILTIN = object()
     FUNCTION = object()
     GENERATOR = object()
     PLACEHOLDER = object()
-
-    BUILTIN = object()
-    COMPREHENSION = object()
 
 class ObjectTypes(Enum):
     """
