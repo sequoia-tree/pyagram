@@ -53,16 +53,21 @@ class Banner:
         """
         """
         for keyword in keywords:
+            if self.has_prev_input:
+                self.elements.append(COMMA)
             is_unpacked = keyword.arg is None
-            if not is_unpacked:
+            if is_unpacked:
+                self.elements.append(ast.Str('**'))
+            else:
                 self.elements.append(ast.Str(f'{keyword.arg}='))
             self.add_bindings(
                 keyword.value,
                 constants.DOUBLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
+                kwd=keyword.arg,
             )
             self.has_prev_input = True
 
-    def add_bindings(self, node, unpacking_code, *, code_prefix=None, code_suffix=None):
+    def add_bindings(self, node, unpacking_code, *, kwd=None, code_prefix=None, code_suffix=None):
         """
         """
         code = ast.get_source_segment(self.code, node).strip('\n')
@@ -74,6 +79,10 @@ class Banner:
             elts=[
                 ast.Constant(
                     value=code,
+                    kind=None,
+                ),
+                ast.Constant(
+                    value=kwd,
                     kind=None,
                 ),
                 ast.Constant(

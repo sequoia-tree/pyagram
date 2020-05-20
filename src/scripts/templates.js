@@ -23,7 +23,7 @@ export const FLAG_TEMPLATE = compile(`
     <table class="text-center">
       <tr>
         {{#each banner}}
-          <td {{#unless (isEmpty bindings)}} colspan="{{sum (mul 2 bindings.length) -1}}" {{/unless}}>
+          <td colspan="{{n_cols}}">
             {{code}}
           </td>
         {{/each}}
@@ -44,6 +44,11 @@ export const FLAG_TEMPLATE = compile(`
             {{/if}}
           {{else}}
             {{#each bindings}}
+              {{#unless (isNull this)}}
+                {{#unless (isNull key)}}
+                  <td>{{key}}=</td>
+                {{/unless}}
+              {{/unless}}
               <td class="pyagram-value {{#if (isNull this)}} pyagram-placeholder {{/if}}">
                 {{#if (isNull this)}}
                   -
