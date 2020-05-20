@@ -136,34 +136,30 @@ class PyagramFlag(PyagramElement):
             binding = self.banner_bindings[binding_idx]
             unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
             if unpacking_type is enum.UnpackingTypes.NORMAL:
-                bindings = [{
-                    'key': keyword,
-                    'value': self.state.encoder.reference_snapshot(binding)
-                }]
+                keyless = keyword is None
+                bindings = self.state.encoder.encode_mapping(
+                    (binding,) if keyless else {keyword: binding},
+                    keyless=keyless,
+                    is_bindings=True,
+                )
             elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
                 unpacked_binding = [*binding]
-                bindings = [
-                    {
-                        'key': None,
-                        'value': self.state.encoder.reference_snapshot(value)
-                    }
-                    for value in unpacked_binding
-                ]
+                bindings = self.state.encoder.encode_mapping(
+                    unpacked_binding,
+                    keyless=True,
+                    is_bindings=True,
+                )
             elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
                 unpacked_binding = {**binding}
-                bindings = [
-                    {
-                        'key': key,
-                        'value': self.state.encoder.reference_snapshot(unpacked_binding[key])
-                    }
-                    for key in unpacked_binding
-                ]
+                bindings = self.state.encoder.encode_mapping(
+                    unpacked_binding,
+                    is_bindings=True,
+                )
             else:
                 raise enum.UnpackingTypes.illegal_enum(unpacking_type)
         else:
             bindings = None
-        # TODO: What if you try f(**{1: 2})? Currently it throws an error in PyagramFlag.step. (During preprocessing, you assume the starred expression is valid. When it's not, you need to detect that and propagate the error up. Maybe call process_exception?) Also, maybe worth investigating: if you comment this stuff out, so that it doesn't cause an error itself, would the Tracer produce a USER_EXCEPTION on its own?
-        # TODO: To cut down on code reuse, consider using encode_mapping with is_bindings=True. Or at least consider abstracting some of this into a helper function.
+        # TODO: What if you try f(**{1: 2})?
         return {
             'code': code,
             'n_cols':

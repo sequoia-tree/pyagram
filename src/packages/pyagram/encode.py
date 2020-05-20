@@ -152,17 +152,26 @@ class Encoder:
             ],
         }
 
-    def encode_mapping(self, object, *, is_bindings=False, take=lambda key: True):
+    def encode_mapping(self, object, *, keyless=False, is_bindings=False, take=lambda key: True):
         """
         """
-        items = [
-            {
-                'key': self.reference_snapshot(key, is_bindings=is_bindings),
-                'value': self.reference_snapshot(value),
-            }
-            for key, value in object.items()
-            if take(key)
-        ]
+        if keyless:
+            items = [
+                {
+                    'key': None,
+                    'value': self.reference_snapshot(value),
+                }
+                for value in object
+            ]
+        else:
+            items = [
+                {
+                    'key': self.reference_snapshot(key, is_bindings=is_bindings),
+                    'value': self.reference_snapshot(value),
+                }
+                for key, value in object.items()
+                if take(key)
+            ]
         if is_bindings:
             return items
         else:
