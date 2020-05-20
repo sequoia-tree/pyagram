@@ -172,7 +172,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            self.close_pyagram_flag(frame)
+            pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
@@ -192,7 +192,8 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            pass
+            if self.curr_element is not self.global_frame: # TODO: This is sloppy.
+                self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
@@ -266,26 +267,19 @@ class ProgramState:
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
         self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
 
-    def close_pyagram_flag(self, frame):
+    def close_pyagram_flag(self, frame, return_value):
         """
         """
         assert self.is_flag
         if self.curr_element.is_builtin:
 
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+            # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
             self.close_pyagram_frame(frame, None)
+            # TODO: Make sure to track the return value! Right now it doesn't.
 
         assert self.is_complete_flag
         self.curr_element = self.curr_element.close()
-
-        # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin
-        # TODO: flag and give it the function. Then, before ...
-        # TODO:       (1) opening an implicit frame, or ...
-        # TODO:       (2) closing a flag ...
-        # TODO: ... check if the curr_element is a builtin flag. If so, Add the placeholder
-        # TODO: builtin frame, take a snapshot, close the placeholder frame, and continue.
-
-        # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
 
     def close_pyagram_frame(self, frame, return_value):
         """
@@ -331,7 +325,8 @@ class ProgramState:
             return
         assert self.is_ongoing_frame
         self.close_pyagram_frame(frame, return_value)
-        self.close_pyagram_flag(frame)
+        self.close_pyagram_flag(frame, None)
+        # TODO: This is definitely broken now.
 
     def register_callable(self, frame, callable):
         """
@@ -355,7 +350,7 @@ class ProgramState:
             # TODO: ... check if the curr_element is a builtin flag. If so, Add the placeholder
             # TODO: builtin frame, take a snapshot, close the placeholder frame, and continue.
 
-            # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event. Might have to do some postprocessing. (You could keep a map {builtin PyagramFrame: return value}, for instance.)
+            # TODO: To get the return value for the builtin frame, you can get it in the SRC_CALL_SUCCESSOR's close event.
 
             # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
         else:
