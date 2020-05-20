@@ -5,6 +5,10 @@ function compile(template) {
     });
 }
 
+export const ESCAPE = Handlebars.compile(`
+{{~this~}}
+`);
+
 export const STACK_TEMPLATE = compile(`
 <div class="font-family-monospace">
   {{decodeFrameSnapshot this}}
@@ -24,7 +28,7 @@ export const FLAG_TEMPLATE = compile(`
       <tr>
         {{#each banner}}
           <td colspan="{{n_cols}}">
-            {{code}}
+            {{escape code}}
           </td>
           {{#if @first}}
             {{#if @last}}
@@ -101,20 +105,17 @@ export const FRAME_TEMPLATE = compile(`
   <div class="pyagram-frame-name">
     {{#if (isEqual type 'function')}}
       <span class="font-family-sans-serif">
-        {{name}}
-        {{#unless (isNull parent)}}
-          [parent: {{parent}}]
-        {{/unless}}
+        {{escape name}}{{#unless (isNull parent)}} [parent: {{escape parent}}]{{/unless}}
       </span>
     {{else if (isEqual type 'generator')}}
       <span class="font-family-sans-serif">
-        {{name}} [parent: {{parent}}]
+        {{escape name}} [parent: {{escape parent}}]
       </span>
     {{else if (isEqual type 'class')}}
       <span class="font-family-sans-serif">
         class
       </span>
-      {{~name~}}
+      {{~escape name~}}
       {{#if (isNull parents)}}
         <span class="font-family-sans-serif">
           [parent: <span class="font-family-monospace">{{decodeUnknownSnapshot this}}</span>]
@@ -124,16 +125,16 @@ export const FRAME_TEMPLATE = compile(`
         <span class="font-family-sans-serif">
           [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
           {{#each parents}}
-            class <span class="font-family-monospace">{{this}}</span>
+            class <span class="font-family-monospace">{{escape this}}</span>
             {{~#unless @last}}, {{/unless~}}
           {{~/each~}}
           ]
         </span>
       {{/if}}
     {{else if (isEqual type 'instance')}}
-      {{~name~}}
+      {{~escape name~}}
       <span class="font-family-sans-serif">
-        instance [parent: class <span class="font-family-monospace">{{parent}}</span>]
+        instance [parent: class <span class="font-family-monospace">{{escape parent}}</span>]
       </span>
     {{/if}}
   </div>
@@ -206,8 +207,12 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
 </table>
 `);
 
-export const PRIMITIVE_TEMPLATE = Handlebars.compile(`
-{{this}}
+export const UNKNOWN_TEMPLATE = compile(`
+<span class="pyagram-unknown">(?)</span>
+`);
+
+export const PRIMITIVE_TEMPLATE = compile(`
+{{escape this}}
 `);
 
 export const REFERENT_TEMPLATE_TEXTPOINTERS_T = compile(`
@@ -231,7 +236,7 @@ export const FUNCTION_TEMPLATE = compile(`
   {{/if}}
 </span>
 {{#if (isNull lambda_id)}}
-  {{~name~}}
+  {{~escape name~}}
 {{else}}
   {{~#with lambda_id~}}
     &#955;<sub>{{lineno}}{{#unless single}}#{{number}}{{/unless}}</sub>
@@ -239,7 +244,7 @@ export const FUNCTION_TEMPLATE = compile(`
 {{/if}}
 (
 {{~#each parameters~}}
-  {{~name~}}
+  {{~escape name~}}
   {{~#unless (isNull default)~}}
     =<span class="pyagram-value">{{decodeReferenceSnapshot default}}</span>
   {{~/unless~}}
@@ -247,7 +252,7 @@ export const FUNCTION_TEMPLATE = compile(`
 {{~/each~}}
 )
 <div class="font-family-sans-serif">
-  [parent: {{parent}}]
+  [parent: {{escape parent}}]
 </div>
 `);
 
@@ -255,18 +260,18 @@ export const BUILTIN_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   function
 </span>
-{{this}}(...)
+{{escape this}}(...)
 `);
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`
 {{#if (isEmpty elements)}}
   <div class="font-family-sans-serif">
-    empty {{type}}
+    empty {{escape type}}
   </div>
 {{else}}
   <div class="d-flex flex-row align-items-center">
     <div class="font-family-sans-serif">
-      {{type}}
+      {{escape type}}
     </div>
     <table class="pyagram-ordered-collection border-collapse ml-1" rules="cols">
       <tr>
@@ -282,12 +287,12 @@ export const ORDERED_COLLECTION_TEMPLATE = compile(`
 export const UNORDERED_COLLECTION_TEMPLATE = compile(`
 {{#if (isEmpty elements)}}
   <div class="font-family-sans-serif">
-    empty {{type}}
+    empty {{escape type}}
   </div>
 {{else}}
   <div class="d-flex flex-row align-items-center">
     <div class="font-family-sans-serif">
-      {{type}}
+      {{escape type}}
     </div>
     <table class="pyagram-unordered-collection ml-1">
       <tr>
@@ -303,12 +308,12 @@ export const UNORDERED_COLLECTION_TEMPLATE = compile(`
 export const MAPPING_TEMPLATE = compile(`
 {{#if (isEmpty items)}}
   <div class="font-family-sans-serif">
-    empty {{type}}
+    empty {{escape type}}
   </div>
 {{else}}
   <div class="d-flex flex-row align-items-center">
     <div class="font-family-sans-serif">
-      {{type}}
+      {{escape type}}
     </div>
     <table class="pyagram-mapping border-collapse ml-1" rules="cols">
       <tr>
@@ -340,7 +345,7 @@ export const ITERATOR_TEMPLATE = compile(`
   </span>
   {{~#unless (isNull annotation)~}}
     <span class="font-family-sans-serif">
-      {{annotation}}
+      {{escapeannotation}}
     </span>
   {{~/unless~}}
   <div class="font-family-sans-serif">
@@ -353,24 +358,24 @@ export const GENERATOR_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   generator
 </span>
-{{~name~}}
+{{~escape name~}}
 {{decodeFrameSnapshot frame}}
 `);
 
-export const OTHER_TEMPLATE = Handlebars.compile(`
-{{this}}
+export const OTHER_TEMPLATE = compile(`
+{{escape this}}
 `);
 
-export const EXCEPTION_TEMPLATE = Handlebars.compile(`
+export const EXCEPTION_TEMPLATE = compile(`
 {{#unless (isNull this)}}
   <div class="pyagram-exception px-3 py-2 font-family-monospace">
-    {{~this~}}
+    {{escape this}}
   </div>
 {{/unless}}
 `);
 
-export const PRINT_OUTPUT_TEMPLATE = Handlebars.compile(`
+export const PRINT_OUTPUT_TEMPLATE = compile(`
 <div class="print-output font-family-monospace">
-  {{~this~}}
+  {{~escape this~}}
 </div>
 `);

@@ -341,6 +341,7 @@ class ProgramState:
 
             # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
         else:
+            # TODO: See if decodeUnknownSnapshot occurs in templates.JS. You might've prematurely deleted it.
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.

@@ -47,6 +47,11 @@ export function decodeHeapSnapshot(heapSnapshot) {
     }
 }
 
+Handlebars.registerHelper('decodeUnknownSnapshot', decodeUnknownSnapshot);
+export function decodeUnknownSnapshot(unknownSnapshot) {
+    return Templates.UNKNOWN_TEMPLATE(unknownSnapshot);
+}
+
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);
 export function decodeReferenceSnapshot(referenceSnapshot) {
     switch (typeof referenceSnapshot) {
@@ -103,6 +108,11 @@ export function decodeExceptionSnapshot(exceptionSnapshot) {
 Handlebars.registerHelper('decodePrintOutputSnapshot', decodePrintOutputSnapshot);
 export function decodePrintOutputSnapshot(printOutputSnapshot) {
     return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);
+}
+
+Handlebars.registerHelper('escape', escape);
+export function escape(snapshot) {
+    return Templates.ESCAPE(snapshot);
 }
 
 Handlebars.registerHelper('isNull', function(object) {
