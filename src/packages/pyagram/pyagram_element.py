@@ -169,40 +169,31 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
             self.state.memory_state.record_function(self, self.function)
-            var_positional_index, var_positional_name, var_keyword_name = utils.get_variable_params(self.function)
-            self.var_positional_index = var_positional_index
-            self.initial_var_pos_args = None if var_positional_name is None else [
-                self.state.encoder.reference_snapshot(positional_argument)
-                for positional_argument in frame.f_locals[var_positional_name]
-            ]
-            self.initial_var_keyword_args = None if var_keyword_name is None else {
-                key: self.state.encoder.reference_snapshot(value)
-                for key, value in frame.f_locals[var_keyword_name].items()
-            }
-            self.initial_bindings = {
-                key: self.state.encoder.reference_snapshot(value)
-                for key, value in self.get_bindings().items()
-            }
             if is_implicit:
                 # TODO: This is broken now.
                 flag = opened_by
-                num_args = len(self.initial_bindings)
-                num_bindings = 1 + num_args
                 flag.banner_elements = [
                     (
                         self.function.__name__,
-                        [0],
+                        None,
+                        0,
+                        constants.NORMAL_ARG,
                     ),
-                    '(',
                     (
                         '...',
-                        list(range(1, num_bindings)),
-                    ),
-                    ')',
+                        None,
+                        1,
+                        constants.NORMAL_ARG,
+                    )
                 ]
-                flag.banner_bindings = [(False, None)] * num_bindings
-                flag.evaluate_next_banner_bindings(skip_args=True)
+                # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
+
+                # code, keyword, binding_idx, unpacking_code
+                raise NotImplementedError()
+                # flag.banner_bindings = [(False, None)] * num_bindings
+                # flag.evaluate_next_banner_bindings(skip_args=True)
         elif self.is_generator_frame:
+            # TODO: This was quite possibly broken by the flag refactor.
             self.state.memory_state.record_generator(self, self.generator)
             self.hide_from(0)
             self.throws_exc = False

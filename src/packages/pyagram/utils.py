@@ -78,21 +78,6 @@ def get_defaults(function):
         if parameter.default is not inspect.Parameter.empty
     ]
 
-def get_variable_params(function):
-    """
-    """
-    var_positional_index, var_positional_name, var_keyword_name = None, None, None
-    for i, (name, parameter) in enumerate(inspect.signature(function).parameters.items()):
-        if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
-            assert var_positional_index is None
-            assert var_positional_name is None
-            var_positional_index = i
-            var_positional_name = name
-        elif parameter.kind is inspect.Parameter.VAR_KEYWORD:
-            assert var_keyword_name is None
-            var_keyword_name = name
-    return var_positional_index, var_positional_name, var_keyword_name
-
 def get_iterable(iterator):
     """
     """
