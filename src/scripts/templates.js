@@ -183,7 +183,7 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
         @{{decodeObjectIdSnapshot id}})
       </td>
       <td class="p-0">
-        <div class="pyagram-object my-2">
+        <div class="pyagram-object my-2 mr-3">
           {{decodeEncodedObjectSnapshot object}}
         </div>
       </td>
@@ -197,7 +197,7 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
   {{#each this}}
     <tr>
       <td class="p-0">
-        <div class="pyagram-object my-2" id="object-{{decodeObjectIdSnapshot id}}">
+        <div class="pyagram-object my-2 mr-3" id="object-{{decodeObjectIdSnapshot id}}">
           {{decodeEncodedObjectSnapshot object}}
         </div>
       </td>
