@@ -69,7 +69,7 @@ class ProgramState:
         self.curr_line_no = 0
         self.prev_trace_type = None
         self.curr_trace_type = None
-        self.exception_info = None # TODO: Rename to init_error_info.
+        self.caught_exc_info = None
         self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 0
@@ -127,7 +127,7 @@ class ProgramState:
         return {
             'global_frame': self.state.encoder.encode_pyagram_frame(self.global_frame),
             'curr_line_no': self.curr_line_no,
-            'exception': self.state.encoder.encode_exception_info(self.exception_info),
+            'exception': self.state.encoder.encode_caught_exc_info(self.caught_exc_info),
         }
 
     def process_trace_event(self, frame, trace_type, *step_info):
@@ -153,8 +153,8 @@ class ProgramState:
             return_value, = step_info
             self.process_frame_close(frame, frame_type, return_value)
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
-            exception_info, = step_info
-            self.process_exception(frame, frame_type, exception_info)
+            caught_exc_info, = step_info
+            self.process_exception(frame, frame_type, caught_exc_info)
         self.prev_trace_type = trace_type
 
     def process_frame_open(self, frame, frame_type):
@@ -200,15 +200,15 @@ class ProgramState:
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
-    def process_exception(self, frame, frame_type, exception_info):
+    def process_exception(self, frame, frame_type, caught_exc_info):
         """
         """
-        _, _, traceback = exception_info
+        _, _, traceback = caught_exc_info
         if traceback.tb_next is None:
 
             # This is the original exception.
 
-            self.exception_info = exception_info
+            self.caught_exc_info = caught_exc_info
             self.exception_index = len(self.state.snapshots)
             is_placeholder_exception = self.is_frame \
                 and self.curr_element.is_placeholder_frame
@@ -225,7 +225,7 @@ class ProgramState:
                 if is_placeholder_exception or is_generator_exception:
                     self.curr_element = exception_element
                 self.process_traceback(frame, frame_type)
-                self.exception_info = None
+                self.caught_exc_info = None
             self.defer(finish_step)
         else:
             self.process_traceback(frame, frame_type)

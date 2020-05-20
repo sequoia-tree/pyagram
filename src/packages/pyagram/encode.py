@@ -176,13 +176,13 @@ class Encoder:
             ],
         }
 
-    def encode_exception_info(self, exception_info):
+    def encode_caught_exc_info(self, caught_exc_info):
         """
         """
-        if exception_info is None:
+        if caught_exc_info is None:
             return None
         else:
-            type, value, traceback = exception_info
+            type, value, traceback = caught_exc_info
             ex_cause = str(value)
             if len(ex_cause) > 0:
                 ex_cause = f': {ex_cause}'
