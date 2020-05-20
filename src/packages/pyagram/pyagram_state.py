@@ -356,7 +356,7 @@ class ProgramState:
         assert self.is_ongoing_flag_sans_frame
         print('new arg:', return_value)
         self.curr_element.banner_bindings.append(return_value)
-        return # TODO
+        # TODO: Finish this.
 
     def register_frame(self):
         """

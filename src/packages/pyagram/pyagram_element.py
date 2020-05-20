@@ -169,6 +169,7 @@ class PyagramFlag(PyagramElement):
             code = banner_element
             bindings = []
         # TODO: What if you try f(**{1: 2})? Perhaps it'd be wise to use encode_mapping with is_bindings=True.
+        # TODO: When you write f(1, 2, *[3, 4], a=5, **{'b': 6, 'c': 7, **{'d': 8}}, e=9), you should see `a=`, `b=`, `c=`, ..., and `e=` in all the appropriate locations on the bottom half of the banner. (And verify the top half of the banner looks good too.)
         return {
             'code': code,
             'bindings': bindings,
