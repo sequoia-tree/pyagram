@@ -161,6 +161,8 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            if self.is_flag and self.curr_element.is_builtin:
+                self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
@@ -192,8 +194,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
-            if self.curr_element is not self.global_frame: # TODO: This is sloppy.
-                self.close_pyagram_flag(frame, return_value)
+            self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
@@ -270,11 +271,14 @@ class ProgramState:
     def close_pyagram_flag(self, frame, return_value):
         """
         """
+        if self.curr_element is self.global_frame:
+            return
         assert self.is_flag
         if self.curr_element.is_builtin:
 
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
+            # TODO: Refactor concurrent with the new lines in process_frame_open which also can open a builtin frame.
             self.close_pyagram_frame(frame, None)
             # TODO: Make sure to track the return value! Right now it doesn't.
 
