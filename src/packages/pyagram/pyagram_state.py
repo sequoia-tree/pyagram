@@ -276,7 +276,8 @@ class ProgramState:
         assert self.is_flag
         if self.curr_element.is_builtin:
 
-            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+            if self.curr_element.frame is None:
+                self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
             # TODO: Refactor concurrent with the new lines in process_frame_open which also can open a builtin frame.
             self.close_pyagram_frame(frame, None)
