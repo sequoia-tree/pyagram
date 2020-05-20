@@ -261,6 +261,7 @@ class ProgramState:
     def open_comprehension(self, frame):
         """
         """
+        # TODO: Revisit comprehension logic after the refactor.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
         self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
@@ -312,6 +313,7 @@ class ProgramState:
     def close_comprehension(self, frame, return_value):
         """
         """
+        # TODO: Revisit comprehension logic after the refactor.
         raises_error = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
         if return_value is None and not raises_error:
             return

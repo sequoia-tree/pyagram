@@ -111,10 +111,16 @@ class PyagramFlag(PyagramElement):
     def fix_obj_instantiation_banner(self):
         """
         """
-        pass # TODO
-        # if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
-        #     _, binding_indices = self.banner_elements[0]
-        #     self.banner_elements[0] = ('__init__', binding_indices)
+        assert 0 < len(self.banner_elements)
+        _, keyword, binding_idx, unpacking_code = self.banner_elements[0]
+        code = '__init__'
+        self.banner_elements[0] = (
+            code,
+            keyword,
+            binding_idx,
+            unpacking_code,
+        )
+        self.state.encoder.new_flag_fn_code[self] = code # TODO: Maybe don't keep this in the Encoder?
 
     def add_frame(self, frame, frame_type, **init_args):
         """

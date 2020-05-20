@@ -15,6 +15,7 @@ class Encoder:
         num_lines, lambdas_per_line = preprocessor_summary
         self.num_lines = num_lines
         self.lambdas_per_line = lambdas_per_line
+        self.new_flag_fn_code = {}
 
     def object_id(self, object):
         """
@@ -35,7 +36,7 @@ class Encoder:
         else:
             return self.object_id(object)
 
-    def object_snapshot(self, object):
+    def object_snapshot(self, object): # TODO: Rename to encode_object, and rename the above to encode_reference. In which case probably move them below encode_pyagram_frame.
         """
         """
         object_type = enum.ObjectTypes.identify_object_type(object)

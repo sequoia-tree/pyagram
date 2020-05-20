@@ -58,7 +58,16 @@ class Postprocessor:
                 raise exception.HiddenSnapshotException()
             else:
                 return constants.HIDDEN_FLAG_CODE
-        # self.interpolate_flag_banner(flag_snapshot, pyagram_flag)
+
+        if pyagram_flag in self.state.encoder.new_flag_fn_code:
+            # TODO: Kinda messy, maybe at least abstract it.
+            old_fn_code = flag_snapshot['banner'][0]['code']
+            new_fn_code = self.state.encoder.new_flag_fn_code[pyagram_flag]
+            if old_fn_code == new_fn_code:
+                del self.state.encoder.new_flag_fn_code[pyagram_flag]
+            else:
+                flag_snapshot['banner'][0]['code'] = new_fn_code
+
         frame_snapshot = flag_snapshot['frame']
         if frame_snapshot is not None:
             self.postprocess_frame_snapshot(snapshot_index, frame_snapshot)
