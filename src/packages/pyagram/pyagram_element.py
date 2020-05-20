@@ -157,7 +157,6 @@ class PyagramFlag(PyagramElement):
                 raise enum.UnpackingTypes.illegal_enum(unpacking_type)
         else:
             bindings = None
-        # TODO: What if you try f(**{1: 2})?
         return {
             'code': code,
             'n_cols':
