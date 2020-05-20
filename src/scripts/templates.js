@@ -206,11 +206,7 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
 </table>
 `);
 
-export const UNKNOWN_TEMPLATE = compile(`
-<span class="pyagram-unknown">(?)</span>
-`);
-
-export const PRIMITIVE_TEMPLATE = compile(`
+export const PRIMITIVE_TEMPLATE = Handlebars.compile(`
 {{this}}
 `);
 
@@ -361,7 +357,7 @@ export const GENERATOR_TEMPLATE = compile(`
 {{decodeFrameSnapshot frame}}
 `);
 
-export const OTHER_TEMPLATE = compile(`
+export const OTHER_TEMPLATE = Handlebars.compile(`
 {{this}}
 `);
 

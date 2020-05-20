@@ -28,8 +28,6 @@ class Encoder:
         """
         """
         # TODO: Refactor this func
-        if object is enum.ObjectTypes.UNKNOWN:
-            return {} # TODO: I think this is obsolete now.
         object_type = enum.ObjectTypes.identify_object_type(object)
         if object_type is enum.ObjectTypes.PRIMITIVE:
             return self.encode_primitive(object, is_bindings=is_bindings)

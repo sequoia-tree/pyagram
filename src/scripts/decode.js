@@ -47,16 +47,9 @@ export function decodeHeapSnapshot(heapSnapshot) {
     }
 }
 
-Handlebars.registerHelper('decodeUnknownSnapshot', decodeUnknownSnapshot);
-export function decodeUnknownSnapshot(unknownSnapshot) {
-    return Templates.UNKNOWN_TEMPLATE(unknownSnapshot);
-}
-
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);
 export function decodeReferenceSnapshot(referenceSnapshot) {
     switch (typeof referenceSnapshot) {
-        case 'object':
-            return Templates.UNKNOWN_TEMPLATE(referenceSnapshot);
         case 'string':
             return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
         case 'number':

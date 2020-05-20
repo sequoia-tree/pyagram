@@ -79,8 +79,6 @@ class ObjectTypes(Enum):
     OBJ_INST = object()
     OTHER = object()
 
-    UNKNOWN = object()
-
     @staticmethod
     def identify_object_type(object):
         """
