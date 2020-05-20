@@ -328,6 +328,7 @@ class ProgramState:
         if type(callable) is type:
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
+            print('C:', callable) # TODO: Debug and delete (see PyagramFlag.step).
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
 
             # Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
