@@ -52,13 +52,13 @@ export const FLAG_TEMPLATE = compile(`
           {{else}}
             {{#each bindings}}
               {{#unless (isNull key)}}
-                <td style="width: {{add key.length 1}}ch;">{{key}}=</td>
+                <td class="banner-text">{{decodeReferenceSnapshot key}}=</td>
               {{/unless}}
               <td class="pyagram-value">
                 {{decodeReferenceSnapshot value}}
               </td>
               {{#unless @last}}
-                <td style="width: 1ch;">,</td>
+                <td class="banner-text">,</td>
               {{/unless}}
             {{/each}}
           {{/if}}

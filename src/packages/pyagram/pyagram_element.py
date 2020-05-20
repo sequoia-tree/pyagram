@@ -82,14 +82,12 @@ class PyagramFlag(PyagramElement):
                     if unpacking_type is enum.UnpackingTypes.NORMAL:
                         referents.append(binding)
                     elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                        unpacked_binding = [*binding]
-                        for element in unpacked_binding:
+                        for element in [*binding]:
                             referents.append(element)
                     elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                        unpacked_binding = {**binding}
-                        for key in unpacked_binding:
-                            # TODO: Should you also track the key? In case of f(**{1: 2})?
-                            referents.append(unpacked_binding[key])
+                        for key, value in {**binding}.items():
+                            referents.append(key)
+                            referents.append(value)
                     else:
                         raise enum.UnpackingTypes.illegal_enum(unpacking_type)
             for referent in referents:
