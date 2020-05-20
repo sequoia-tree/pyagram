@@ -23,38 +23,63 @@ export const FLAG_TEMPLATE = compile(`
     <table class="text-center">
       <tr>
         {{#each banner}}
-          <td {{#unless (isEmpty bindings)}} colspan="{{sum (mul 2 bindings.length) -1}}" {{/unless}}>
+          <td colspan="{{n_cols}}">
             {{code}}
           </td>
+          {{#if @first}}
+            {{#if @last}}
+              <td>()</td>
+            {{else}}
+              <td>(</td>
+            {{/if}}
+          {{else}}
+            {{#if @last}}
+              <td>)</td>
+            {{else}}
+              <td>,</td>
+            {{/if}}
+          {{/if}}
         {{/each}}
       </tr>
       <tr>
         {{#each banner}}
-          {{#if (isEmpty bindings)}}
-            {{#if (isEqual @index 1)}}
-              {{#if @last}}
-                <td class="text-left">()</td>
-              {{else}}
-                <td class="text-left">(</td>
-              {{/if}}
-            {{else if @last}}
-              <td class="text-right">)</td>
-            {{else}}
-              <td class="text-left">,</td>
-            {{/if}}
+          {{#if (isNull bindings)}}
+            <td class="pyagram-value pyagram-placeholder">
+              -
+            </td>
+          {{else if (isEmpty bindings)}}
+            <td></td>
           {{else}}
             {{#each bindings}}
-              <td class="pyagram-value {{#if (isNull this)}} pyagram-placeholder {{/if}}">
-                {{#if (isNull this)}}
-                  -
-                {{else}}
-                  {{decodeReferenceSnapshot this}}
-                {{/if}}
+              {{#unless (isNull key)}}
+                <td class="banner-text">{{decodeReferenceSnapshot key}}=</td>
+              {{/unless}}
+              <td class="pyagram-value">
+                {{decodeReferenceSnapshot value}}
               </td>
               {{#unless @last}}
-                <td>,</td>
+                <td class="banner-text">,</td>
               {{/unless}}
             {{/each}}
+          {{/if}}
+          {{#if @first}}
+            {{#if @last}}
+              <td>()</td>
+            {{else}}
+              <td>(</td>
+            {{/if}}
+          {{else}}
+            {{#if @last}}
+              <td>)</td>
+            {{else}}
+              {{#if (isNull bindings)}}
+                <td>,</td>
+              {{else if (isEmpty bindings)}}
+                <td></td>
+              {{else}}
+                <td>,</td>
+              {{/if}}
+            {{/if}}
           {{/if}}
         {{/each}}
       </tr>

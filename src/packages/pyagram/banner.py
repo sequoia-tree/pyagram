@@ -1,10 +1,6 @@
 import ast
 
-OPEN_PARENTHESIS, CLOSE_PARENTHESIS = ast.Str('('), ast.Str(')')
-OPEN_STARRED_LIST, CLOSE_STARRED_LIST = ast.Str('*['), ast.Str(']')
-OPEN_STARRED_TUPLE, CLOSE_STARRED_TUPLE = ast.Str('*('), ast.Str(')')
-OPEN_KEYWORD_DICT, CLOSE_KEYWORD_DICT = ast.Str('**{'), ast.Str('}')
-COMMA = ast.Str(', ')
+from . import constants
 
 class Banner:
     """
@@ -13,26 +9,12 @@ class Banner:
     def __init__(self, code, node):
         self.code = code
         self.elements = []
-        self.bindings = []
-        self.has_prev_input = False
+        self.binding_index = 0
         self.add_func_info(node.func)
-        self.elements.append(OPEN_PARENTHESIS)
         self.add_args_info(node.args)
-        self.add_kwds_info([
-            (None if keyword.arg is None else ast.Str(keyword.arg), keyword.value)
-            for keyword in node.keywords
-        ])
-        self.elements.append(CLOSE_PARENTHESIS)
-
-    @property
-    def banner(self):
-        """
-        """
-        return ast.Tuple(
-            elts=[
-                ast.List(elts=self.elements, ctx=ast.Load()),
-                ast.List(elts=self.bindings, ctx=ast.Load()),
-            ],
+        self.add_kwds_info(node.keywords)
+        self.elements = ast.List(
+            elts=self.elements,
             ctx=ast.Load(),
         )
 
@@ -40,93 +22,59 @@ class Banner:
         """
         """
         if isinstance(func, ast.Lambda):
-            self.add_bindings(func, code_prefix='(', code_suffix=')')
+            self.add_bindings(func, constants.NORMAL_ARG, code_prefix='(', code_suffix=')')
         else:
-            self.add_bindings(func)
+            self.add_bindings(func, constants.NORMAL_ARG)
 
     def add_args_info(self, args):
         """
         """
         for arg in args:
-            if self.has_prev_input:
-                self.elements.append(COMMA)
-            if isinstance(arg, ast.Starred):
-                if isinstance(arg.value, ast.List):
-                    self.elements.append(OPEN_STARRED_LIST)
-                    self.has_prev_input = False
-                    self.add_args_info(arg.value.elts)
-                    self.elements.append(CLOSE_STARRED_LIST)
-                elif isinstance(arg.value, ast.Tuple):
-                    self.elements.append(OPEN_STARRED_TUPLE)
-                    self.has_prev_input = False
-                    self.add_args_info(arg.value.elts)
-                    self.elements.append(CLOSE_STARRED_TUPLE)
-                elif isinstance(arg.value, ast.Str):
-                    values = (*arg.value.s,)
-                    params = (None,) * len(values)
-                    self.add_bindings(arg, values, params)
-                else:
-                    self.add_bindings(arg, (), ())
-            else:
-                self.add_bindings(arg)
-            self.has_prev_input = True
+            is_unpacked = isinstance(arg, ast.Starred)
+            self.add_bindings(
+                arg,
+                constants.SINGLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
+            )
 
-    def add_kwds_info(self, kwds, *, is_keyword_dict=False):
+    def add_kwds_info(self, keywords):
         """
         """
-        for param, arg in kwds:
-            if self.has_prev_input:
-                self.elements.append(COMMA)
-            if param is None:
-                if isinstance(arg, ast.Dict):
-                    self.elements.append(OPEN_KEYWORD_DICT)
-                    self.has_prev_input = False
-                    self.add_kwds_info(
-                        list(zip(arg.keys, arg.values)),
-                        is_keyword_dict=True,
-                    )
-                    self.elements.append(CLOSE_KEYWORD_DICT)
-                else:
-                    self.add_bindings(arg, (), ())
-            else:
-                self.elements.append(ast.Str(
-                    f'{ast.get_source_segment(self.code, param)}:'
-                    if is_keyword_dict
-                    else f'{param.s}='
-                ))
-                self.add_bindings(arg, (arg,), (param,))
-            self.has_prev_input = True
+        for keyword in keywords:
+            is_unpacked = keyword.arg is None
+            self.add_bindings(
+                keyword.value,
+                constants.DOUBLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
+                code_prefix='**' if is_unpacked else f'{keyword.arg}=',
+                kwd=keyword.arg,
+            )
 
-    def add_bindings(self, node, values=None, params=None, *, code_prefix=None, code_suffix=None):
+    def add_bindings(self, node, unpacking_code, *, kwd=None, code_prefix=None, code_suffix=None):
         """
         """
-        is_unsupported_binding = values == () and params == ()
-        if values is None and params is None:
-            values = (node,)
-            params = (None,)
-        assert len(values) == len(params)
         code = ast.get_source_segment(self.code, node).strip('\n')
         if code_prefix is not None:
             code = ''.join((code_prefix, code))
         if code_suffix is not None:
             code = ''.join((code, code_suffix))
-        code = ast.Str(code)
-        bindings = []
-        if is_unsupported_binding:
-            binding = ast.NameConstant(None)
-            bindings.append(binding)
-        else:
-            for value, param in zip(values, params):
-                is_call = ast.NameConstant(isinstance(value, ast.Call))
-                param_if_known = ast.NameConstant(None) if param is None else param
-                binding = ast.Tuple(elts=[is_call, param_if_known], ctx=ast.Load())
-                bindings.append(binding)
-        binding_indices = []
-        for binding in bindings:
-            binding_indices.append(ast.Num(len(self.bindings)))
-            self.bindings.append(binding)
-        banner_element = ast.Tuple(
-            elts=[code, ast.List(elts=binding_indices, ctx=ast.Load())],
+        self.elements.append(ast.Tuple(
+            elts=[
+                ast.Constant(
+                    value=code,
+                    kind=None,
+                ),
+                ast.Constant(
+                    value=kwd,
+                    kind=None,
+                ),
+                ast.Constant(
+                    value=self.binding_index,
+                    kind=None,
+                ),
+                ast.Constant(
+                    value=unpacking_code,
+                    kind=None,
+                ),
+            ],
             ctx=ast.Load(),
-        )
-        self.elements.append(banner_element)
+        ))
+        self.binding_index += 1

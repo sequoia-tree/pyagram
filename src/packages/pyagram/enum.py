@@ -25,7 +25,8 @@ class FrameTypes(Enum):
     """
 
     SRC_CALL = object()
-    SRC_CALL_F_WRAPPER = object()
+    SRC_CALL_FN_WRAPPER = object()
+    SRC_CALL_RG_WRAPPER = object()
     SRC_CALL_PRECURSOR = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
@@ -38,7 +39,9 @@ class FrameTypes(Enum):
         if step_code == constants.UNMODIFIED_LINENO:
             return FrameTypes.SRC_CALL
         elif step_code == constants.FN_WRAPPER_LINENO:
-            return FrameTypes.SRC_CALL_F_WRAPPER
+            return FrameTypes.SRC_CALL_FN_WRAPPER
+        elif step_code == constants.RG_WRAPPER_LINENO:
+            return FrameTypes.SRC_CALL_RG_WRAPPER
         elif step_code == constants.INNER_CALL_LINENO:
             return FrameTypes.SRC_CALL_PRECURSOR
         elif step_code == constants.OUTER_CALL_LINENO:
@@ -105,3 +108,24 @@ class ObjectTypes(Enum):
             return ObjectTypes.OBJ_INST
         else:
             return ObjectTypes.OTHER
+
+class UnpackingTypes(Enum):
+    """
+    """
+
+    NORMAL = object()
+    SINGLY_UNPACKED = object()
+    DOUBLY_UNPACKED = object()
+
+    @staticmethod
+    def identify_unpacking_type(unpacking_code):
+        """
+        """
+        if unpacking_code == constants.NORMAL_ARG:
+            return UnpackingTypes.NORMAL
+        elif unpacking_code == constants.SINGLY_UNPACKED_ARG:
+            return UnpackingTypes.SINGLY_UNPACKED
+        elif unpacking_code == constants.DOUBLY_UNPACKED_ARG:
+            return UnpackingTypes.DOUBLY_UNPACKED
+        else:
+            raise UnpackingTypes.illegal_enum(unpacking_code)

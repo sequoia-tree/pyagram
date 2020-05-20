@@ -125,7 +125,7 @@ class ProgramState:
         """
         """
         return {
-            'global_frame': self.global_frame.snapshot(),
+            'global_frame': self.state.encoder.encode_pyagram_frame(self.global_frame),
             'curr_line_no': self.curr_line_no,
             'exception': self.state.encoder.encode_exception_info(self.exception_info),
         }
@@ -165,7 +165,9 @@ class ProgramState:
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
             self.open_pyagram_frame(frame, None, is_implicit=is_implicit)
-        elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
+        elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
+            pass
+        elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             pass
@@ -183,8 +185,10 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(frame, return_value)
-        elif frame_type is enum.FrameTypes.SRC_CALL_F_WRAPPER:
+        elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
             self.register_callable(frame, return_value)
+        elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
+            self.register_argument(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
@@ -257,9 +261,6 @@ class ProgramState:
     def open_comprehension(self, frame):
         """
         """
-        # TODO: You should make a flag and frame for comprehensions.
-        # TODO: Clutter isn't an issue since by default, you'll close flags once completed.
-        # TODO: Replace the PLACEHOLDER PyagramFrameTypes enum with COMPREHENSION instead.
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.open_pyagram_flag(frame, None, hidden_snapshot=0)
         self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
@@ -321,10 +322,8 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
-        return # TODO: Delete this.
-        assert self.is_ongoing_flag_sans_frame
+        assert self.is_ongoing_flag_sans_frame and 0 == len(self.curr_element.banner_bindings)
         if type(callable) is type:
-            # TODO: Make sure this works.
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
@@ -348,6 +347,13 @@ class ProgramState:
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
+        self.curr_element.banner_bindings.append(callable) # TODO: Give the PyagramFlag a method (set_func) for this, and a method (set_arg or set_binding) for below.
+
+    def register_argument(self, frame, return_value):
+        """
+        """
+        assert self.is_ongoing_flag_sans_frame and 0 < len(self.curr_element.banner_bindings)
+        self.curr_element.banner_bindings.append(return_value)
 
     def register_frame(self):
         """
@@ -370,7 +376,7 @@ class MemoryState:
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
-        self.obj_init_debuts = {}
+        self.tracked_obj_ids = set()
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?
@@ -447,12 +453,12 @@ class MemoryState:
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
-        is_unseen = id(object) not in self.obj_init_debuts
+        is_unseen = id(object) not in self.tracked_obj_ids
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
             debut_idx = len(self.state.snapshots)
             self.objects.append(object)
-            self.obj_init_debuts[id(object)] = debut_idx
+            self.tracked_obj_ids.add(id(object))
             if object_type is enum.ObjectTypes.GENERATOR:
                 generator_function = utils.get_function(object.gi_frame)
                 if generator_function is None:

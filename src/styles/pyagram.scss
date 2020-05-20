@@ -21,6 +21,9 @@
     @include border-bottom();
     @include border-right();
   }
+  .banner-text {
+    width: 1ch;
+  }
 }
 
 .pyagram-frame {

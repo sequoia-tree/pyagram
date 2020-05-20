@@ -13,7 +13,6 @@ class PyagramElement:
         self.opened_by = opened_by
         self.state = opened_by.state if state is None else state
         self.flags = []
-        self.is_new = True
 
     def step(self):
         """
@@ -32,28 +31,28 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, banner, hidden_snapshot=math.inf, *, state=None):
+    def __init__(self, opened_by, banner_elements, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        if banner is None:
-            banner_elements, banner_bindings = [], []
-        else:
-            banner_elements, banner_bindings = banner
-            utils.concatenate_adjacent_strings(banner_elements)
+        if banner_elements is None:
+            # TODO: This is totally broken now.
+            # TODO: Do you even need this if clause anymore?
+            banner_elements = []
+        # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag.
+        self.banner_elements = banner_elements
+        self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
-        self.banner_elements = banner_elements
-        self.banner_bindings = banner_bindings
-        self.banner_binding_index = 0
-        self.positional_arg_index = 0
-        self.has_processed_subflag_since_prev_eval = False
-        self.function = None
         self.frame = None
 
     @property
     def banner_is_complete(self):
         """
         """
-        return self.banner_binding_index == len(self.banner_bindings)
+        if len(self.banner_elements) == 0:
+            return True
+        else:
+            _, _, last_binding_idx, _ = self.banner_elements[-1]
+            return last_binding_idx < len(self.banner_bindings)
 
     @property
     def has_returned(self):
@@ -65,8 +64,10 @@ class PyagramFlag(PyagramElement):
     def return_value(self):
         """
         """
-        assert self.has_returned
-        return self.frame.return_value
+        if self.has_returned:
+            return self.frame.return_value
+        else:
+            raise AttributeError(f'PyagramFlag {self} has no return value')
 
     def hide_from(self, snapshot_index):
         """
@@ -83,114 +84,42 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-
-        # Fill in every banner binding up to the next one that is obtained through a function call.
-
-        if not self.banner_is_complete:
-            if self is self.state.program_state.curr_element:
-                if self.is_new or self.has_processed_subflag_since_prev_eval:
-                    self.evaluate_next_banner_bindings()
-                self.has_processed_subflag_since_prev_eval = False
-            else:
-                self.has_processed_subflag_since_prev_eval = True
+        if not self.is_hidden():
+            referents = []
+            for banner_element in self.banner_elements:
+                _, _, binding_idx, unpacking_code = banner_element
+                if binding_idx < len(self.banner_bindings):
+                    binding = self.banner_bindings[binding_idx]
+                    unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                    if unpacking_type is enum.UnpackingTypes.NORMAL:
+                        referents.append(binding)
+                    elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                        for element in [*binding]:
+                            referents.append(element)
+                    elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                        for key, value in {**binding}.items():
+                            referents.append(key)
+                            referents.append(value)
+                    else:
+                        raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+            for referent in referents:
+                self.state.memory_state.track(referent)
         if self.frame is not None:
             self.frame.step()
-        self.is_new = False
         super().step()
-
-    def snapshot(self):
-        """
-        """
-        is_hidden = self.is_hidden()
-        return {
-            'is_curr_element': self is self.state.program_state.curr_element,
-            'banner': None, # Placeholder.
-            'frame':
-                None
-                if self.frame is None or is_hidden
-                else self.frame.snapshot(),
-            'flags':
-                []
-                if self.hidden_subflags
-                else [
-                    flag.snapshot()
-                    for flag in self.flags + (
-                        self.frame.flags
-                        if is_hidden and self.frame is not None
-                        else []
-                    )
-                ],
-            'self': self, # For postprocessing.
-            'banner_binding_index': self.banner_binding_index, # For postprocessing.
-            'snapshot_index': len(self.state.snapshots), # For postprocessing.
-        }
-
-    def evaluate_next_banner_bindings(self, *, skip_args=False):
-        """
-        """
-        self.state.snapshot()
-        if not self.is_new:
-            assert not skip_args
-            self.evaluate_next_banner_binding(True)
-        next_binding_might_not_be_call = True
-        while next_binding_might_not_be_call and not self.banner_is_complete:
-            next_binding_might_not_be_call = self.evaluate_next_banner_binding(
-                False,
-                skip_args=skip_args,
-            )
-
-    def evaluate_next_banner_binding(self, expect_call, *, skip_args=False):
-        """
-        """
-
-        # Examine the next binding.
-        # If it turns out to be a call:
-        # (*) DON'T evaluate it.
-        # (*) Return False.
-        # Else:
-        # (*) Evaluate the binding.
-        # (*) Return True.
-        # Return False if the banner gets completed.
-
-        binding = self.banner_bindings[self.banner_binding_index]
-        is_unsupported_binding = binding is None
-        if is_unsupported_binding:
-            while not self.banner_is_complete:
-                self.banner_bindings[self.banner_binding_index] = constants.BANNER_UNSUPPORTED_CODE
-                self.banner_binding_index += 1
-            self.state.snapshot()
-            return False
-        else:
-            is_call, param_if_known = binding
-            if is_call and not expect_call:
-                return False
-            else:
-                is_func_binding = self.banner_binding_index == 0
-                if param_if_known is None:
-                    if is_func_binding:
-                        self.banner_bindings[self.banner_binding_index] = constants.BANNER_FUNCTION_CODE
-                    else:
-                        self.banner_bindings[self.banner_binding_index] = self.positional_arg_index
-                        self.positional_arg_index += 1
-                else:
-                    assert not is_func_binding
-                    self.banner_bindings[self.banner_binding_index] = param_if_known
-                self.banner_binding_index += 1
-                if not skip_args or is_func_binding or self.banner_is_complete:
-                    self.state.snapshot()
-                return True
 
     def fix_obj_instantiation_banner(self):
         """
         """
-        if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
-            _, binding_indices = self.banner_elements[0]
-            self.banner_elements[0] = ('__init__', binding_indices)
+        pass # TODO
+        # if 0 < len(self.banner_elements) and isinstance(self.banner_elements[0], tuple):
+        #     _, binding_indices = self.banner_elements[0]
+        #     self.banner_elements[0] = ('__init__', binding_indices)
 
     def add_frame(self, frame, frame_type, **init_args):
         """
         """
-        # assert self.banner_is_complete # TODO: ?
+        assert self.banner_is_complete
         frame = PyagramFrame(self, frame, frame_type, **init_args)
         self.frame = frame
         return frame
@@ -199,7 +128,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         if self.frame is None:
-            self.hide_from(0)
+            self.hide_from(0) # TODO: Delete this once you get to the function-wrapper refactor.
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
@@ -209,6 +138,7 @@ class PyagramFrame(PyagramElement):
     def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None):
         super().__init__(opened_by, state)
         self.frame = frame
+        self.is_new = True # TODO: Does every frame_type need this?
         if frame_type is None:
             self.function = utils.get_function(frame)
             self.generator = utils.get_generator(frame)
@@ -245,6 +175,7 @@ class PyagramFrame(PyagramElement):
                 for key, value in self.get_bindings().items()
             }
             if is_implicit:
+                # TODO: This is broken now.
                 flag = opened_by
                 num_args = len(self.initial_bindings)
                 num_bindings = 1 + num_args
@@ -388,32 +319,6 @@ class PyagramFrame(PyagramElement):
                 for referent in referents:
                     self.state.memory_state.track(referent)
         super().step()
-
-    def snapshot(self):
-        """
-        """
-        return {
-            'type': 'function',
-            'is_curr_element': self is self.state.program_state.curr_element,
-            'name': repr(self),
-            'parent':
-                None
-                if self.parent is None
-                else repr(self.parent),
-            'bindings': self.state.encoder.encode_mapping(
-                self.bindings if self.shows_bindings else {},
-                is_bindings=True,
-            ),
-            'return_value':
-                self.state.encoder.reference_snapshot(self.return_value)
-                if self.shows_return_value
-                else None,
-            'from': None,
-            'flags': [
-                flag.snapshot()
-                for flag in self.flags
-            ],
-        }
 
     def get_bindings(self):
         """

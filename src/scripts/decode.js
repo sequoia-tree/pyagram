@@ -123,11 +123,3 @@ Handlebars.registerHelper('isEmpty', function(object) {
 Handlebars.registerHelper('isEqual', function(operand1, operand2) {
     return operand1 === operand2;
 });
-
-Handlebars.registerHelper('mul', function(operand1, operand2) {
-    return operand1 * operand2;
-});
-
-Handlebars.registerHelper('sum', function(operand1, operand2) {
-    return operand1 + operand2;
-});
