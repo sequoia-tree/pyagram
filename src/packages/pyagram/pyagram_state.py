@@ -125,7 +125,7 @@ class ProgramState:
         """
         """
         return {
-            'global_frame': self.global_frame.snapshot(),
+            'global_frame': self.state.encoder.encode_pyagram_frame(self.global_frame),
             'curr_line_no': self.curr_line_no,
             'exception': self.state.encoder.encode_exception_info(self.exception_info),
         }

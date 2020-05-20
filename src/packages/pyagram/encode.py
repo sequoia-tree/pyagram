@@ -79,6 +79,119 @@ class Encoder:
             'data': data,
         }
 
+    def encode_pyagram_flag(self, pyagram_flag):
+        """
+        """
+        is_hidden = pyagram_flag.is_hidden()
+        return {
+            'is_curr_element': pyagram_flag is self.state.program_state.curr_element,
+            'banner': [
+                self.encode_banner_element(pyagram_flag, banner_element)
+                for banner_element in pyagram_flag.banner_elements
+            ],
+            'frame':
+                None
+                if pyagram_flag.frame is None or is_hidden
+                else self.encode_pyagram_frame(pyagram_flag.frame),
+            'flags':
+                []
+                if pyagram_flag.hidden_subflags
+                else [
+                    self.encode_pyagram_flag(flag)
+                    for flag in pyagram_flag.flags + (
+                        pyagram_flag.frame.flags
+                        if is_hidden and pyagram_flag.frame is not None
+                        else []
+                    )
+                ],
+            'self': pyagram_flag, # For postprocessing.
+        }
+
+    def encode_banner_element(self, pyagram_flag, banner_element):
+        """
+        """
+        code, keyword, binding_idx, unpacking_code = banner_element
+        if binding_idx < len(pyagram_flag.banner_bindings):
+            binding = pyagram_flag.banner_bindings[binding_idx]
+            unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+            if unpacking_type is enum.UnpackingTypes.NORMAL:
+                keyless = keyword is None
+                bindings = self.encode_mapping(
+                    (binding,) if keyless else {keyword: binding},
+                    keyless=keyless,
+                    is_bindings=True,
+                )
+            elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                unpacked_binding = [*binding]
+                bindings = self.encode_mapping(
+                    unpacked_binding,
+                    keyless=True,
+                    is_bindings=True,
+                )
+            elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                unpacked_binding = {**binding}
+                bindings = self.encode_mapping(
+                    unpacked_binding,
+                    is_bindings=True,
+                )
+            else:
+                raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+        else:
+            bindings = None
+        return {
+            'code': code,
+            'n_cols':
+                2 * len(bindings) - 1 + sum(
+                    binding['key'] is not None
+                    for binding in bindings
+                )
+                if bindings is not None and len(bindings) > 0
+                else 1,
+            'bindings': bindings,
+        }
+
+    def encode_pyagram_frame(self, pyagram_frame):
+        """
+        """
+        return {
+            'type': 'function',
+            'is_curr_element': pyagram_frame is self.state.program_state.curr_element,
+            'name': repr(pyagram_frame),
+            'parent':
+                None
+                if pyagram_frame.parent is None
+                else repr(pyagram_frame.parent),
+            'bindings': self.encode_mapping(
+                pyagram_frame.bindings if pyagram_frame.shows_bindings else {},
+                is_bindings=True,
+            ),
+            'return_value':
+                self.reference_snapshot(pyagram_frame.return_value)
+                if pyagram_frame.shows_return_value
+                else None,
+            'from': None,
+            'flags': [
+                self.encode_pyagram_flag(flag)
+                for flag in pyagram_frame.flags
+            ],
+        }
+
+    def encode_exception_info(self, exception_info):
+        """
+        """
+        if exception_info is None:
+            return None
+        else:
+            type, value, traceback = exception_info
+            ex_cause = str(value)
+            if len(ex_cause) > 0:
+                ex_cause = f': {ex_cause}'
+            lineno, _, _ = utils.decode_lineno(
+                traceback.tb_lineno,
+                max_lineno=self.num_lines,
+            )
+            return f'{type.__name__} (line {lineno}){ex_cause}'
+
     def encode_primitive(self, object, *, is_bindings=False):
         """
         """
@@ -266,22 +379,6 @@ class Encoder:
             'from': None,
             'flags': [],
         }
-
-    def encode_exception_info(self, object):
-        """
-        """
-        if object is None:
-            return None
-        else:
-            type, value, traceback = object
-            ex_cause = str(value)
-            if len(ex_cause) > 0:
-                ex_cause = f': {ex_cause}'
-            lineno, _, _ = utils.decode_lineno(
-                traceback.tb_lineno,
-                max_lineno=self.num_lines,
-            )
-            return f'{type.__name__} (line {lineno}){ex_cause}'
 
     def encode_other(self, object):
         """

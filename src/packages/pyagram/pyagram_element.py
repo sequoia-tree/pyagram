@@ -13,7 +13,6 @@ class PyagramElement:
         self.opened_by = opened_by
         self.state = opened_by.state if state is None else state
         self.flags = []
-        self.is_new = True
 
     def step(self):
         """
@@ -38,6 +37,7 @@ class PyagramFlag(PyagramElement):
             # TODO: This is totally broken now.
             # TODO: Do you even need this if clause anymore?
             banner_elements = []
+        # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag.
         self.banner_elements = banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
@@ -54,8 +54,10 @@ class PyagramFlag(PyagramElement):
     def return_value(self):
         """
         """
-        assert self.has_returned
-        return self.frame.return_value
+        if self.has_returned:
+            return self.frame.return_value
+        else:
+            raise AttributeError(f'PyagramFlag {self} has no return value')
 
     def hide_from(self, snapshot_index):
         """
@@ -94,80 +96,7 @@ class PyagramFlag(PyagramElement):
                 self.state.memory_state.track(referent)
         if self.frame is not None:
             self.frame.step()
-        self.is_new = False # TODO: Do you still need this?
         super().step()
-
-    def snapshot(self):
-        """
-        """
-        is_hidden = self.is_hidden()
-        return {
-            'is_curr_element': self is self.state.program_state.curr_element,
-            'banner': [
-                self.encode_banner_element(banner_element)
-                for banner_element in self.banner_elements
-            ],
-            'frame':
-                None
-                if self.frame is None or is_hidden
-                else self.frame.snapshot(),
-            'flags':
-                []
-                if self.hidden_subflags
-                else [
-                    flag.snapshot()
-                    for flag in self.flags + (
-                        self.frame.flags
-                        if is_hidden and self.frame is not None
-                        else []
-                    )
-                ],
-            'self': self, # For postprocessing.
-        }
-
-    def encode_banner_element(self, banner_element):
-        """
-        """
-        # TODO: This should not be a function, or at least not here. Maybe move it to encode.py?
-        code, keyword, binding_idx, unpacking_code = banner_element
-        if binding_idx < len(self.banner_bindings):
-            binding = self.banner_bindings[binding_idx]
-            unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-            if unpacking_type is enum.UnpackingTypes.NORMAL:
-                keyless = keyword is None
-                bindings = self.state.encoder.encode_mapping(
-                    (binding,) if keyless else {keyword: binding},
-                    keyless=keyless,
-                    is_bindings=True,
-                )
-            elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                unpacked_binding = [*binding]
-                bindings = self.state.encoder.encode_mapping(
-                    unpacked_binding,
-                    keyless=True,
-                    is_bindings=True,
-                )
-            elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                unpacked_binding = {**binding}
-                bindings = self.state.encoder.encode_mapping(
-                    unpacked_binding,
-                    is_bindings=True,
-                )
-            else:
-                raise enum.UnpackingTypes.illegal_enum(unpacking_type)
-        else:
-            bindings = None
-        return {
-            'code': code,
-            'n_cols':
-                2 * len(bindings) - 1 + sum(
-                    binding['key'] is not None
-                    for binding in bindings
-                )
-                if bindings is not None and len(bindings) > 0
-                else 1,
-            'bindings': bindings,
-        }
 
     def fix_obj_instantiation_banner(self):
         """
@@ -199,6 +128,7 @@ class PyagramFrame(PyagramElement):
     def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None):
         super().__init__(opened_by, state)
         self.frame = frame
+        self.is_new = True # TODO: Does every frame_type need this?
         if frame_type is None:
             self.function = utils.get_function(frame)
             self.generator = utils.get_generator(frame)
@@ -379,32 +309,6 @@ class PyagramFrame(PyagramElement):
                 for referent in referents:
                     self.state.memory_state.track(referent)
         super().step()
-
-    def snapshot(self):
-        """
-        """
-        return {
-            'type': 'function',
-            'is_curr_element': self is self.state.program_state.curr_element,
-            'name': repr(self),
-            'parent':
-                None
-                if self.parent is None
-                else repr(self.parent),
-            'bindings': self.state.encoder.encode_mapping(
-                self.bindings if self.shows_bindings else {},
-                is_bindings=True,
-            ),
-            'return_value':
-                self.state.encoder.reference_snapshot(self.return_value)
-                if self.shows_return_value
-                else None,
-            'from': None,
-            'flags': [
-                flag.snapshot()
-                for flag in self.flags
-            ],
-        }
 
     def get_bindings(self):
         """
