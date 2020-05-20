@@ -111,16 +111,3 @@ def is_genuine_binding(variable):
     # Their frames sometimes has implicit variables named `.0`, `.1`, etc.
 
     return re.fullmatch(r'\.\d+', variable) is None
-
-def concatenate_adjacent_strings(elements):
-    """
-    """
-    i = 0
-    while i < len(elements) - 1:
-        curr_elem = elements[i]
-        next_elem = elements[i + 1]
-        if isinstance(curr_elem, str) and isinstance(next_elem, str):
-            elements[i] = ''.join((curr_elem, next_elem))
-            del elements[i + 1]
-        else:
-            i += 1

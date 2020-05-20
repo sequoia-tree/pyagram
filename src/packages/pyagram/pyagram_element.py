@@ -38,8 +38,6 @@ class PyagramFlag(PyagramElement):
             # TODO: This is totally broken now.
             # TODO: Do you even need this if clause anymore?
             banner_elements = []
-        else:
-            utils.concatenate_adjacent_strings(banner_elements)
         self.banner_elements = banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
@@ -77,24 +75,23 @@ class PyagramFlag(PyagramElement):
         if not self.is_hidden():
             referents = []
             for banner_element in self.banner_elements:
-                if type(banner_element) is tuple:
-                    _, _, binding_idx, unpacking_code = banner_element
-                    if binding_idx < len(self.banner_bindings):
-                        binding = self.banner_bindings[binding_idx]
-                        unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-                        if unpacking_type is enum.UnpackingTypes.NORMAL:
-                            referents.append(binding)
-                        elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                            unpacked_binding = [*binding]
-                            for element in unpacked_binding:
-                                referents.append(element)
-                        elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                            unpacked_binding = {**binding}
-                            for key in unpacked_binding:
-                                # TODO: Should you also track the key? In case of f(**{1: 2})?
-                                referents.append(unpacked_binding[key])
-                        else:
-                            raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+                _, _, binding_idx, unpacking_code = banner_element
+                if binding_idx < len(self.banner_bindings):
+                    binding = self.banner_bindings[binding_idx]
+                    unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                    if unpacking_type is enum.UnpackingTypes.NORMAL:
+                        referents.append(binding)
+                    elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                        unpacked_binding = [*binding]
+                        for element in unpacked_binding:
+                            referents.append(element)
+                    elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                        unpacked_binding = {**binding}
+                        for key in unpacked_binding:
+                            # TODO: Should you also track the key? In case of f(**{1: 2})?
+                            referents.append(unpacked_binding[key])
+                    else:
+                        raise enum.UnpackingTypes.illegal_enum(unpacking_type)
             for referent in referents:
                 self.state.memory_state.track(referent)
         if self.frame is not None:
@@ -137,41 +134,37 @@ class PyagramFlag(PyagramElement):
         """
         """
         # TODO: This should not be a function, or at least not here. Maybe move it to encode.py?
-        if type(banner_element) is tuple:
-            code, keyword, binding_idx, unpacking_code = banner_element
-            if binding_idx < len(self.banner_bindings):
-                binding = self.banner_bindings[binding_idx]
-                unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-                if unpacking_type is enum.UnpackingTypes.NORMAL:
-                    bindings = [{
-                        'key': keyword,
-                        'value': self.state.encoder.reference_snapshot(binding)
-                    }]
-                elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                    unpacked_binding = [*binding]
-                    bindings = [
-                        {
-                            'key': None,
-                            'value': self.state.encoder.reference_snapshot(value)
-                        }
-                        for value in unpacked_binding
-                    ]
-                elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                    unpacked_binding = {**binding}
-                    bindings = [
-                        {
-                            'key': key,
-                            'value': self.state.encoder.reference_snapshot(unpacked_binding[key])
-                        }
-                        for key in unpacked_binding
-                    ]
-                else:
-                    raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+        code, keyword, binding_idx, unpacking_code = banner_element
+        if binding_idx < len(self.banner_bindings):
+            binding = self.banner_bindings[binding_idx]
+            unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+            if unpacking_type is enum.UnpackingTypes.NORMAL:
+                bindings = [{
+                    'key': keyword,
+                    'value': self.state.encoder.reference_snapshot(binding)
+                }]
+            elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                unpacked_binding = [*binding]
+                bindings = [
+                    {
+                        'key': None,
+                        'value': self.state.encoder.reference_snapshot(value)
+                    }
+                    for value in unpacked_binding
+                ]
+            elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                unpacked_binding = {**binding}
+                bindings = [
+                    {
+                        'key': key,
+                        'value': self.state.encoder.reference_snapshot(unpacked_binding[key])
+                    }
+                    for key in unpacked_binding
+                ]
             else:
-                bindings = [None]
+                raise enum.UnpackingTypes.illegal_enum(unpacking_type)
         else:
-            code = banner_element
-            bindings = []
+            bindings = None
         # TODO: What if you try f(**{1: 2})? Currently it throws an error in PyagramFlag.step. (During preprocessing, you assume the starred expression is valid. When it's not, you need to detect that and propagate the error up. Maybe call process_exception?) Also, maybe worth investigating: if you comment this stuff out, so that it doesn't cause an error itself, would the Tracer produce a USER_EXCEPTION on its own?
         # TODO: To cut down on code reuse, consider using encode_mapping with is_bindings=True.
         # TODO: When you write f(1, 2, *[3, 4], a=5, **{'b': 6, 'c': 7, **{'d': 8}}, e=9), you should see `a=`, `b=`, `c=`, ..., and `e=` in all the appropriate locations on the bottom half of the banner. (And verify the top half of the banner looks good too.)
@@ -179,11 +172,11 @@ class PyagramFlag(PyagramElement):
             'code': code,
             'n_cols':
                 2 * len(bindings) - 1 + sum(
-                    binding is not None and binding['key'] is not None
+                    binding['key'] is not None
                     for binding in bindings
                 )
-                if len(bindings) > 0
-                else 0,
+                if bindings is not None and len(bindings) > 0
+                else 1,
             'bindings': bindings,
         }
 
