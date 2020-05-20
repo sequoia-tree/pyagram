@@ -146,7 +146,7 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None):
+    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None):
         super().__init__(opened_by, state)
         self.frame = frame
         self.is_new = True # TODO: Does every frame_type need this?
@@ -165,8 +165,6 @@ class PyagramFrame(PyagramElement):
         if self.is_global_frame:
             del frame.f_globals['__builtins__']
         elif self.is_builtin_frame:
-            assert function is not None
-            self.function = function
             self.frame_number = self.state.program_state.register_frame()
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()

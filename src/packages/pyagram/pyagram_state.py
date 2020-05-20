@@ -269,11 +269,23 @@ class ProgramState:
     def close_pyagram_flag(self, frame):
         """
         """
-        if self.is_frame:
-            assert self.curr_element.is_builtin_frame
+        assert self.is_flag
+        if self.curr_element.is_builtin:
+
+            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             self.close_pyagram_frame(frame, None)
-        assert self.is_complete_flag or self.is_ongoing_flag_sans_frame
+
+        assert self.is_complete_flag
         self.curr_element = self.curr_element.close()
+
+        # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin
+        # TODO: flag and give it the function. Then, before ...
+        # TODO:       (1) opening an implicit frame, or ...
+        # TODO:       (2) closing a flag ...
+        # TODO: ... check if the curr_element is a builtin flag. If so, Add the placeholder
+        # TODO: builtin frame, take a snapshot, close the placeholder frame, and continue.
+
+        # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
 
     def close_pyagram_frame(self, frame, return_value):
         """
@@ -336,12 +348,17 @@ class ProgramState:
 
             self.curr_element.is_builtin = True
 
-            # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin flag and give it the function. Then, before opening an implicit frame or closing a flag, check if the curr_element is a builtin flag. If so, Add the placeholder builtin frame, take a snapshot, close the placeholder frame, and continue.
-            # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
+            # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin
+            # TODO: flag and give it the function. Then, before ...
+            # TODO:       (1) opening an implicit frame, or ...
+            # TODO:       (2) closing a flag ...
+            # TODO: ... check if the curr_element is a builtin flag. If so, Add the placeholder
+            # TODO: builtin frame, take a snapshot, close the placeholder frame, and continue.
 
-            # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
+            # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event. Might have to do some postprocessing. (You could keep a map {builtin PyagramFrame: return value}, for instance.)
+
+            # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
         else:
-            # TODO: See if decodeUnknownSnapshot occurs in templates.JS. You might've prematurely deleted it.
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
