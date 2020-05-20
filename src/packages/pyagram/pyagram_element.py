@@ -45,6 +45,16 @@ class PyagramFlag(PyagramElement):
         self.frame = None
 
     @property
+    def banner_is_complete(self):
+        """
+        """
+        if len(self.banner_elements) == 0:
+            return True
+        else:
+            _, _, last_binding_idx, _ = self.banner_elements[-1]
+            return last_binding_idx < len(self.banner_bindings)
+
+    @property
     def has_returned(self):
         """
         """
@@ -109,7 +119,7 @@ class PyagramFlag(PyagramElement):
     def add_frame(self, frame, frame_type, **init_args):
         """
         """
-        # assert self.banner_is_complete
+        assert self.banner_is_complete
         frame = PyagramFrame(self, frame, frame_type, **init_args)
         self.frame = frame
         return frame
@@ -118,7 +128,7 @@ class PyagramFlag(PyagramElement):
         """
         """
         if self.frame is None:
-            self.hide_from(0)
+            self.hide_from(0) # TODO: Delete this once you get to the function-wrapper refactor.
         return self.opened_by
 
 class PyagramFrame(PyagramElement):

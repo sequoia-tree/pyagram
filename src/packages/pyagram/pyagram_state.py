@@ -322,7 +322,7 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
-        assert self.is_ongoing_flag_sans_frame
+        assert self.is_ongoing_flag_sans_frame and 0 == len(self.curr_element.banner_bindings)
         if type(callable) is type:
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
@@ -347,16 +347,13 @@ class ProgramState:
             pass # TODO
             # TODO: Do self.curr_element.function = function. Atm PyagramFlag.function is unused.
             # TODO: You may be able to avoid the necessity of giving each func a unique code object.
-        assert len(self.curr_element.banner_bindings) == 0
         self.curr_element.banner_bindings.append(callable) # TODO: Give the PyagramFlag a method (set_func) for this, and a method (set_arg or set_binding) for below.
 
     def register_argument(self, frame, return_value):
         """
         """
-        assert self.is_ongoing_flag_sans_frame
-        print('new arg:', return_value)
+        assert self.is_ongoing_flag_sans_frame and 0 < len(self.curr_element.banner_bindings)
         self.curr_element.banner_bindings.append(return_value)
-        # TODO: Finish this.
 
     def register_frame(self):
         """
@@ -379,7 +376,7 @@ class MemoryState:
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
-        self.obj_init_debuts = {}
+        self.tracked_obj_ids = set()
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?
@@ -456,12 +453,12 @@ class MemoryState:
         if object_type is None:
             object_type = enum.ObjectTypes.identify_object_type(object)
         is_object = object_type is not enum.ObjectTypes.PRIMITIVE
-        is_unseen = id(object) not in self.obj_init_debuts
+        is_unseen = id(object) not in self.tracked_obj_ids
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
             debut_idx = len(self.state.snapshots)
             self.objects.append(object)
-            self.obj_init_debuts[id(object)] = debut_idx
+            self.tracked_obj_ids.add(id(object))
             if object_type is enum.ObjectTypes.GENERATOR:
                 generator_function = utils.get_function(object.gi_frame)
                 if generator_function is None:
