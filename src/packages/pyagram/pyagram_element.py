@@ -20,10 +20,10 @@ class PyagramElement:
         for flag in self.flags:
             flag.step()
 
-    def add_flag(self, banner, **init_args):
+    def add_flag(self, banner_summary, **init_args):
         """
         """
-        flag = PyagramFlag(self, banner, **init_args)
+        flag = PyagramFlag(self, banner_summary, **init_args)
         self.flags.append(flag)
         return flag
 

@@ -240,11 +240,11 @@ class ProgramState:
             self.curr_element.hidden_subflags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, frame, banner, **init_args):
+    def open_pyagram_flag(self, frame, banner_summary, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-        self.curr_element = self.curr_element.add_flag(banner, **init_args)
+        self.curr_element = self.curr_element.add_flag(banner_summary, **init_args)
 
     def open_pyagram_frame(self, frame, frame_type, **init_args):
         """
@@ -456,7 +456,6 @@ class MemoryState:
         is_unseen = id(object) not in self.tracked_obj_ids
         is_masked = id(object) in self.wrapped_obj_ids
         if is_object and is_unseen and not is_masked:
-            debut_idx = len(self.state.snapshots)
             self.objects.append(object)
             self.tracked_obj_ids.add(id(object))
             if object_type is enum.ObjectTypes.GENERATOR:
