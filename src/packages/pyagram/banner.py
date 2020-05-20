@@ -9,7 +9,7 @@ class Banner:
     def __init__(self, code, node):
         self.code = code
         self.elements = []
-        self.val_idx = 0 # TODO: Rename
+        self.binding_index = 0
         self.add_func_info(node.func)
         self.add_args_info(node.args)
         self.add_kwds_info(node.keywords)
@@ -67,7 +67,7 @@ class Banner:
                     kind=None,
                 ),
                 ast.Constant(
-                    value=self.val_idx,
+                    value=self.binding_index,
                     kind=None,
                 ),
                 ast.Constant(
@@ -77,4 +77,4 @@ class Banner:
             ],
             ctx=ast.Load(),
         ))
-        self.val_idx += 1
+        self.binding_index += 1
