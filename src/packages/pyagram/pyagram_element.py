@@ -102,9 +102,6 @@ class PyagramFlag(PyagramElement):
     def snapshot(self):
         """
         """
-        # TODO: Make sure *args and **kwargs show up properly on the banner.
-        # TODO: Make sure *dict and **dict behave how they respectively ought.
-        # TODO: Make sure f(x=...) makes x= show up on the bottom of the banner.
         is_hidden = self.is_hidden()
         return {
             'is_curr_element': self is self.state.program_state.curr_element,
@@ -165,9 +162,9 @@ class PyagramFlag(PyagramElement):
                 raise enum.UnpackingTypes.illegal_enum(unpacking_type)
         else:
             bindings = None
+        # TODO: Make sure *dict and **dict behave how they respectively ought to.
         # TODO: What if you try f(**{1: 2})? Currently it throws an error in PyagramFlag.step. (During preprocessing, you assume the starred expression is valid. When it's not, you need to detect that and propagate the error up. Maybe call process_exception?) Also, maybe worth investigating: if you comment this stuff out, so that it doesn't cause an error itself, would the Tracer produce a USER_EXCEPTION on its own?
         # TODO: To cut down on code reuse, consider using encode_mapping with is_bindings=True.
-        # TODO: When you write f(1, 2, *[3, 4], a=5, **{'b': 6, 'c': 7, **{'d': 8}}, e=9), you should see `a=`, `b=`, `c=`, ..., and `e=` in all the appropriate locations on the bottom half of the banner. (And verify the top half of the banner looks good too.)
         return {
             'code': code,
             'n_cols':

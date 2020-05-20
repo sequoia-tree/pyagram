@@ -26,8 +26,7 @@ export const FLAG_TEMPLATE = compile(`
           <td colspan="{{n_cols}}">
             {{code}}
           </td>
-
-          {{#if @first}} <!-- TODO: Make this a Handlebars partial. -->
+          {{#if @first}}
             {{#if @last}}
               <td>()</td>
             {{else}}
@@ -40,12 +39,10 @@ export const FLAG_TEMPLATE = compile(`
               <td>,</td>
             {{/if}}
           {{/if}}
-
         {{/each}}
       </tr>
       <tr>
         {{#each banner}}
-
           {{#if (isNull bindings)}}
             <td class="pyagram-value pyagram-placeholder">
               -
@@ -55,17 +52,16 @@ export const FLAG_TEMPLATE = compile(`
           {{else}}
             {{#each bindings}}
               {{#unless (isNull key)}}
-                <td>{{key}}=</td>
+                <td style="width: {{add key.length 1}}ch;">{{key}}=</td>
               {{/unless}}
               <td class="pyagram-value">
                 {{decodeReferenceSnapshot value}}
               </td>
               {{#unless @last}}
-                <td class="argument-separator">,</td> <!-- TODO: Set dynamically. -->
+                <td style="width: 1ch;">,</td>
               {{/unless}}
             {{/each}}
           {{/if}}
-
           {{#if @first}}
             {{#if @last}}
               <td>()</td>
@@ -85,7 +81,6 @@ export const FLAG_TEMPLATE = compile(`
               {{/if}}
             {{/if}}
           {{/if}}
-
         {{/each}}
       </tr>
     </table>
