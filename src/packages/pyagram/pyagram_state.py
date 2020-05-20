@@ -328,22 +328,16 @@ class ProgramState:
         if type(callable) is type:
             self.curr_element.fix_obj_instantiation_banner()
             callable = callable.__init__
-            print('C:', callable) # TODO: Debug and delete (see PyagramFlag.step).
+            # TODO: Make it work nicely for when the __init__ isn't user-defined (see the todo in PyagramFlag.step).
+            # TODO: I think you should test whether the callable is tracked already (or maybe whether it's a method, rather than a slot wrapper or method descriptor). If so, then proceed as normal. Otherwise, close the flag and hide it. (You should NOT display a flag for the instantiation of an object that has no user-defined __init__ method. That would get SO annoying.)
         if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
 
             # Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
 
-            raise NotImplementedError() # TODO
+            self.curr_element.is_builtin = True
 
-            # TODO: (1) Also modify the banner. It should just have 2 components that get evaluated: FUNCTION(...). Here, you should take the snapshot where the function is evaluated, and before opening the builtin frame, you should take the snapshot where the rest gets filled in with '...'.
-            # TODO: (2) Actually, don't open the frame here. Instead, just mark the flag as a builtin flag and give it the function. Then, before opening an implicit frame or closing a flag, check if the curr_element is a builtin flag. If so, Add the placeholder builtin frame, take a snapshot, close the placeholder frame, and continue.
-            # TODO: (3) To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
-
-            # print(self.curr_element.banner_elements)
-            # print(self.curr_element.banner_bindings)
-            # from . import constants
-            # self.curr_element.banner_elements[1:] = ['(', ('f(a), key=f', [1]), ')']
-            # self.curr_element.banner_bindings[1:] = constants.BANNER_ELLIPSIS_CODE
+            # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin flag and give it the function. Then, before opening an implicit frame or closing a flag, check if the curr_element is a builtin flag. If so, Add the placeholder builtin frame, take a snapshot, close the placeholder frame, and continue.
+            # TODO: To get the return value for the builtin frame, you can extract it from the SRC_CALL_SUCCESSOR's close event.
 
             # self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN, function=callable)
         else:

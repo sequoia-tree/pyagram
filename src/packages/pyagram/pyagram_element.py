@@ -42,6 +42,7 @@ class PyagramFlag(PyagramElement):
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
+        self.is_builtin = False
         self.frame = None
 
     @property
@@ -85,7 +86,7 @@ class PyagramFlag(PyagramElement):
         """
         """
 
-        # TODO: This tracks the __init__ slot wrapper object. (You can see it if you switch to text-pointer mode.) Is this desired behavior? If not, how do you want to handle it?
+        # TODO: This tracks the __init__ slot wrapper object. How do you want to handle it?
         # class A:
         #     pass
         # a = A()
@@ -99,7 +100,6 @@ class PyagramFlag(PyagramElement):
                     unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
                     if unpacking_type is enum.UnpackingTypes.NORMAL:
                         referents.append(binding)
-                        print('S:', binding) # TODO: Debug and delete (see register_callable).
                     elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
                         for element in [*binding]:
                             referents.append(element)
@@ -140,8 +140,6 @@ class PyagramFlag(PyagramElement):
     def close(self):
         """
         """
-        if self.frame is None:
-            self.hide_from(0) # TODO: Delete this once you get to the function-wrapper refactor.
         return self.opened_by
 
 class PyagramFrame(PyagramElement):
