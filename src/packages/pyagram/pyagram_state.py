@@ -162,8 +162,10 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             # TODO: Perhaps move this into a helper function.
-            if self.is_flag and self.curr_element.is_builtin:
+
+            if self.is_flag and self.curr_element.is_builtin: # TODO: Make @property tags for this?
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
             is_implicit = self.is_ongoing_frame
@@ -263,6 +265,8 @@ class ProgramState:
         """
         assert self.is_ongoing_flag_sans_frame
         self.curr_element = self.curr_element.add_frame(frame, frame_type, **init_args)
+        if frame_type is enum.PyagramFrameTypes.BUILTIN:
+            self.state.snapshot()
 
     def open_class_frame(self, frame):
         """
@@ -284,10 +288,10 @@ class ProgramState:
         if self.curr_element is self.global_frame:
             return
         if self.is_flag and self.curr_element.is_builtin:
+
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
-            # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
             # TODO: This code should appear in a helper. Right now it's duplicated in process_frame_open, which is BAD! Don't duplicate code.
-            # TODO: Refactor concurrent with the new lines in process_frame_open which also can open a builtin frame.
+
         if self.is_frame:
             assert self.curr_element.opened_by.is_builtin
             self.close_pyagram_frame(frame, None)
