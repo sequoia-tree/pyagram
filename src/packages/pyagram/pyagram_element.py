@@ -171,21 +171,53 @@ class PyagramFrame(PyagramElement):
             self.state.memory_state.record_function(self, self.function)
             if is_implicit:
                 # TODO: This is broken now.
+                # TODO: Abstract into a helper function.
+                args = []
+                kwds = {}
+                for parameter in inspect.signature(self.function).parameters:
+                    if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
+                        args.append(frame.f_locals[parameter.name])
+                    elif parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD:
+                        args.append(frame.f_locals[parameter.name])
+                    elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                        args.extend(frame.f_locals[parameter.name])
+                    elif parameter.kind is inspect.Parameter.KEYWORD_ONLY:
+                        kwds[parameter.name] = frame.f_locals[parameter.name]
+                    elif parameter.kind is inspect.Parameter.VAR_KEYWORD:
+                        kwds.update(frame.f_locals[parameter.name])
+                    else:
+                        raise enum.Enum.illegal_enum(parameter.kind)
                 flag = opened_by
-                flag.banner_elements = [
-                    (
-                        self.function.__name__,
-                        None,
-                        0,
-                        constants.NORMAL_ARG,
-                    ),
-                    (
+                banner_index = 0
+                flag.banner_elements = [(
+                    self.function.__name__,
+                    None,
+                    banner_index,
+                    constants.NORMAL_ARG,
+                )]
+                banner_index += 1
+                if 0 < len(args):
+                    flag.banner_elements.append((
                         '...',
                         None,
-                        1,
-                        constants.NORMAL_ARG,
-                    )
-                ]
+                        banner_index,
+                        constants.SINGLY_UNPACKED_ARG,
+                    ))
+                    banner_index += 1
+                if 0 < len(kwds):
+                    flag.banner_element.append(( # TODO: Abstract repetitive 'if's into a helper.
+                        '...',
+                        None,
+                        banner_index,
+                        constants.DOUBLY_UNPACKED_ARG,
+                    ))
+                    banner_index += 1
+
+                # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args, snapshot again, append kwds.
+
+
+
+
                 # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
 
                 # code, keyword, binding_idx, unpacking_code
