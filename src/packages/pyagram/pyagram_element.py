@@ -132,7 +132,6 @@ class PyagramFlag(PyagramElement):
     def fix_implicit_banner(self, function, bindings):
         """
         """
-        # TODO: This is broken now.
         def add_banner_element(name, binding_idx, unpacking_code):
             self.banner_elements.append((
                 name,
@@ -162,17 +161,16 @@ class PyagramFlag(PyagramElement):
             num_bindings = add_banner_element('...', num_bindings, constants.SINGLY_UNPACKED_ARG)
         if 0 < len(kwds):
             num_bindings = add_banner_element('...', num_bindings, constants.DOUBLY_UNPACKED_ARG)
-
+        self.state.step()
         self.banner_bindings.append(function)
+        self.state.step()
         if 0 < len(args):
             self.banner_bindings.append(args)
+            self.state.step()
         if 0 < len(kwds):
             self.banner_bindings.append(kwds)
-
-
-        # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args (if it's not empty), snapshot again, and append kwds (if it's not empty).
-        # TODO: You'll have to actually move this somewhere right before opening the PyagramFrame, so that the frame doesn't appear before the flag finishes.
-        # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
+            self.state.step()
+        # TODO: Here, where you append the function / args, it should call some helper that is also called by register_callable / register_argument.
 
     def add_frame(self, frame, frame_type, **init_args):
         """
