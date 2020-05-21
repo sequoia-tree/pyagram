@@ -166,7 +166,15 @@ class ProgramState:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
-            self.open_pyagram_frame(frame, None, is_implicit=is_implicit)
+            function = utils.get_function(frame)
+            generator = utils.get_generator(frame)
+            self.open_pyagram_frame(
+                frame,
+                None,
+                is_implicit=is_implicit,
+                function=function,
+                generator=generator,
+            )
         elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
             pass
         elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
@@ -279,6 +287,7 @@ class ProgramState:
             if self.curr_element.frame is None:
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
+            # TODO: This code should appear in a helper. Right now it's duplicated in process_frame_open, which is BAD! Don't duplicate code.
             # TODO: Refactor concurrent with the new lines in process_frame_open which also can open a builtin frame.
             self.close_pyagram_frame(frame, None)
             # TODO: Make sure to track the return value! Right now it doesn't.

@@ -146,20 +146,19 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None):
+    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None, generator=None):
         super().__init__(opened_by, state)
         self.frame = frame
         self.is_new = True # TODO: Does every frame_type need this?
+        self.function = function # TODO: For consistency, in this function, use 'function' rather than 'self.function' and 'generator' rather than 'self.generator' wherever possible.
+        self.generator = generator
         if frame_type is None:
-            self.function = utils.get_function(frame)
-            self.generator = utils.get_generator(frame)
             if self.generator is None:
                 frame_type = enum.PyagramFrameTypes.FUNCTION
             else:
                 frame_type = enum.PyagramFrameTypes.GENERATOR
         else:
-            self.function = None
-            self.generator = None
+            assert function is None and generator is None
         self.frame_type = frame_type
         self.is_implicit = is_implicit
         if self.is_global_frame:
@@ -213,9 +212,9 @@ class PyagramFrame(PyagramElement):
                     ))
                     banner_index += 1
 
-                # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args, snapshot again, append kwds.
+                # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args (if it's not empty), snapshot again, and append kwds (if it's not empty).
 
-
+                # TODO: You'll have to actually move this somewhere right before opening the PyagramFrame, so that the frame doesn't appear before the flag finishes.
 
 
                 # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
