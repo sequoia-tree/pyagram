@@ -115,7 +115,7 @@ class PyagramFlag(PyagramElement):
             self.frame.step()
         super().step()
 
-    def fix_obj_instantiation_banner(self):
+    def fix_obj_instantiation_banner(self): # TODO: Rename to fix_init_banner.
         """
         """
         assert 0 < len(self.banner_elements)
@@ -128,6 +128,51 @@ class PyagramFlag(PyagramElement):
             unpacking_code,
         )
         self.state.encoder.new_flag_fn_code[self] = code # TODO: Maybe don't keep this in the Encoder?
+
+    def fix_implicit_banner(self, function, bindings):
+        """
+        """
+        # TODO: This is broken now.
+        def add_banner_element(name, binding_idx, unpacking_code):
+            self.banner_elements.append((
+                name,
+                None,
+                binding_idx,
+                unpacking_code,
+            ))
+            return binding_idx + 1
+        args = []
+        kwds = {}
+        for parameter in inspect.signature(function).parameters.values():
+            if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
+                args.append(bindings[parameter.name])
+            elif parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD:
+                args.append(bindings[parameter.name])
+            elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                args.extend(bindings[parameter.name])
+            elif parameter.kind is inspect.Parameter.KEYWORD_ONLY:
+                kwds[parameter.name] = bindings[parameter.name]
+            elif parameter.kind is inspect.Parameter.VAR_KEYWORD:
+                kwds.update(bindings[parameter.name])
+            else:
+                raise enum.Enum.illegal_enum(parameter.kind)
+        num_bindings = 0
+        num_bindings = add_banner_element(function.__name__, num_bindings, constants.NORMAL_ARG)
+        if 0 < len(args):
+            num_bindings = add_banner_element('...', num_bindings, constants.SINGLY_UNPACKED_ARG)
+        if 0 < len(kwds):
+            num_bindings = add_banner_element('...', num_bindings, constants.DOUBLY_UNPACKED_ARG)
+
+        self.banner_bindings.append(function)
+        if 0 < len(args):
+            self.banner_bindings.append(args)
+        if 0 < len(kwds):
+            self.banner_bindings.append(kwds)
+
+
+        # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args (if it's not empty), snapshot again, and append kwds (if it's not empty).
+        # TODO: You'll have to actually move this somewhere right before opening the PyagramFrame, so that the frame doesn't appear before the flag finishes.
+        # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
 
     def add_frame(self, frame, frame_type, **init_args):
         """
@@ -168,61 +213,6 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
             self.state.memory_state.record_function(self, self.function) # TODO: Is this obsolete now?
-            if is_implicit:
-                # TODO: This is broken now.
-                # TODO: Abstract into a helper function.
-                args = []
-                kwds = {}
-                for parameter in inspect.signature(self.function).parameters:
-                    if parameter.kind is inspect.Parameter.POSITIONAL_ONLY:
-                        args.append(frame.f_locals[parameter.name])
-                    elif parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD:
-                        args.append(frame.f_locals[parameter.name])
-                    elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
-                        args.extend(frame.f_locals[parameter.name])
-                    elif parameter.kind is inspect.Parameter.KEYWORD_ONLY:
-                        kwds[parameter.name] = frame.f_locals[parameter.name]
-                    elif parameter.kind is inspect.Parameter.VAR_KEYWORD:
-                        kwds.update(frame.f_locals[parameter.name])
-                    else:
-                        raise enum.Enum.illegal_enum(parameter.kind)
-                flag = opened_by
-                banner_index = 0
-                flag.banner_elements = [(
-                    self.function.__name__,
-                    None,
-                    banner_index,
-                    constants.NORMAL_ARG,
-                )]
-                banner_index += 1
-                if 0 < len(args):
-                    flag.banner_elements.append((
-                        '...',
-                        None,
-                        banner_index,
-                        constants.SINGLY_UNPACKED_ARG,
-                    ))
-                    banner_index += 1
-                if 0 < len(kwds):
-                    flag.banner_element.append(( # TODO: Abstract repetitive 'if's into a helper.
-                        '...',
-                        None,
-                        banner_index,
-                        constants.DOUBLY_UNPACKED_ARG,
-                    ))
-                    banner_index += 1
-
-                # TODO: Now snapshot, append function to flag.banner_bindings, snapshot again, append args (if it's not empty), snapshot again, and append kwds (if it's not empty).
-
-                # TODO: You'll have to actually move this somewhere right before opening the PyagramFrame, so that the frame doesn't appear before the flag finishes.
-
-
-                # TODO: Here, where you evaluate the function, it should call some helper that is also called by register_callable. Similar idea to abstract register_argument.
-
-                # code, keyword, binding_idx, unpacking_code
-                raise NotImplementedError()
-                # flag.banner_bindings = [(False, None)] * num_bindings
-                # flag.evaluate_next_banner_bindings(skip_args=True)
         elif self.is_generator_frame:
             # TODO: This was quite possibly broken by the flag refactor.
             self.state.memory_state.record_generator(self, self.generator)

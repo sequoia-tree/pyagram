@@ -169,7 +169,7 @@ class ProgramState:
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
-                # TODO: Fill out implicit flag banner here, rather than in PyagramFlag.__init__.
+                self.curr_element.fix_implicit_banner(function, frame.f_locals)
             self.open_pyagram_frame(
                 frame,
                 None,
@@ -283,17 +283,15 @@ class ProgramState:
         """
         if self.curr_element is self.global_frame:
             return
-        assert self.is_flag
-        if self.curr_element.is_builtin:
-
-            if self.curr_element.frame is None:
-                self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+        if self.is_flag and self.curr_element.is_builtin:
+            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             # TODO: Take a snapshot (no need to step first) after opening the frame, so the return value doesn't immediately appear.
             # TODO: This code should appear in a helper. Right now it's duplicated in process_frame_open, which is BAD! Don't duplicate code.
             # TODO: Refactor concurrent with the new lines in process_frame_open which also can open a builtin frame.
+        if self.is_frame:
+            assert self.curr_element.opened_by.is_builtin
             self.close_pyagram_frame(frame, None)
             # TODO: Make sure to track the return value! Right now it doesn't.
-
         assert self.is_complete_flag
         self.curr_element = self.curr_element.close()
 
