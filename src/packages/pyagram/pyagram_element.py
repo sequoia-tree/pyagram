@@ -167,7 +167,7 @@ class PyagramFrame(PyagramElement):
             self.frame_number = self.state.program_state.register_frame()
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
-            self.state.memory_state.record_function(self, self.function)
+            self.state.memory_state.record_function(self, self.function) # TODO: Is this obsolete now?
             if is_implicit:
                 # TODO: This is broken now.
                 # TODO: Abstract into a helper function.

@@ -161,6 +161,7 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            # TODO: Perhaps move this into a helper function.
             if self.is_flag and self.curr_element.is_builtin:
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             is_implicit = self.is_ongoing_frame
