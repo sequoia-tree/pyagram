@@ -164,11 +164,12 @@ class ProgramState:
             # TODO: Perhaps move this into a helper function.
             if self.is_flag and self.curr_element.is_builtin:
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+            function = utils.get_function(frame)
+            generator = utils.get_generator(frame)
             is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
-            function = utils.get_function(frame)
-            generator = utils.get_generator(frame)
+                # TODO: Fill out implicit flag banner here, rather than in PyagramFlag.__init__.
             self.open_pyagram_frame(
                 frame,
                 None,
