@@ -49,7 +49,7 @@ class Preprocessor:
                     max_lineno=self.num_lines,
                 )
 
-    def wrap_node(self, lineno, frame_code, return_node, *, params=[], args=[], keywords=[]):
+    def wrap_node(self, lineno, step_code, return_node, *, params=[], args=[]):
         """
         """
         function = ast.Lambda(
@@ -67,15 +67,31 @@ class Preprocessor:
         function_call = ast.Call(
             func=function,
             args=args,
-            keywords=keywords,
+            keywords=[],
             lineno=utils.encode_lineno(
                 lineno,
-                frame_code,
+                step_code,
                 False,
                 max_lineno=self.num_lines,
             ),
         )
         return function_call
+
+    def insert_lazy_call(self, lineno, step_code, *bindings):
+        """
+        """
+        params, args = zip(*bindings)
+        return_param = params[-1]
+        return self.wrap_node(
+            lineno,
+            step_code,
+            ast.Name(id=return_param, ctx=ast.Load()),
+            params=[
+                ast.arg(arg=param, annotation=None)
+                for param in params
+            ],
+            args=list(args),
+        )
 
 class CodeWrapper(ast.NodeTransformer):
     """
@@ -84,22 +100,6 @@ class CodeWrapper(ast.NodeTransformer):
     def __init__(self, preprocessor):
         super().__init__()
         self.preprocessor = preprocessor
-
-    # def insert_lazy_call(self, lineno, step_code, *bindings):
-    #     """
-    #     """
-    #     params, args = zip(*bindings)
-    #     return_param = params[-1]
-    #     return self.insert_call(
-    #         lineno,
-    #         step_code,
-    #         ast.Name(id=return_param, ctx=ast.Load()),
-    #         params=[
-    #             ast.arg(arg=param, annotation=None)
-    #             for param in params
-    #         ],
-    #         args=args,
-    #     )
 
     def visit_Call(self, node):
         """
@@ -131,30 +131,18 @@ class CodeWrapper(ast.NodeTransformer):
             args=[
                 (
                     ast.Starred(
-                        value=self.preprocessor.wrap_node(
+                        value=self.preprocessor.insert_lazy_call(
                             arg.value.lineno,
                             constants.RG_WRAPPER_LINENO,
-                            ast.Name(id='arg', ctx=ast.Load()), # TODO: This code is copy/pasted 3x here (for starred args), for normal args, and for kwargs. Pls don't copy/paste. Also reconsider the `lineno` arg in wrap_node.
-                            params=[
-                                ast.arg(arg='arg', annotation=None),
-                            ],
-                            args=[
-                                arg.value,
-                            ]
+                            ('arg', arg.value),
                         ),
                         ctx=ast.Load(),
                     )
                     if isinstance(arg, ast.Starred)
-                    else self.preprocessor.wrap_node(
+                    else self.preprocessor.insert_lazy_call(
                         arg.lineno,
                         constants.RG_WRAPPER_LINENO,
-                        ast.Name(id='arg', ctx=ast.Load()), # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
-                        params=[
-                            ast.arg(arg='arg', annotation=None),
-                        ],
-                        args=[
-                            arg,
-                        ],
+                        ('arg', arg),
                     )
                 )
                 for arg in node.args
@@ -162,35 +150,26 @@ class CodeWrapper(ast.NodeTransformer):
             keywords=[
                 ast.keyword(
                     arg=keyword.arg,
-                    value=self.preprocessor.wrap_node(
+                    value=self.preprocessor.insert_lazy_call(
                         keyword.value.lineno,
                         constants.RG_WRAPPER_LINENO,
-                        ast.Name(id='arg', ctx=ast.Load()),
-                        params=[
-                            ast.arg(arg='arg', annotation=None),
-                        ],
-                        args=[
-                            keyword.value,
-                        ],
+                        ('arg', keyword.value),
                     )
                 )
                 for keyword in node.keywords
             ],
             lineno=node.lineno,
         )
-        wrapper_call = self.preprocessor.wrap_node(
+        wrapper_call = self.preprocessor.insert_lazy_call(
             node.lineno,
             constants.OUTER_CALL_LINENO,
-            ast.Name(id='call', ctx=ast.Load()),
-            params=[
-                ast.arg(arg='info', annotation=None),
-                ast.arg(arg='call', annotation=None),
-            ],
-            args=[
-                banner_call,
-                function_call,
-            ],
+            ('info', banner_call),
+            ('call', function_call),
         )
+
+        # TODO: This code is copy/pasted 3x here (for starred args), for normal args, and for kwargs. Pls don't copy/paste. Also reconsider the `lineno` arg in wrap_node.
+
+        # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
 
         # TODO: Delete this when you're done with it.
         import pprintast
