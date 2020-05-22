@@ -162,14 +162,13 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
 
-            # TODO: Perhaps move this into a helper function.
-
-            if self.is_flag and self.curr_element.is_builtin: # TODO: Make @property tags for this?
+            if self.is_flag and self.curr_element.is_builtin:
+                # TODO: Make an is_builtin_flag @property tag to use here and in close_pyagram_flag.
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
 
+            is_implicit = self.is_ongoing_frame
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
-            is_implicit = self.is_ongoing_frame
             if is_implicit:
                 self.open_pyagram_flag(frame, None)
                 self.curr_element.fix_implicit_banner(function, frame.f_locals)
@@ -207,6 +206,8 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+            if self.curr_element is self.global_frame:
+                return
             self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
@@ -286,18 +287,15 @@ class ProgramState:
     def close_pyagram_flag(self, frame, return_value):
         """
         """
-        if self.curr_element is self.global_frame:
-            return
         if self.is_flag and self.curr_element.is_builtin:
 
-            # TODO: Umm, only open if it doesn't already have a frame?
+            # TODO: Why's this work? Shouldn't we only open if it doesn't already have a frame?
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
-            # TODO: This code should appear in a helper. Right now it's duplicated in process_frame_open, which is BAD! Don't duplicate code.
 
         if self.is_frame:
             assert self.curr_element.opened_by.is_builtin
             self.close_pyagram_frame(frame, None)
-            # TODO: Make sure to track the return value! Right now it doesn't.
+            # TODO: Make sure builtin PyagramFrames track their return values! Right now they don't.
         assert self.is_complete_flag
         self.curr_element = self.curr_element.close()
 
