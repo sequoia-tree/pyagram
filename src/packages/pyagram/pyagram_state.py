@@ -81,6 +81,12 @@ class ProgramState:
         return isinstance(self.curr_element, pyagram_element.PyagramFlag)
 
     @property
+    def is_builtin_flag(self):
+        """
+        """
+        return self.is_flag and self.curr_element.is_builtin
+
+    @property
     def is_ongoing_flag_sans_frame(self):
         """
         """
@@ -161,11 +167,8 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-
-            if self.is_flag and self.curr_element.is_builtin:
-                # TODO: Make an is_builtin_flag @property tag to use here and in close_pyagram_flag.
+            if self.is_builtin_flag:
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
-
             is_implicit = self.is_ongoing_frame
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
@@ -287,13 +290,9 @@ class ProgramState:
     def close_pyagram_flag(self, frame, return_value):
         """
         """
-        if self.is_flag and self.curr_element.is_builtin:
-
-            # TODO: Why's this work? Shouldn't we only open if it doesn't already have a frame?
+        if self.is_builtin_flag:
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
-
         if self.is_frame:
-            assert self.curr_element.opened_by.is_builtin
             self.close_pyagram_frame(frame, None)
             # TODO: Make sure builtin PyagramFrames track their return values! Right now they don't.
         assert self.is_complete_flag
@@ -351,7 +350,7 @@ class ProgramState:
         """
         assert self.is_ongoing_flag_sans_frame and 0 == len(self.curr_element.banner_bindings)
         if type(callable) is type:
-            self.curr_element.fix_obj_instantiation_banner()
+            self.curr_element.fix_init_banner()
             callable = callable.__init__
             # TODO: Make it work nicely for when the __init__ isn't user-defined (see the todo in PyagramFlag.step).
             # TODO: I think you should test whether the callable is tracked already (or maybe whether it's a method, rather than a slot wrapper or method descriptor). If so, then proceed as normal. Otherwise, close the flag and hide it. (You should NOT display a flag for the instantiation of an object that has no user-defined __init__ method. That would get SO annoying.)

@@ -115,7 +115,7 @@ class PyagramFlag(PyagramElement):
             self.frame.step()
         super().step()
 
-    def fix_obj_instantiation_banner(self): # TODO: Rename to fix_init_banner.
+    def fix_init_banner(self):
         """
         """
         assert 0 < len(self.banner_elements)
