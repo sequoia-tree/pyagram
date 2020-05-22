@@ -161,12 +161,14 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            print('OPEN FRAME')
             # TODO: Perhaps move this into a helper function.
 
             if self.is_flag and self.curr_element.is_builtin: # TODO: Make @property tags for this?
                 self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
 
             function = utils.get_function(frame)
+            print(function)
             generator = utils.get_generator(frame)
             is_implicit = self.is_ongoing_frame
             if is_implicit:
@@ -198,14 +200,19 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
+            print('CLOSE FRAME')
             self.close_pyagram_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
+            print('FN WRAPPER')
             self.register_callable(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
+            print('RG WRAPPER')
             self.register_argument(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
+            print('OPEN FLAG', return_value)
             self.open_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+            print('CLOSE FLAG')
             self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
@@ -289,6 +296,8 @@ class ProgramState:
             return
         if self.is_flag and self.curr_element.is_builtin:
 
+            # TODO: Umm, only open if it doesn't already have a frame?
+            print('o2')
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
             # TODO: This code should appear in a helper. Right now it's duplicated in process_frame_open, which is BAD! Don't duplicate code.
 

@@ -87,6 +87,22 @@ class CodeWrapper(ast.NodeTransformer):
         super().__init__()
         self.preprocessor = preprocessor
 
+    # def insert_lazy_call(self, lineno, step_code, *bindings):
+    #     """
+    #     """
+    #     params, args = zip(*bindings)
+    #     return_param = params[-1]
+    #     return self.insert_call(
+    #         lineno,
+    #         step_code,
+    #         ast.Name(id=return_param, ctx=ast.Load()),
+    #         params=[
+    #             ast.arg(arg=param, annotation=None)
+    #             for param in params
+    #         ],
+    #         args=args,
+    #     )
+
     def visit_Call(self, node):
         """
         """
@@ -105,6 +121,9 @@ class CodeWrapper(ast.NodeTransformer):
             banner.Banner(self.preprocessor.code, node).elements,
             lineno=node.lineno,
         )
+
+        self.generic_visit(node)
+
         function_call = ast.Call(
             func=self.preprocessor.wrap_node(
                 constants.FN_WRAPPER_LINENO,
@@ -115,14 +134,28 @@ class CodeWrapper(ast.NodeTransformer):
                     ast.Starred(
                         value=self.preprocessor.wrap_node(
                             constants.RG_WRAPPER_LINENO,
-                            arg.value,
+                            ast.Name(id='arg', ctx=ast.Load()), # TODO: This code is copy/pasted 3x here (for starred args), for normal args, and for kwargs. Pls don't copy/paste. Also reconsider the `lineno` arg in wrap_node.
+                            lineno=arg.value.lineno,
+                            params=[
+                                ast.arg(arg='arg', annotation=None),
+                            ],
+                            args=[
+                                arg.value,
+                            ]
                         ),
                         ctx=ast.Load(),
                     )
                     if isinstance(arg, ast.Starred)
                     else self.preprocessor.wrap_node(
                         constants.RG_WRAPPER_LINENO,
-                        arg,
+                        ast.Name(id='arg', ctx=ast.Load()),
+                        lineno=arg.lineno, # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
+                        params=[
+                            ast.arg(arg='arg', annotation=None),
+                        ],
+                        args=[
+                            arg,
+                        ],
                     )
                 )
                 for arg in node.args
@@ -132,7 +165,14 @@ class CodeWrapper(ast.NodeTransformer):
                     arg=keyword.arg,
                     value=self.preprocessor.wrap_node(
                         constants.RG_WRAPPER_LINENO,
-                        keyword.value,
+                        ast.Name(id='arg', ctx=ast.Load()),
+                        lineno=keyword.value.lineno,
+                        params=[
+                            ast.arg(arg='arg', annotation=None),
+                        ],
+                        args=[
+                            keyword.value,
+                        ],
                     )
                 )
                 for keyword in node.keywords
@@ -152,63 +192,68 @@ class CodeWrapper(ast.NodeTransformer):
                 function_call,
             ],
         )
-        self.generic_visit(node)
+
+        # TODO: Delete this when you're done with it.
+        import pprintast
+        pprintast.pprintast(wrapper_call)
+        print('')
+
         return wrapper_call
 
     def visit_ClassDef(self, node):
         """
         """
+        self.generic_visit(node)
         node.lineno = utils.encode_lineno(
             node.lineno,
             constants.CLASS_DEFN_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
-        self.generic_visit(node)
         return node
 
     def visit_Lambda(self, node):
         """
         """
+        self.generic_visit(node)
         lineno = node.lineno
         if lineno not in self.preprocessor.lambdas_by_line:
             self.preprocessor.lambdas_by_line[lineno] = []
         self.preprocessor.lambdas_by_line[lineno].append(node)
-        self.generic_visit(node)
         return node
 
     def visit_ListComp(self, node):
         """
         """
+        self.generic_visit(node)
         node.lineno = utils.encode_lineno(
             node.lineno,
             constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
-        self.generic_visit(node)
         return node
 
     def visit_SetComp(self, node):
         """
         """
+        self.generic_visit(node)
         node.lineno = utils.encode_lineno(
             node.lineno,
             constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
-        self.generic_visit(node)
         return node
 
     def visit_DictComp(self, node):
         """
         """
+        self.generic_visit(node)
         node.lineno = utils.encode_lineno(
             node.lineno,
             constants.CNTNR_COMP_LINENO,
             False,
             max_lineno=self.preprocessor.num_lines,
         )
-        self.generic_visit(node)
         return node
