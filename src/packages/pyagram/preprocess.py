@@ -12,6 +12,7 @@ class Preprocessor:
         self.code = code
         self.num_lines = len(code.split('\n'))
         self.ast = ast.parse(code)
+        self.new_node_linenos = []
         self.lambdas_by_line = {}
 
     @property
@@ -28,6 +29,7 @@ class Preprocessor:
         """
         code_wrapper = CodeWrapper(self)
         self.ast = code_wrapper.visit(self.ast)
+        self.update_linenos()
         self.encode_lambdas()
         ast.fix_missing_locations(self.ast)
         self.ast = compile(
@@ -35,6 +37,18 @@ class Preprocessor:
             filename=constants.USERCODE_FILENAME,
             mode='exec',
         )
+
+    def update_linenos(self):
+        """
+        """
+        while 0 < len(self.new_node_linenos):
+            node, step_code = self.new_node_linenos.pop(0)
+            node.lineno = utils.encode_lineno(
+                node.lineno,
+                step_code,
+                False,
+                max_lineno=self.num_lines,
+            )
 
     def encode_lambdas(self):
         """
@@ -57,6 +71,11 @@ class CodeWrapper(ast.NodeTransformer):
         super().__init__()
         self.preprocessor = preprocessor
 
+    def mod_lineno(self, node, step_code):
+        """
+        """
+        self.preprocessor.new_node_linenos.append((node, step_code))
+
     def visit_Call(self, node):
         """
         """
@@ -75,9 +94,7 @@ class CodeWrapper(ast.NodeTransformer):
             constants.INNER_CALL_LINENO,
             banner.Banner(self.preprocessor.code, node).elements,
         )
-
         self.generic_visit(node)
-
         function_call = ast.Call(
             func=self.insert_eager_call(
                 node.func.lineno,
@@ -123,8 +140,6 @@ class CodeWrapper(ast.NodeTransformer):
             ('call', function_call),
         )
 
-        # TODO: This code is copy/pasted 3x here (for starred args), for normal args, and for kwargs. Pls don't copy/paste. Also reconsider the `lineno` arg in insert_call.
-
         # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
 
         # TODO: Delete this when you're done with it.
@@ -138,12 +153,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
         """
         self.generic_visit(node)
-        node.lineno = utils.encode_lineno(
-            node.lineno,
-            constants.CLASS_DEFN_LINENO,
-            False,
-            max_lineno=self.preprocessor.num_lines,
-        )
+        self.mod_lineno(node, constants.CLASS_DEFN_LINENO)
         return node
 
     def visit_Lambda(self, node):
@@ -160,36 +170,21 @@ class CodeWrapper(ast.NodeTransformer):
         """
         """
         self.generic_visit(node)
-        node.lineno = utils.encode_lineno(
-            node.lineno,
-            constants.CNTNR_COMP_LINENO,
-            False,
-            max_lineno=self.preprocessor.num_lines,
-        )
+        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
         return node
 
     def visit_SetComp(self, node):
         """
         """
         self.generic_visit(node)
-        node.lineno = utils.encode_lineno(
-            node.lineno,
-            constants.CNTNR_COMP_LINENO,
-            False,
-            max_lineno=self.preprocessor.num_lines,
-        )
+        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
         return node
 
     def visit_DictComp(self, node):
         """
         """
         self.generic_visit(node)
-        node.lineno = utils.encode_lineno(
-            node.lineno,
-            constants.CNTNR_COMP_LINENO,
-            False,
-            max_lineno=self.preprocessor.num_lines,
-        )
+        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
         return node
 
     def insert_call(self, lineno, step_code, return_node, *, params, args):
@@ -211,13 +206,9 @@ class CodeWrapper(ast.NodeTransformer):
             func=function,
             args=args,
             keywords=[],
-            lineno=utils.encode_lineno(
-                lineno,
-                step_code,
-                False,
-                max_lineno=self.preprocessor.num_lines,
-            ),
+            lineno=lineno,
         )
+        self.mod_lineno(function_call, step_code)
         return function_call
 
     def insert_eager_call(self, lineno, step_code, return_node):
