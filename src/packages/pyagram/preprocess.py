@@ -139,14 +139,6 @@ class CodeWrapper(ast.NodeTransformer):
             ('info', banner_call),
             ('call', function_call),
         )
-
-        # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
-
-        # TODO: Delete this when you're done with it.
-        import pprintast
-        pprintast.pprintast(wrapper_call)
-        print('')
-
         return wrapper_call
 
     def visit_ClassDef(self, node):
