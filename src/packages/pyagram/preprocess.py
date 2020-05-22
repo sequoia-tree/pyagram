@@ -49,11 +49,9 @@ class Preprocessor:
                     max_lineno=self.num_lines,
                 )
 
-    def wrap_node(self, frame_code, return_node, *, lineno=None, params=[], args=[], keywords=[]):
+    def wrap_node(self, lineno, frame_code, return_node, *, params=[], args=[], keywords=[]):
         """
         """
-        if lineno is None:
-            lineno = return_node.lineno
         function = ast.Lambda(
             args=ast.arguments(
                 posonlyargs=params,
@@ -117,15 +115,16 @@ class CodeWrapper(ast.NodeTransformer):
         #                )
 
         banner_call = self.preprocessor.wrap_node(
+            node.lineno,
             constants.INNER_CALL_LINENO,
             banner.Banner(self.preprocessor.code, node).elements,
-            lineno=node.lineno,
         )
 
         self.generic_visit(node)
 
         function_call = ast.Call(
             func=self.preprocessor.wrap_node(
+                node.func.lineno,
                 constants.FN_WRAPPER_LINENO,
                 node.func,
             ),
@@ -133,9 +132,9 @@ class CodeWrapper(ast.NodeTransformer):
                 (
                     ast.Starred(
                         value=self.preprocessor.wrap_node(
+                            arg.value.lineno,
                             constants.RG_WRAPPER_LINENO,
                             ast.Name(id='arg', ctx=ast.Load()), # TODO: This code is copy/pasted 3x here (for starred args), for normal args, and for kwargs. Pls don't copy/paste. Also reconsider the `lineno` arg in wrap_node.
-                            lineno=arg.value.lineno,
                             params=[
                                 ast.arg(arg='arg', annotation=None),
                             ],
@@ -147,9 +146,9 @@ class CodeWrapper(ast.NodeTransformer):
                     )
                     if isinstance(arg, ast.Starred)
                     else self.preprocessor.wrap_node(
+                        arg.lineno,
                         constants.RG_WRAPPER_LINENO,
-                        ast.Name(id='arg', ctx=ast.Load()),
-                        lineno=arg.lineno, # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
+                        ast.Name(id='arg', ctx=ast.Load()), # TODO: The problem is that you visit the g(4) node first, and transform its lineno. But here, you assume arg.lineno is the original lineno for g(4). Big oops. I think you should maintain a stack of outer call nodes, which for now do not have modified linenos; after visiting everything, go thru the stack and change their linenos.
                         params=[
                             ast.arg(arg='arg', annotation=None),
                         ],
@@ -164,9 +163,9 @@ class CodeWrapper(ast.NodeTransformer):
                 ast.keyword(
                     arg=keyword.arg,
                     value=self.preprocessor.wrap_node(
+                        keyword.value.lineno,
                         constants.RG_WRAPPER_LINENO,
                         ast.Name(id='arg', ctx=ast.Load()),
-                        lineno=keyword.value.lineno,
                         params=[
                             ast.arg(arg='arg', annotation=None),
                         ],
@@ -180,9 +179,9 @@ class CodeWrapper(ast.NodeTransformer):
             lineno=node.lineno,
         )
         wrapper_call = self.preprocessor.wrap_node(
+            node.lineno,
             constants.OUTER_CALL_LINENO,
             ast.Name(id='call', ctx=ast.Load()),
-            lineno=node.lineno,
             params=[
                 ast.arg(arg='info', annotation=None),
                 ast.arg(arg='call', annotation=None),
