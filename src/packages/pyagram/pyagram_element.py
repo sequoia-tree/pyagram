@@ -208,10 +208,10 @@ class PyagramFrame(PyagramElement):
     def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None, generator=None):
         super().__init__(opened_by, state)
         self.frame = frame
-        self.function = function # TODO: For consistency, in this function, use 'function' rather than 'self.function' and 'generator' rather than 'self.generator' wherever possible.
+        self.function = function
         self.generator = generator
         if frame_type is None:
-            if self.generator is None:
+            if generator is None:
                 frame_type = enum.PyagramFrameTypes.FUNCTION
             else:
                 frame_type = enum.PyagramFrameTypes.GENERATOR
@@ -227,7 +227,7 @@ class PyagramFrame(PyagramElement):
             self.frame_number = self.state.program_state.register_frame()
         elif self.is_generator_frame:
             # TODO: This was quite possibly broken by the flag refactor.
-            self.state.memory_state.record_generator(self, self.generator)
+            self.state.memory_state.record_generator(self, generator)
             self.hide_from(0)
             self.throws_exc = False
         elif self.is_placeholder_frame:
