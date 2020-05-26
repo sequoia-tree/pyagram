@@ -440,7 +440,7 @@ class MemoryState:
         return [
             {
                 'id': id(object),
-                'object': self.state.encoder.object_snapshot(object),
+                'object': self.state.encoder.encode_object(object),
             }
             for object in self.objects
         ]

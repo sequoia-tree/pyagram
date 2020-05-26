@@ -81,9 +81,9 @@ class Postprocessor:
     def postprocess_memory_snapshot(self, snapshot_index, memory_snapshot):
         """
         """
-        for object_snapshot in memory_snapshot:
-            encoding = object_snapshot['object']['encoding']
-            snapshot = object_snapshot['object']['data']
+        for encode_object in memory_snapshot:
+            encoding = encode_object['object']['encoding']
+            snapshot = encode_object['object']['data']
             if encoding == 'obj_class':
                 class_frame = snapshot.pop('self')
                 snapshot['parents'] = None if class_frame.parents is None else [parent.__name__ for parent in class_frame.parents]
@@ -119,5 +119,5 @@ class Postprocessor:
     def encode_object_numbers(self):
         """
         """
-        for i, object_snapshot in enumerate(self.state.snapshots[-1]['memory_state']):
-            self.obj_numbers[object_snapshot['id']] = i + 1
+        for i, encode_object in enumerate(self.state.snapshots[-1]['memory_state']):
+            self.obj_numbers[encode_object['id']] = i + 1

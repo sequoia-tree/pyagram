@@ -24,60 +24,6 @@ class Encoder:
         raw_id = id(object)
         return self.state.memory_state.wrapped_obj_ids.get(raw_id, raw_id)
 
-    def reference_snapshot(self, object, *, is_bindings=False):
-        """
-        """
-        # TODO: Refactor this func
-        object_type = enum.ObjectTypes.identify_object_type(object)
-        if object_type is enum.ObjectTypes.PRIMITIVE:
-            return self.encode_primitive(object, is_bindings=is_bindings)
-        else:
-            return self.object_id(object)
-
-    def object_snapshot(self, object): # TODO: Rename to encode_object, and rename the above to encode_reference. In which case probably move them below encode_pyagram_frame.
-        """
-        """
-        object_type = enum.ObjectTypes.identify_object_type(object)
-        if object_type is enum.ObjectTypes.PRIMITIVE:
-            encoding = 'primitive'
-            data = self.encode_primitive(object)
-        elif object_type is enum.ObjectTypes.FUNCTION:
-            encoding = 'function'
-            data = self.encode_function(object)
-        elif object_type is enum.ObjectTypes.BUILTIN:
-            encoding = 'builtin'
-            data = self.encode_builtin(object)
-        elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
-            encoding = 'ordered_collection'
-            data = self.encode_collection(object)
-        elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
-            encoding = 'unordered_collection'
-            data = self.encode_collection(object)
-        elif object_type is enum.ObjectTypes.MAPPING:
-            encoding = 'mapping'
-            data = self.encode_mapping(object)
-        elif object_type is enum.ObjectTypes.ITERATOR:
-            encoding = 'iterator'
-            data = self.encode_iterator(object)
-        elif object_type is enum.ObjectTypes.GENERATOR:
-            encoding = 'generator'
-            data = self.encode_generator(object)
-        elif object_type is enum.ObjectTypes.OBJ_CLASS:
-            encoding = 'obj_class'
-            data = self.encode_obj_class(object)
-        elif object_type is enum.ObjectTypes.OBJ_INST:
-            encoding = 'obj_inst'
-            data = self.encode_obj_inst(object)
-        elif object_type is enum.ObjectTypes.OTHER:
-            encoding = 'other'
-            data = self.encode_other(object)
-        else:
-            raise enum.ObjectTypes.illegal_enum(object_type)
-        return {
-            'encoding': encoding,
-            'data': data,
-        }
-
     def encode_pyagram_flag(self, pyagram_flag):
         """
         """
@@ -104,6 +50,32 @@ class Encoder:
                     )
                 ],
             'self': pyagram_flag, # For postprocessing.
+        }
+
+    def encode_pyagram_frame(self, pyagram_frame):
+        """
+        """
+        return {
+            'type': 'function',
+            'is_curr_element': pyagram_frame is self.state.program_state.curr_element,
+            'name': repr(pyagram_frame),
+            'parent':
+                None
+                if pyagram_frame.parent is None
+                else repr(pyagram_frame.parent),
+            'bindings': self.encode_mapping(
+                pyagram_frame.bindings if pyagram_frame.shows_bindings else {},
+                is_bindings=True,
+            ),
+            'return_value':
+                self.encode_reference(pyagram_frame.return_value)
+                if pyagram_frame.shows_return_value
+                else None,
+            'from': None,
+            'flags': [
+                self.encode_pyagram_flag(flag)
+                for flag in pyagram_frame.flags
+            ],
         }
 
     def encode_banner_element(self, pyagram_flag, banner_element):
@@ -149,32 +121,6 @@ class Encoder:
             'bindings': bindings,
         }
 
-    def encode_pyagram_frame(self, pyagram_frame):
-        """
-        """
-        return {
-            'type': 'function',
-            'is_curr_element': pyagram_frame is self.state.program_state.curr_element,
-            'name': repr(pyagram_frame),
-            'parent':
-                None
-                if pyagram_frame.parent is None
-                else repr(pyagram_frame.parent),
-            'bindings': self.encode_mapping(
-                pyagram_frame.bindings if pyagram_frame.shows_bindings else {},
-                is_bindings=True,
-            ),
-            'return_value':
-                self.reference_snapshot(pyagram_frame.return_value)
-                if pyagram_frame.shows_return_value
-                else None,
-            'from': None,
-            'flags': [
-                self.encode_pyagram_flag(flag)
-                for flag in pyagram_frame.flags
-            ],
-        }
-
     def encode_caught_exc_info(self, caught_exc_info):
         """
         """
@@ -190,6 +136,60 @@ class Encoder:
                 max_lineno=self.num_lines,
             )
             return f'{type.__name__} (line {lineno}){ex_cause}'
+
+    def encode_reference(self, object, *, is_bindings=False):
+        """
+        """
+        # TODO: Refactor this func
+        object_type = enum.ObjectTypes.identify_object_type(object)
+        if object_type is enum.ObjectTypes.PRIMITIVE:
+            return self.encode_primitive(object, is_bindings=is_bindings)
+        else:
+            return self.object_id(object)
+
+    def encode_object(self, object):
+        """
+        """
+        object_type = enum.ObjectTypes.identify_object_type(object)
+        if object_type is enum.ObjectTypes.PRIMITIVE:
+            encoding = 'primitive'
+            data = self.encode_primitive(object)
+        elif object_type is enum.ObjectTypes.FUNCTION:
+            encoding = 'function'
+            data = self.encode_function(object)
+        elif object_type is enum.ObjectTypes.BUILTIN:
+            encoding = 'builtin'
+            data = self.encode_builtin(object)
+        elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
+            encoding = 'ordered_collection'
+            data = self.encode_collection(object)
+        elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
+            encoding = 'unordered_collection'
+            data = self.encode_collection(object)
+        elif object_type is enum.ObjectTypes.MAPPING:
+            encoding = 'mapping'
+            data = self.encode_mapping(object)
+        elif object_type is enum.ObjectTypes.ITERATOR:
+            encoding = 'iterator'
+            data = self.encode_iterator(object)
+        elif object_type is enum.ObjectTypes.GENERATOR:
+            encoding = 'generator'
+            data = self.encode_generator(object)
+        elif object_type is enum.ObjectTypes.OBJ_CLASS:
+            encoding = 'obj_class'
+            data = self.encode_obj_class(object)
+        elif object_type is enum.ObjectTypes.OBJ_INST:
+            encoding = 'obj_inst'
+            data = self.encode_obj_inst(object)
+        elif object_type is enum.ObjectTypes.OTHER:
+            encoding = 'other'
+            data = self.encode_other(object)
+        else:
+            raise enum.ObjectTypes.illegal_enum(object_type)
+        return {
+            'encoding': encoding,
+            'data': data,
+        }
 
     def encode_primitive(self, object, *, is_bindings=False):
         """
@@ -225,7 +225,7 @@ class Encoder:
                 'default':
                     None
                     if parameter.default is inspect.Parameter.empty
-                    else self.reference_snapshot(parameter.default),
+                    else self.encode_reference(parameter.default),
             })
         if slash_arg_index is not None:
             slash_arg = {
@@ -259,7 +259,7 @@ class Encoder:
         return {
             'type': type(object).__name__,
             'elements': [
-                self.reference_snapshot(item)
+                self.encode_reference(item)
                 for item in object
             ],
         }
@@ -271,15 +271,15 @@ class Encoder:
             items = [
                 {
                     'key': None,
-                    'value': self.reference_snapshot(value),
+                    'value': self.encode_reference(value),
                 }
                 for value in object
             ]
         else:
             items = [
                 {
-                    'key': self.reference_snapshot(key, is_bindings=is_bindings),
-                    'value': self.reference_snapshot(value),
+                    'key': self.encode_reference(key, is_bindings=is_bindings),
+                    'value': self.encode_reference(value),
                 }
                 for key, value in object.items()
                 if take(key)
@@ -297,7 +297,7 @@ class Encoder:
         """
         iterable = utils.get_iterable(object)
         return None if iterable is None else {
-            'object': self.reference_snapshot(iterable),
+            'object': self.encode_reference(iterable),
             'index': len(iterable) - object.__length_hint__(),
             'annotation':
                 constants.ITERATOR_ANNOTATIONS[type(object)]
@@ -327,10 +327,10 @@ class Encoder:
             frame_encoding.update({
                 'is_curr_element': frame is self.state.program_state.curr_element,
                 'return_value':
-                    self.reference_snapshot(frame.return_value)
+                    self.encode_reference(frame.return_value)
                     if frame.shows_return_value
                     else None,
-                'from': None if object.gi_yieldfrom is None else self.reference_snapshot(object.gi_yieldfrom),
+                'from': None if object.gi_yieldfrom is None else self.encode_reference(object.gi_yieldfrom),
             })
         else:
             frame_encoding.update({
