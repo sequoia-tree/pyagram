@@ -33,12 +33,8 @@ class PyagramFlag(PyagramElement):
 
     def __init__(self, opened_by, banner_elements, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        if banner_elements is None:
-            # TODO: This is totally broken now.
-            # TODO: Do you even need this if clause anymore?
-            banner_elements = []
         # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag.
-        self.banner_elements = banner_elements
+        self.banner_elements = [] if banner_elements is None else banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hidden_subflags = False
@@ -157,21 +153,40 @@ class PyagramFlag(PyagramElement):
                 raise enum.Enum.illegal_enum(parameter.kind)
         num_bindings = 0
         num_bindings = add_banner_element(function.__name__, num_bindings, constants.NORMAL_ARG)
+        # TODO: Implicit lambdas, eg in min(..., key=lambda ...), should not appear as "<lambda>". They should appear as the lambda symbol, with the proper subscript.
         if 0 < len(args):
             num_bindings = add_banner_element('...', num_bindings, constants.SINGLY_UNPACKED_ARG)
         if 0 < len(kwds):
             num_bindings = add_banner_element('...', num_bindings, constants.DOUBLY_UNPACKED_ARG)
         self.state.step()
-        self.banner_bindings.append(function)
+        self.register_callable(function)
         self.state.step()
         if 0 < len(args):
-            self.banner_bindings.append(args)
+            self.register_argument(args)
             self.state.step()
         if 0 < len(kwds):
-            self.banner_bindings.append(kwds)
+            self.register_argument(kwds)
             self.state.step()
-        # TODO: Here, where you append the function / args, it should call some helper that is also called by register_callable / register_argument.
-        # TODO: Implicit lambdas, eg in min(..., key=lambda ...), should not appear as "<lambda>". They should appear as the lambda symbol, with the proper subscript.
+
+    def register_callable(self, callable):
+        """
+        """
+        assert 0 == len(self.banner_bindings)
+        if type(callable) is type:
+            self.fix_init_banner()
+            callable = callable.__init__
+            # TODO: Make it work nicely for when the __init__ isn't user-defined (see the todo in PyagramFlag.step).
+            # TODO: I think you should test whether the callable is tracked already (or maybe whether it's a method, rather than a slot wrapper or method descriptor). If so, then proceed as normal. Otherwise, close the flag and hide it. (You should NOT display a flag for the instantiation of an object that has no user-defined __init__ method. That would get SO annoying.)
+        if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
+            # TODO: Make sure this is triggered by every callable that doesn't expose a frame.
+            self.is_builtin = True
+        self.banner_bindings.append(callable)
+
+    def register_argument(self, argument):
+        """
+        """
+        assert 0 < len(self.banner_bindings)
+        self.banner_bindings.append(argument)
 
     def add_frame(self, frame, frame_type, **init_args):
         """

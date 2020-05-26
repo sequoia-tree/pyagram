@@ -347,33 +347,14 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
-        assert self.is_ongoing_flag_sans_frame and 0 == len(self.curr_element.banner_bindings)
-        if type(callable) is type:
-            self.curr_element.fix_init_banner()
-            callable = callable.__init__
-            # TODO: Make it work nicely for when the __init__ isn't user-defined (see the todo in PyagramFlag.step).
-            # TODO: I think you should test whether the callable is tracked already (or maybe whether it's a method, rather than a slot wrapper or method descriptor). If so, then proceed as normal. Otherwise, close the flag and hide it. (You should NOT display a flag for the instantiation of an object that has no user-defined __init__ method. That would get SO annoying.)
-        if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
-
-            # Make sure this is triggered by EVERY callable that doesn't expose a frame to us.
-
-            self.curr_element.is_builtin = True
-
-            # TODO: Actually, don't open the frame here. Instead, just mark the flag as a builtin
-            # TODO: flag and give it the function. Then, before ...
-            # TODO:       (1) opening an implicit frame, or ...
-            # TODO:       (2) closing a flag ...
-            # TODO: ... check if the curr_element is a builtin flag. If so, Add the placeholder
-            # TODO: builtin frame, take a snapshot, close the placeholder frame, and continue.
-
-        self.curr_element.banner_bindings.append(callable) # TODO: Give the PyagramFlag a method (set_func) for this, and a method (set_arg or set_binding) for below.
-        # TODO: You may be able to avoid the necessity of giving each func a unique code object.
+        assert self.is_ongoing_flag_sans_frame
+        self.curr_element.register_callable(callable)
 
     def register_argument(self, frame, argument):
         """
         """
-        assert self.is_ongoing_flag_sans_frame and 0 < len(self.curr_element.banner_bindings)
-        self.curr_element.banner_bindings.append(argument)
+        assert self.is_ongoing_flag_sans_frame
+        self.curr_element.register_argument(argument)
 
     def register_frame(self):
         """
