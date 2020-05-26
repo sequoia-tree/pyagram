@@ -37,7 +37,7 @@ class PyagramFlag(PyagramElement):
         self.banner_elements = [] if banner_elements is None else banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
-        self.hidden_subflags = False
+        self.hidden_subflags = False # TODO: Rename to hide_flags.
         self.is_builtin = False
         self.frame = None
 
@@ -81,12 +81,6 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-
-        # TODO: This tracks the __init__ slot wrapper object. How do you want to handle it?
-        # class A:
-        #     pass
-        # a = A()
-
         if not self.is_hidden():
             referents = []
             for banner_element in self.banner_elements:
@@ -175,12 +169,15 @@ class PyagramFlag(PyagramElement):
         if type(callable) is type:
             self.fix_init_banner()
             callable = callable.__init__
-            # TODO: Make it work nicely for when the __init__ isn't user-defined (see the todo in PyagramFlag.step).
-            # TODO: I think you should test whether the callable is tracked already (or maybe whether it's a method, rather than a slot wrapper or method descriptor). If so, then proceed as normal. Otherwise, close the flag and hide it. (You should NOT display a flag for the instantiation of an object that has no user-defined __init__ method. That would get SO annoying.)
-        if enum.ObjectTypes.identify_object_type(callable) is enum.ObjectTypes.BUILTIN:
+        callable_type = enum.ObjectTypes.identify_object_type(callable)
+        if callable_type is enum.ObjectTypes.BUILTIN:
             # TODO: Make sure this is triggered by every callable that doesn't expose a frame.
             self.is_builtin = True
-        self.banner_bindings.append(callable)
+        if callable_type is enum.ObjectTypes.BUILTIN or callable_type is enum.ObjectTypes.FUNCTION:
+            self.banner_bindings.append(callable)
+        else:
+            self.hide_from(0)
+            self.hidden_subflags = True
 
     def register_argument(self, argument):
         """
@@ -199,6 +196,9 @@ class PyagramFlag(PyagramElement):
     def close(self):
         """
         """
+        if not self.has_returned:
+            self.hide_from(0)
+            self.hidden_subflags = True
         return self.opened_by
 
 class PyagramFrame(PyagramElement):

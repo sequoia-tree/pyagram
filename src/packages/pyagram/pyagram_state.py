@@ -294,7 +294,7 @@ class ProgramState:
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
         if self.is_frame:
             self.close_pyagram_frame(frame, return_value)
-        assert self.is_complete_flag
+        assert self.is_flag
         self.curr_element = self.curr_element.close()
 
     def close_pyagram_frame(self, frame, return_value):
