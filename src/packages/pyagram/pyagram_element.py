@@ -37,7 +37,7 @@ class PyagramFlag(PyagramElement):
         self.banner_elements = [] if banner_elements is None else banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
-        self.hidden_subflags = False # TODO: Rename to hide_flags.
+        self.hide_flags = False
         self.is_builtin = False
         self.frame = None
 
@@ -177,7 +177,7 @@ class PyagramFlag(PyagramElement):
             self.banner_bindings.append(callable)
         else:
             self.hide_from(0)
-            self.hidden_subflags = True
+            self.hide_flags = True
 
     def register_argument(self, argument):
         """
@@ -198,7 +198,7 @@ class PyagramFlag(PyagramElement):
         """
         if not self.has_returned:
             self.hide_from(0)
-            self.hidden_subflags = True
+            self.hide_flags = True # TODO: This should be an optional arg in the hide_from method.
         return self.opened_by
 
 class PyagramFrame(PyagramElement):

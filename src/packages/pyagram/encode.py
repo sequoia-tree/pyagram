@@ -42,7 +42,7 @@ class Encoder:
                 else self.encode_pyagram_frame(pyagram_flag.frame),
             'flags':
                 []
-                if pyagram_flag.hidden_subflags
+                if pyagram_flag.hide_flags
                 else [
                     self.encode_pyagram_flag(flag)
                     for flag in pyagram_flag.flags + (
