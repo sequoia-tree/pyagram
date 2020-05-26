@@ -293,8 +293,7 @@ class ProgramState:
         if self.is_builtin_flag:
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
         if self.is_frame:
-            self.close_pyagram_frame(frame, None)
-            # TODO: Make sure builtin PyagramFrames track their return values! Right now they don't.
+            self.close_pyagram_frame(frame, return_value)
         assert self.is_complete_flag
         self.curr_element = self.curr_element.close()
 
@@ -397,7 +396,7 @@ class MemoryState:
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
-        self.tracked_obj_ids = set()
+        self.tracked_obj_ids = set() # TODO: To see if an object is tracked, just use `object in self.objects`. In practice there will be very few (less than 50) objects, so it'll be sufficiently fast without adding any memory overhead.
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?

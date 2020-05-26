@@ -325,18 +325,19 @@ class PyagramFrame(PyagramElement):
     def step(self):
         """
         """
-        if self.shows_bindings:
-            self.bindings = self.get_bindings()
-            if not self.is_hidden():
-                referents = list(self.bindings.values())
-                if self.function is not None:
-                    referents.append(self.function)
-                if self.generator is not None:
-                    referents.append(self.generator)
-                if self.shows_return_value:
-                    referents.append(self.return_value)
-                for referent in referents:
-                    self.state.memory_state.track(referent)
+        if not self.is_hidden():
+            referents = []
+            if self.function is not None:
+                referents.append(self.function)
+            if self.generator is not None:
+                referents.append(self.generator)
+            if self.shows_bindings:
+                self.bindings = self.get_bindings()
+                referents.extend(self.bindings.values())
+            if self.shows_return_value:
+                referents.append(self.return_value)
+            for referent in referents:
+                self.state.memory_state.track(referent)
         super().step()
 
     def get_bindings(self):
