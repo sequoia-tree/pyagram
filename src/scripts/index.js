@@ -106,9 +106,7 @@ editor.session.on('change', function(delta) {
     Overlay.setTop(outputOverlay);
 });
 
-Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, function(newValue) {
-    drawSnapshot(newValue);
-});
+Slider.initializeSlider(slider, sliderLabel, sliderButtonL, sliderButtonR, true, drawSnapshot);
 
 Object.keys(visOptions).forEach(function(visOptionID) {
     visOptions[visOptionID].onclick = visOptionClick;
