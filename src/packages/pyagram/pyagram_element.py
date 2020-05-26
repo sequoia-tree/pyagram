@@ -171,6 +171,7 @@ class PyagramFlag(PyagramElement):
             self.banner_bindings.append(kwds)
             self.state.step()
         # TODO: Here, where you append the function / args, it should call some helper that is also called by register_callable / register_argument.
+        # TODO: Implicit lambdas, eg in min(..., key=lambda ...), should not appear as "<lambda>". They should appear as the lambda symbol, with the proper subscript.
 
     def add_frame(self, frame, frame_type, **init_args):
         """
@@ -192,7 +193,6 @@ class PyagramFrame(PyagramElement):
     def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None, generator=None):
         super().__init__(opened_by, state)
         self.frame = frame
-        self.is_new = True # TODO: Does every frame_type need this?
         self.function = function # TODO: For consistency, in this function, use 'function' rather than 'self.function' and 'generator' rather than 'self.generator' wherever possible.
         self.generator = generator
         if frame_type is None:
@@ -210,7 +210,6 @@ class PyagramFrame(PyagramElement):
             self.frame_number = self.state.program_state.register_frame()
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
-            self.state.memory_state.record_function(self, self.function) # TODO: Is this obsolete now?
         elif self.is_generator_frame:
             # TODO: This was quite possibly broken by the flag refactor.
             self.state.memory_state.record_generator(self, self.generator)

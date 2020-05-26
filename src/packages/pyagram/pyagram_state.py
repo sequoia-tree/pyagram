@@ -369,11 +369,11 @@ class ProgramState:
         self.curr_element.banner_bindings.append(callable) # TODO: Give the PyagramFlag a method (set_func) for this, and a method (set_arg or set_binding) for below.
         # TODO: You may be able to avoid the necessity of giving each func a unique code object.
 
-    def register_argument(self, frame, return_value):
+    def register_argument(self, frame, argument):
         """
         """
         assert self.is_ongoing_flag_sans_frame and 0 < len(self.curr_element.banner_bindings)
-        self.curr_element.banner_bindings.append(return_value)
+        self.curr_element.banner_bindings.append(argument)
 
     def register_frame(self):
         """
@@ -408,53 +408,50 @@ class MemoryState:
     def step(self):
         """
         """
-        if isinstance(self.state.program_state.curr_element, pyagram_element.PyagramFrame):
-            curr_frame = self.state.program_state.curr_element
-            for object in self.objects:
-                object_type = enum.ObjectTypes.identify_object_type(object)
-                if object_type is enum.ObjectTypes.PRIMITIVE:
-                    referents = []
-                elif object_type is enum.ObjectTypes.FUNCTION:
-                    self.record_function(curr_frame, object)
-                    referents = utils.get_defaults(object)
-                elif object_type is enum.ObjectTypes.BUILTIN:
-                    referents = []
-                elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
-                    referents = list(object)
-                elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
-                    referents = list(object)
-                elif object_type is enum.ObjectTypes.MAPPING:
-                    keys, values = list(object.keys()), list(object.values())
-                    referents = keys
-                    referents.extend(values)
-                elif object_type is enum.ObjectTypes.ITERATOR:
-                    iterable = utils.get_iterable(object)
-                    referents = [] if iterable is None else [iterable]
-                elif object_type is enum.ObjectTypes.GENERATOR:
-                    referents = [
-                        value
-                        for variable, value in inspect.getgeneratorlocals(object).items()
-                        if utils.is_genuine_binding(variable)
-                    ]
-                    if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
-                        referents.append(self.latest_gen_frames[object].return_value)
-                    if object.gi_yieldfrom is not None:
-                        referents.append(object.gi_yieldfrom)
-                elif object_type is enum.ObjectTypes.OBJ_CLASS:
-                    referents = [
-                        value
-                        for key, value in object.bindings.items()
-                        if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
-                    ]
-                elif object_type is enum.ObjectTypes.OBJ_INST:
-                    referents = object.__dict__.values()
-                elif object_type is enum.ObjectTypes.OTHER:
-                    referents = []
-                else:
-                    raise enum.ObjectTypes.illegal_enum(object_type)
-                for referent in referents:
-                    self.track(referent)
-            curr_frame.is_new = False
+        for object in self.objects:
+            object_type = enum.ObjectTypes.identify_object_type(object)
+            if object_type is enum.ObjectTypes.PRIMITIVE:
+                referents = []
+            elif object_type is enum.ObjectTypes.FUNCTION:
+                self.record_function(object)
+                referents = utils.get_defaults(object)
+            elif object_type is enum.ObjectTypes.BUILTIN:
+                referents = []
+            elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
+                referents = list(object)
+            elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
+                referents = list(object)
+            elif object_type is enum.ObjectTypes.MAPPING:
+                keys, values = list(object.keys()), list(object.values())
+                referents = keys
+                referents.extend(values)
+            elif object_type is enum.ObjectTypes.ITERATOR:
+                iterable = utils.get_iterable(object)
+                referents = [] if iterable is None else [iterable]
+            elif object_type is enum.ObjectTypes.GENERATOR:
+                referents = [
+                    value
+                    for variable, value in inspect.getgeneratorlocals(object).items()
+                    if utils.is_genuine_binding(variable)
+                ]
+                if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
+                    referents.append(self.latest_gen_frames[object].return_value)
+                if object.gi_yieldfrom is not None:
+                    referents.append(object.gi_yieldfrom)
+            elif object_type is enum.ObjectTypes.OBJ_CLASS:
+                referents = [
+                    value
+                    for key, value in object.bindings.items()
+                    if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
+                ]
+            elif object_type is enum.ObjectTypes.OBJ_INST:
+                referents = object.__dict__.values()
+            elif object_type is enum.ObjectTypes.OTHER:
+                referents = []
+            else:
+                raise enum.ObjectTypes.illegal_enum(object_type)
+            for referent in referents:
+                self.track(referent)
 
     def snapshot(self):
         """
@@ -501,16 +498,12 @@ class MemoryState:
         self.latest_gen_frames[generator] = pyagram_frame
         self.track(generator, enum.ObjectTypes.GENERATOR)
 
-    def record_function(self, pyagram_frame, function):
+    def record_function(self, function):
         """
         """
         if function not in self.function_parents:
             utils.assign_unique_code_object(function)
-            if pyagram_frame.is_new and pyagram_frame.opened_by is not None:
-                parent = pyagram_frame.opened_by
-                while isinstance(parent, pyagram_element.PyagramFlag):
-                    parent = parent.opened_by
-            else:
-                parent = pyagram_frame
+            parent = self.state.program_state.curr_element
+            while isinstance(parent, pyagram_element.PyagramFlag):
+                parent = parent.opened_by
             self.function_parents[function] = parent
-        self.track(function, enum.ObjectTypes.FUNCTION)
