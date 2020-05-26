@@ -20,7 +20,9 @@ class Encoder:
     def object_id(self, object):
         """
         """
-        # TODO: Refactor this func -- it gets the id we use to track an obj
+
+        # Get the ID that we use to track an object.
+
         raw_id = id(object)
         return self.state.memory_state.wrapped_obj_ids.get(raw_id, raw_id)
 
@@ -140,7 +142,6 @@ class Encoder:
     def encode_reference(self, object, *, is_bindings=False):
         """
         """
-        # TODO: Refactor this func
         object_type = enum.ObjectTypes.identify_object_type(object)
         if object_type is enum.ObjectTypes.PRIMITIVE:
             return self.encode_primitive(object, is_bindings=is_bindings)
