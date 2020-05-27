@@ -254,9 +254,10 @@ class ProgramState:
         """
         if self.is_frame:
             self.curr_element.hide_from(self.exception_index + 1)
-        while self.is_flag:
+        while self.is_flag or (self.is_frame and self.curr_element.is_builtin_frame):
             self.curr_element.hide_from(self.exception_index + 1)
-            self.curr_element.hide_flags = True
+            if self.is_flag:
+                self.curr_element.hide_flags = True
             self.curr_element = self.curr_element.opened_by
 
     def open_pyagram_flag(self, frame, banner_summary, **init_args):

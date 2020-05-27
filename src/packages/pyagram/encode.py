@@ -361,12 +361,13 @@ class Encoder:
     def encode_bltn_class(self, object):
         """
         """
+        # TODO: This is sloppy. Find a better way to encode all frame types with minimal cruft.
         return {
             'type': 'class',
-            'bltn': True, # TODO: This boolean is sloppy. Find a better general encoding for frames.
+            'bltn': True,
             'is_curr_element': False,
             'name': object.__name__,
-            'parents': object.__bases__, # Placeholder.
+            'parents': [parent.__name__ for parent in object.__bases__],
             'bindings': self.encode_mapping(
                 {},
                 is_bindings=True,
@@ -384,7 +385,7 @@ class Encoder:
             'bltn': False,
             'is_curr_element': False,
             'name': object.frame.f_code.co_name,
-            'parents': object.parents, # Placeholder.
+            'parents': None, # Placeholder.
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,
@@ -393,6 +394,7 @@ class Encoder:
             'return_value': None,
             'from': None,
             'flags': [],
+            'self': object, # For postprocessing.
         }
 
     def encode_obj_inst(self, object):
