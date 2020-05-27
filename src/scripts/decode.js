@@ -79,6 +79,8 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
             return Templates.PRIMITIVE_TEMPLATE(encodedObjectSnapshot.data);
         case 'function':
             return Templates.FUNCTION_TEMPLATE(encodedObjectSnapshot.data);
+        case 'method':
+            return Templates.METHOD_TEMPLATE(encodedObjectSnapshot.data);
         case 'builtin':
             return Templates.BUILTIN_TEMPLATE(encodedObjectSnapshot.data);
         case 'ordered_collection':

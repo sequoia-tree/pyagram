@@ -396,6 +396,14 @@ class MemoryState:
             elif object_type is enum.ObjectTypes.FUNCTION:
                 self.record_function(object)
                 referents = utils.get_defaults(object)
+            elif object_type is enum.ObjectTypes.METHOD:
+                function = object.__func__
+                instance = object.__self__
+                self.record_function(function)
+                referents = [
+                    instance,
+                    *utils.get_defaults(function),
+                ]
             elif object_type is enum.ObjectTypes.BUILTIN:
                 referents = []
             elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
@@ -404,8 +412,10 @@ class MemoryState:
                 referents = list(object)
             elif object_type is enum.ObjectTypes.MAPPING:
                 keys, values = list(object.keys()), list(object.values())
-                referents = keys
-                referents.extend(values)
+                referents = [
+                    *keys,
+                    *values,
+                ]
             elif object_type is enum.ObjectTypes.ITERATOR:
                 iterable = utils.get_iterable(object)
                 referents = [] if iterable is None else [iterable]

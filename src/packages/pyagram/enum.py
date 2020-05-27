@@ -69,6 +69,7 @@ class ObjectTypes(Enum):
 
     PRIMITIVE = object()
     FUNCTION = object()
+    METHOD = object()
     BUILTIN = object()
     ORDERED_COLLECTION = object()
     UNORDERED_COLLECTION = object()
@@ -88,6 +89,8 @@ class ObjectTypes(Enum):
             return ObjectTypes.PRIMITIVE
         elif object_type in constants.FUNCTION_TYPES:
             return ObjectTypes.FUNCTION
+        elif object_type in constants.METHOD_TYPES:
+            return ObjectTypes.METHOD
         elif object_type in constants.BUILTIN_TYPES:
             return ObjectTypes.BUILTIN
         elif object_type in constants.ORDERED_COLLECTION_TYPES:

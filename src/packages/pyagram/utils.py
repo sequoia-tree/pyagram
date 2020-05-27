@@ -41,7 +41,8 @@ def get_function(frame):
     """
     function = None
     for referrer in gc.get_referrers(frame.f_code):
-        # TODO: What if you call a non-function, like a user-defined slot wrapper or bound method? Perhaps those, and other callable types, should be included in constants.FUNCTION_TYPES. Consider these scenarios elsewhere in your code, too.
+        # TODO: What about slot wrappers and other atypical callables?
+        # TODO: Bound methods (i.e. ObjectTypes.METHOD) don't contain a ref to the code. They refer to the function (via .__func__), which refers to the code. If a bound method opens a frame, this will return the .__func__ of that bound method -- which should be fine.
         if enum.ObjectTypes.identify_object_type(referrer) is enum.ObjectTypes.FUNCTION:
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer
@@ -60,12 +61,6 @@ def get_generator(frame):
 def assign_unique_code_object(function):
     """
     """
-    if type(function) is types.FunctionType:
-        function = function
-    elif type(function) is types.MethodType:
-        function = function.__func__
-    else:
-        assert False
     function.__code__ = function.__code__.replace()
 
 def get_defaults(function):

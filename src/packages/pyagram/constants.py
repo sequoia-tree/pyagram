@@ -28,6 +28,8 @@ PRIMITIVE_TYPES = {
 }
 FUNCTION_TYPES = {
     types.FunctionType,
+}
+METHOD_TYPES = {
     types.MethodType,
 }
 BUILTIN_TYPES = {

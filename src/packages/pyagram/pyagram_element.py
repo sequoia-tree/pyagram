@@ -173,7 +173,9 @@ class PyagramFlag(PyagramElement):
         if callable_type is enum.ObjectTypes.BUILTIN:
             # TODO: Make sure this is triggered by every callable that doesn't expose a frame.
             self.is_builtin = True
-        if callable_type is enum.ObjectTypes.BUILTIN or callable_type is enum.ObjectTypes.FUNCTION:
+        if callable_type is enum.ObjectTypes.FUNCTION \
+            or callable_type is enum.ObjectTypes.METHOD \
+            or callable_type is enum.ObjectTypes.BUILTIN:
             self.banner_bindings.append(callable)
         else:
             self.hide_from(0)

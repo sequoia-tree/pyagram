@@ -256,6 +256,21 @@ export const FUNCTION_TEMPLATE = compile(`
 </div>
 `);
 
+export const METHOD_TEMPLATE = compile(`
+<span class="font-family-sans-serif">
+  method
+</span>
+<span class="pyagram-value">
+  {{~decodeReferenceSnapshot function~}}
+</span>
+<span class="font-family-sans-serif">
+  bound to
+</span>
+<span class="pyagram-value">
+  {{~decodeReferenceSnapshot instance~}}
+</span>
+`);
+
 export const BUILTIN_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   function
