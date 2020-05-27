@@ -172,6 +172,13 @@ export const FRAME_TEMPLATE = compile(`
       </tr>
     {{/unless}}
   </table>
+  {{#if (isEqual type 'class')}}
+    {{#if bltn}}
+      <div class="text-center">
+        ...
+      </div>
+    {{/if}}
+  {{/if}}
 </div>
 {{decodeElementSnapshot this}}
 `);

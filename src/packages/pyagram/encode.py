@@ -363,6 +363,7 @@ class Encoder:
         """
         return {
             'type': 'class',
+            'bltn': True, # TODO: This boolean is sloppy. Find a better general encoding for frames.
             'is_curr_element': False,
             'name': object.__name__,
             'parents': object.__bases__, # Placeholder.
@@ -380,6 +381,7 @@ class Encoder:
         """
         return {
             'type': 'class',
+            'bltn': False,
             'is_curr_element': False,
             'name': object.frame.f_code.co_name,
             'parents': object.parents, # Placeholder.
