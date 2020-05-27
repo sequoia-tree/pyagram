@@ -171,6 +171,7 @@ class PyagramFlag(PyagramElement):
             callable = callable.__init__
         self.banner_bindings.append(callable)
         if enum.ObjectTypes.identify_object_type(callable) not in {
+            # TODO: Is a callable user-defined iff it's an ObjectTypes.{FUNCTION, METHOD}?
             enum.ObjectTypes.FUNCTION,
             enum.ObjectTypes.METHOD,
         }:
