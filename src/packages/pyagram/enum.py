@@ -76,6 +76,7 @@ class ObjectTypes(Enum):
     MAPPING = object()
     ITERATOR = object()
     GENERATOR = object()
+    BLTN_CLASS = object()
     OBJ_CLASS = object()
     OBJ_INST = object()
     OTHER = object()
@@ -103,8 +104,10 @@ class ObjectTypes(Enum):
             return ObjectTypes.ITERATOR
         elif object_type in constants.GENERATOR_TYPES:
             return ObjectTypes.GENERATOR
+        elif object_type is type:
+            return ObjectTypes.BLTN_CLASS
         elif object_type is pyagram_wrapped_object.PyagramClassFrame:
-            return ObjectTypes.OBJ_CLASS
+            return ObjectTypes.OBJ_CLASS # TODO: Perhaps rename ot USER_CLASS.
         elif hasattr(object, '__dict__'):
             return ObjectTypes.OBJ_INST
         else:

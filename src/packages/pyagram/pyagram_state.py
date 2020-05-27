@@ -429,6 +429,8 @@ class MemoryState:
                     referents.append(self.latest_gen_frames[object].return_value)
                 if object.gi_yieldfrom is not None:
                     referents.append(object.gi_yieldfrom)
+            elif object_type is enum.ObjectTypes.BLTN_CLASS:
+                referents = []
             elif object_type is enum.ObjectTypes.OBJ_CLASS:
                 referents = [
                     value

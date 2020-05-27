@@ -179,6 +179,9 @@ class Encoder:
         elif object_type is enum.ObjectTypes.GENERATOR:
             encoding = 'generator'
             data = self.encode_generator(object)
+        elif object_type is enum.ObjectTypes.BLTN_CLASS:
+            encoding = 'obj_class'
+            data = self.encode_bltn_class(object)
         elif object_type is enum.ObjectTypes.OBJ_CLASS:
             encoding = 'obj_class'
             data = self.encode_obj_class(object)
@@ -355,6 +358,23 @@ class Encoder:
             'frame': frame_encoding,
         }
 
+    def encode_bltn_class(self, object):
+        """
+        """
+        return {
+            'type': 'class',
+            'is_curr_element': False,
+            'name': object.__name__,
+            'parents': object.__bases__, # Placeholder.
+            'bindings': self.encode_mapping(
+                {},
+                is_bindings=True,
+            ),
+            'return_value': None,
+            'from': None,
+            'flags': [],
+        }
+
     def encode_obj_class(self, object):
         """
         """
@@ -362,7 +382,7 @@ class Encoder:
             'type': 'class',
             'is_curr_element': False,
             'name': object.frame.f_code.co_name,
-            'parents': None, # Placeholder.
+            'parents': object.parents, # Placeholder.
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,
@@ -371,7 +391,6 @@ class Encoder:
             'return_value': None,
             'from': None,
             'flags': [],
-            'self': object, # For postprocessing.
         }
 
     def encode_obj_inst(self, object):
