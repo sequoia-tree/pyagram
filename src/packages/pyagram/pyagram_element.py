@@ -174,6 +174,8 @@ class PyagramFlag(PyagramElement):
             # TODO: Is a callable user-defined iff it's an ObjectTypes.{FUNCTION, METHOD}?
             # TODO: Ideally there'd be a way to know whether or not it's user-defined ....
             # TODO: Speaking of which, this may fail on some / all imported functions ....
+            # TODO: Maybe check that (it's a FUNCTION and __) or (it's a METHOD and ___) ?
+            # TODO: Maybe you could make use of the code object's filename or module name?
             enum.ObjectTypes.FUNCTION,
             enum.ObjectTypes.METHOD,
         }:

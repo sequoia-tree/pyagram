@@ -381,9 +381,13 @@ class MemoryState:
         self.tracked_obj_ids = set() # TODO: To see if an object is tracked, just use `object in self.objects`. In practice there will be very few (less than 50) objects, so it'll be sufficiently fast without adding any memory overhead.
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
+
         self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?
         self.generator_numbers = {} # TODO: You should combine gen_numbers and gen_parents into one.
         self.generator_parents = {}
+
+        self.generator_frames = {}
+
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 
