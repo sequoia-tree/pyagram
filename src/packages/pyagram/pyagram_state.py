@@ -1,6 +1,7 @@
 import gc
 import inspect
 
+from . import constants
 from . import encode
 from . import enum
 from . import pyagram_element
@@ -381,13 +382,7 @@ class MemoryState:
         self.tracked_obj_ids = set() # TODO: To see if an object is tracked, just use `object in self.objects`. In practice there will be very few (less than 50) objects, so it'll be sufficiently fast without adding any memory overhead.
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
-
-        self.latest_gen_frames = {} # TODO: Maybe combine these 3 dicts into a class or namedtuple?
-        self.generator_numbers = {} # TODO: You should combine gen_numbers and gen_parents into one.
-        self.generator_parents = {}
-
-        self.generator_frames = {}
-
+        self.pg_generator_frames = {}
         self.function_parents = {}
         # ------------------------------------------------------------------------------------------
 
@@ -395,10 +390,8 @@ class MemoryState:
         """
         """
         for object in self.objects:
-            object_type = enum.ObjectTypes.identify_object_type(object)
-            if object_type is enum.ObjectTypes.PRIMITIVE:
-                referents = []
-            elif object_type is enum.ObjectTypes.FUNCTION:
+            object_type = enum.ObjectTypes.identify_tracked_object_type(object)
+            if object_type is enum.ObjectTypes.FUNCTION:
                 self.record_function(object)
                 referents = utils.get_defaults(object)
             elif object_type is enum.ObjectTypes.METHOD:
@@ -427,22 +420,24 @@ class MemoryState:
             elif object_type is enum.ObjectTypes.GENERATOR:
                 referents = [
                     value
-                    for variable, value in inspect.getgeneratorlocals(object).items()
+                    for variable, value in inspect.getgeneratorlocals(object.generator).items()
                     if utils.is_genuine_binding(variable)
                 ]
-                if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
-                    referents.append(self.latest_gen_frames[object].return_value)
-                if object.gi_yieldfrom is not None:
-                    referents.append(object.gi_yieldfrom)
-            elif object_type is enum.ObjectTypes.BLTN_CLASS:
-                referents = []
-            elif object_type is enum.ObjectTypes.OBJ_CLASS:
+                # TODO: The return value is tracked in PyagramFrame.step right?
+                # if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
+                #     referents.append(self.latest_gen_frames[object].return_value)
+                if object.generator.gi_yieldfrom is not None:
+                    referents.append(object.generator.gi_yieldfrom)
+            elif object_type is enum.ObjectTypes.USER_CLASS:
                 referents = [
                     value
                     for key, value in object.bindings.items()
                     if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
                 ]
-            elif object_type is enum.ObjectTypes.OBJ_INST:
+            elif object_type is enum.ObjectTypes.BLTN_CLASS:
+                referents = []
+            elif object_type is enum.ObjectTypes.INSTANCE:
+                # TODO: What if the user writes instance.__dict__ = {(1, 2, 3): (4, 5, 6)}?
                 referents = object.__dict__.values()
             elif object_type is enum.ObjectTypes.OTHER:
                 referents = []
@@ -462,25 +457,20 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object, object_type=None):
+    def track(self, object, object_type=None): # TODO: Delete the unused object_type param.
         """
         """
-        if object_type is None:
-            object_type = enum.ObjectTypes.identify_object_type(object)
-        is_object = object_type is not enum.ObjectTypes.PRIMITIVE
-        is_unseen = id(object) not in self.tracked_obj_ids
-        is_masked = id(object) in self.wrapped_obj_ids
-        if is_object and is_unseen and not is_masked:
-            self.objects.append(object)
-            self.tracked_obj_ids.add(id(object))
-            if object_type is enum.ObjectTypes.GENERATOR:
-                generator_function = utils.get_function(object.gi_frame)
-                if generator_function is None:
-                    parent = self.state.program_state.curr_element
-                else:
-                    parent = self.function_parents[generator_function]
-                self.generator_numbers[object] = self.state.program_state.register_frame()
-                self.generator_parents[object] = parent
+        is_tracked = id(object) in self.tracked_obj_ids
+        is_wrapped = id(object) in self.wrapped_obj_ids
+        if not is_tracked and not is_wrapped:
+            object_type = enum.ObjectTypes.identify_raw_object_type(object)
+            if object_type is enum.ObjectTypes.PRIMITIVE:
+                pass
+            elif object_type is enum.ObjectTypes.GENERATOR:
+                pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
+            else:
+                self.objects.append(object)
+                self.tracked_obj_ids.add(id(object))
 
     def record_function(self, function):
         """
@@ -496,7 +486,9 @@ class MemoryState:
         """
         """
         self.track(generator, enum.ObjectTypes.GENERATOR)
-        self.latest_gen_frames[generator] = pyagram_frame
+        pg_generator_frame = self.pg_generator_frames[generator] # TODO: See if you still need this.
+        pg_generator_frame.prev_frame = pg_generator_frame.curr_frame
+        pg_generator_frame.curr_frame = pyagram_frame
 
     def record_class_frame(self, frame_object, class_object):
         """

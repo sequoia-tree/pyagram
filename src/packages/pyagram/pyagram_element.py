@@ -170,7 +170,7 @@ class PyagramFlag(PyagramElement):
             self.fix_init_banner()
             callable = callable.__init__
         self.banner_bindings.append(callable)
-        if enum.ObjectTypes.identify_object_type(callable) not in {
+        if enum.ObjectTypes.identify_raw_object_type(callable) not in {
             # TODO: Is a callable user-defined iff it's an ObjectTypes.{FUNCTION, METHOD}?
             # TODO: Ideally there'd be a way to know whether or not it's user-defined ....
             # TODO: Speaking of which, this may fail on some / all imported functions ....

@@ -76,13 +76,13 @@ class ObjectTypes(Enum):
     MAPPING = object()
     ITERATOR = object()
     GENERATOR = object()
+    USER_CLASS = object()
     BLTN_CLASS = object()
-    OBJ_CLASS = object()
-    OBJ_INST = object()
+    INSTANCE = object()
     OTHER = object()
 
     @staticmethod
-    def identify_object_type(object):
+    def identify_raw_object_type(object):
         """
         """
         object_type = type(object)
@@ -104,14 +104,35 @@ class ObjectTypes(Enum):
             return ObjectTypes.ITERATOR
         elif object_type in constants.GENERATOR_TYPES:
             return ObjectTypes.GENERATOR
-        elif object_type is type:
-            return ObjectTypes.BLTN_CLASS
-        elif object_type is pyagram_wrapped_object.PyagramClassFrame:
-            return ObjectTypes.OBJ_CLASS # TODO: Perhaps rename ot USER_CLASS.
-        elif hasattr(object, '__dict__'):
-            return ObjectTypes.OBJ_INST
         else:
             return ObjectTypes.OTHER
+
+    @staticmethod
+    def identify_tracked_object_type(object):
+        """
+        """
+        raw_object_type = ObjectTypes.identify_raw_object_type(object)
+        if raw_object_type is ObjectTypes.OTHER:
+            object_type = type(object)
+            if object_type is pyagram_wrapped_object.PyagramGeneratorFrame:
+                return ObjectTypes.GENERATOR
+            elif object_type is pyagram_wrapped_object.PyagramClassFrame:
+                return ObjectTypes.USER_CLASS
+            elif object_type is type:
+                return ObjectTypes.BLTN_CLASS
+            elif hasattr(object, '__dict__'):
+                return ObjectTypes.INSTANCE
+            else:
+                return ObjectTypes.OTHER
+        else:
+            assert raw_object_type not in {
+                ObjectTypes.PRIMITIVE,
+                ObjectTypes.GENERATOR,
+                ObjectTypes.USER_CLASS,
+                ObjectTypes.BLTN_CLASS,
+                ObjectTypes.INSTANCE,
+            }
+            return raw_object_type
 
 class UnpackingTypes(Enum):
     """

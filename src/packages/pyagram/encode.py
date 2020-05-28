@@ -142,20 +142,17 @@ class Encoder:
     def encode_reference(self, object, *, is_bindings=False):
         """
         """
-        object_type = enum.ObjectTypes.identify_object_type(object)
+        object_type = enum.ObjectTypes.identify_raw_object_type(object)
         if object_type is enum.ObjectTypes.PRIMITIVE:
-            return self.encode_primitive(object, is_bindings=is_bindings)
+            return str(object) if is_bindings or type(object) is not str else repr(object)
         else:
             return self.object_id(object)
 
     def encode_object(self, object):
         """
         """
-        object_type = enum.ObjectTypes.identify_object_type(object)
-        if object_type is enum.ObjectTypes.PRIMITIVE:
-            encoding = 'primitive'
-            data = self.encode_primitive(object)
-        elif object_type is enum.ObjectTypes.FUNCTION:
+        object_type = enum.ObjectTypes.identify_tracked_object_type(object)
+        if object_type is enum.ObjectTypes.FUNCTION:
             encoding = 'function'
             data = self.encode_function(object)
         elif object_type is enum.ObjectTypes.METHOD:
@@ -179,13 +176,13 @@ class Encoder:
         elif object_type is enum.ObjectTypes.GENERATOR:
             encoding = 'generator'
             data = self.encode_generator(object)
+        elif object_type is enum.ObjectTypes.USER_CLASS:
+            encoding = 'obj_class'
+            data = self.encode_obj_class(object)
         elif object_type is enum.ObjectTypes.BLTN_CLASS:
             encoding = 'obj_class'
             data = self.encode_bltn_class(object)
-        elif object_type is enum.ObjectTypes.OBJ_CLASS:
-            encoding = 'obj_class'
-            data = self.encode_obj_class(object)
-        elif object_type is enum.ObjectTypes.OBJ_INST:
+        elif object_type is enum.ObjectTypes.INSTANCE:
             encoding = 'obj_inst'
             data = self.encode_obj_inst(object)
         elif object_type is enum.ObjectTypes.OTHER:
@@ -197,11 +194,6 @@ class Encoder:
             'encoding': encoding,
             'data': data,
         }
-
-    def encode_primitive(self, object, *, is_bindings=False):
-        """
-        """
-        return str(object) if is_bindings or type(object) is not str else repr(object)
 
     def encode_function(self, object):
         """
@@ -323,29 +315,36 @@ class Encoder:
     def encode_generator(self, object):
         """
         """
-        latest_gen_frames = self.state.memory_state.latest_gen_frames
-        generator_numbers = self.state.memory_state.generator_numbers
-        generator_parents = self.state.memory_state.generator_parents
         frame_encoding = {
             'type': 'generator',
-            'name': f'Frame {generator_numbers[object]}',
-            'parent': repr(generator_parents[object]),
+            'name': f'Frame {object.number}',
+            'parent': repr(object.parent),
             'bindings': self.encode_mapping(
-                inspect.getgeneratorlocals(object),
+                inspect.getgeneratorlocals(object.generator),
                 is_bindings=True,
                 take=utils.is_genuine_binding,
             ),
             'flags': [],
         }
-        if object in latest_gen_frames:
-            frame = latest_gen_frames[object]
+        # if object in latest_gen_frames:
+        #     frame = latest_gen_frames[object]
+        #     frame_encoding.update({
+        #         'is_curr_element': frame is self.state.program_state.curr_element,
+        #         'return_value':
+        #             self.encode_reference(frame.return_value)
+        #             if frame.shows_return_value
+        #             else None,
+        #         'from': None if object.gi_yieldfrom is None else self.encode_reference(object.gi_yieldfrom),
+        #     })
+        # TODO
+        if object.curr_frame is not None:
             frame_encoding.update({
-                'is_curr_element': frame is self.state.program_state.curr_element,
+                'is_curr_element': object.curr_frame is self.state.program_state.curr_element,
                 'return_value':
-                    self.encode_reference(frame.return_value)
-                    if frame.shows_return_value
-                    else None,
-                'from': None if object.gi_yieldfrom is None else self.encode_reference(object.gi_yieldfrom),
+                    self.encode_reference(object.return_frame.return_value)
+                    if object.return_frame is not None and object.return_frame.shows_return_value
+                    else None, # TODO
+                'from': None, # TODO
             })
         else:
             frame_encoding.update({
@@ -354,7 +353,7 @@ class Encoder:
                 'from': None,
             })
         return {
-            'name': object.__name__,
+            'name': object.generator.__name__,
             'frame': frame_encoding,
         }
 

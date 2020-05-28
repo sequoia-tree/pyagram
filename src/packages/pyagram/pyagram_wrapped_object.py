@@ -1,4 +1,5 @@
 from . import enum
+from . import utils
 
 class PyagramWrappedObject:
     """
@@ -16,6 +17,31 @@ class PyagramWrappedObject:
         """
         self.state.memory_state.wrapped_obj_ids[id(object)] = id(self)
 
+class PyagramGeneratorFrame(PyagramWrappedObject):
+    """
+    """
+
+    def __init__(self, generator, *, state):
+        super().__init__(state, object_type=enum.ObjectTypes.GENERATOR)
+        state.memory_state.pg_generator_frames[generator] = self
+        self.generator = generator
+        self.wrap_object(generator)
+        generator_function = utils.get_function(generator.gi_frame)
+        if generator_function is None:
+            parent = state.program_state.curr_element
+        else:
+            parent = state.memory_state.function_parents[generator_function]
+        self.number = self.state.program_state.register_frame()
+        self.parent = parent
+        self.prev_frame = None
+        self.curr_frame = None
+
+    @property
+    def return_frame(self):
+        """
+        """
+        return self.curr_frame if self.curr_frame.shows_return_value else self.prev_frame
+
 class PyagramClassFrame(PyagramWrappedObject):
     """
     """
@@ -30,7 +56,7 @@ class PyagramClassFrame(PyagramWrappedObject):
     }
 
     def __init__(self, frame, *, state):
-        super().__init__(state, object_type=enum.ObjectTypes.OBJ_CLASS)
+        super().__init__(state, object_type=enum.ObjectTypes.USER_CLASS)
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
         self.bindings = frame.f_locals

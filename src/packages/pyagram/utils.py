@@ -43,7 +43,7 @@ def get_function(frame):
     for referrer in gc.get_referrers(frame.f_code):
         # TODO: What about slot wrappers and other atypical callables?
         # TODO: Bound methods (i.e. ObjectTypes.METHOD) don't contain a ref to the code. They refer to the function (via .__func__), which refers to the code. If a bound method opens a frame, this will return the .__func__ of that bound method -- which should be fine.
-        if enum.ObjectTypes.identify_object_type(referrer) is enum.ObjectTypes.FUNCTION:
+        if enum.ObjectTypes.identify_raw_object_type(referrer) is enum.ObjectTypes.FUNCTION:
             assert function is None, f'multiple functions refer to code object {frame.f_code}'
             function = referrer
     return function

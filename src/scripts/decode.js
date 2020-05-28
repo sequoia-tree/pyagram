@@ -75,8 +75,6 @@ export function decodeObjectIdSnapshot(objectIdSnapshot) {
 Handlebars.registerHelper('decodeEncodedObjectSnapshot', decodeEncodedObjectSnapshot);
 export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
     switch (encodedObjectSnapshot.encoding) {
-        case 'primitive':
-            return Templates.PRIMITIVE_TEMPLATE(encodedObjectSnapshot.data);
         case 'function':
             return Templates.FUNCTION_TEMPLATE(encodedObjectSnapshot.data);
         case 'method':
