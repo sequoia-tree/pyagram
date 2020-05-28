@@ -482,20 +482,6 @@ class MemoryState:
                 self.generator_numbers[object] = self.state.program_state.register_frame()
                 self.generator_parents[object] = parent
 
-    def record_class_frame(self, frame_object, class_object):
-        """
-        """
-        pyagram_class_frame = self.pg_class_frames[frame_object]
-        pyagram_class_frame.wrap_object(class_object)
-        pyagram_class_frame.bindings = class_object.__dict__
-        pyagram_class_frame.parents = class_object.__bases__
-
-    def record_generator(self, pyagram_frame, generator):
-        """
-        """
-        self.latest_gen_frames[generator] = pyagram_frame
-        self.track(generator, enum.ObjectTypes.GENERATOR)
-
     def record_function(self, function):
         """
         """
@@ -505,3 +491,17 @@ class MemoryState:
             while isinstance(parent, pyagram_element.PyagramFlag):
                 parent = parent.opened_by
             self.function_parents[function] = parent
+
+    def record_generator(self, pyagram_frame, generator):
+        """
+        """
+        self.track(generator, enum.ObjectTypes.GENERATOR)
+        self.latest_gen_frames[generator] = pyagram_frame
+
+    def record_class_frame(self, frame_object, class_object):
+        """
+        """
+        pyagram_class_frame = self.pg_class_frames[frame_object]
+        pyagram_class_frame.wrap_object(class_object)
+        pyagram_class_frame.bindings = class_object.__dict__
+        pyagram_class_frame.parents = class_object.__bases__
