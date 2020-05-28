@@ -457,7 +457,7 @@ class MemoryState:
             for object in self.objects
         ]
 
-    def track(self, object, object_type=None): # TODO: Delete the unused object_type param.
+    def track(self, object):
         """
         """
         is_tracked = id(object) in self.tracked_obj_ids
@@ -485,7 +485,7 @@ class MemoryState:
     def record_generator(self, pyagram_frame, generator):
         """
         """
-        self.track(generator, enum.ObjectTypes.GENERATOR)
+        self.track(generator)
         pg_generator_frame = self.pg_generator_frames[generator] # TODO: See if you still need this.
         pg_generator_frame.prev_frame = pg_generator_frame.curr_frame
         pg_generator_frame.curr_frame = pyagram_frame

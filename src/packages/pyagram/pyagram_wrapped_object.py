@@ -5,11 +5,8 @@ class PyagramWrappedObject:
     """
     """
 
-    def __init__(self, state, *, object_type=None):
-        if object_type is None:
-            state.memory_state.track(self)
-        else:
-            state.memory_state.track(self, object_type)
+    def __init__(self, state):
+        state.memory_state.track(self)
         self.state = state
 
     def wrap_object(self, object):
@@ -22,7 +19,7 @@ class PyagramGeneratorFrame(PyagramWrappedObject):
     """
 
     def __init__(self, generator, *, state):
-        super().__init__(state, object_type=enum.ObjectTypes.GENERATOR)
+        super().__init__(state)
         state.memory_state.pg_generator_frames[generator] = self
         self.generator = generator
         self.wrap_object(generator)
@@ -56,7 +53,7 @@ class PyagramClassFrame(PyagramWrappedObject):
     }
 
     def __init__(self, frame, *, state):
-        super().__init__(state, object_type=enum.ObjectTypes.USER_CLASS)
+        super().__init__(state)
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
         self.bindings = frame.f_locals
