@@ -228,7 +228,6 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             self.frame_number = self.state.program_state.register_frame()
         elif self.is_generator_frame:
-            # TODO: This was quite possibly broken by the flag refactor.
             self.state.memory_state.record_generator(self, generator) # TODO: Do you need this?
             self.hide_from(0)
             self.yield_from = None

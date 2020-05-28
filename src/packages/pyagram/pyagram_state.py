@@ -235,7 +235,7 @@ class ProgramState:
             is_generator_exception = self.is_frame \
                 and len(self.curr_element.flags) == 1 \
                 and self.curr_element.flags[0].frame is not None \
-                and self.curr_element.flags[0].frame.is_generator_frame
+                and self.curr_element.flags[0].frame.is_generator_frame # TODO: Revisit this later.
             if is_placeholder_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.opened_by.opened_by
