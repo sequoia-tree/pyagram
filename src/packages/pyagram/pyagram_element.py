@@ -250,7 +250,7 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             return f'Frame {self.frame_number}'
         elif self.is_generator_frame:
-            return f'Frame {self.state.memory_state.generator_numbers[self.generator]}'
+            return f'Frame {self.state.memory_state.pg_generator_frames[self.generator].number}'
         elif self.is_placeholder_frame:
             return '...'
         else:
@@ -297,7 +297,7 @@ class PyagramFrame(PyagramElement):
         elif self.is_function_frame:
             return self.state.memory_state.function_parents[self.function]
         elif self.is_generator_frame:
-            return self.state.memory_state.generator_parents[self.generator]
+            return self.state.memory_state.pg_generator_frames[self.generator].parent
         elif self.is_placeholder_frame:
             return None
         else:

@@ -231,7 +231,7 @@ class ProgramState:
             self.caught_exc_info = caught_exc_info
             self.exception_index = len(self.state.snapshots)
             is_placeholder_exception = self.is_frame \
-                and self.curr_element.is_placeholder_frame
+                and self.curr_element.is_placeholder_frame # TODO: Revisit this after revisiting comprehensions.
             is_generator_exception = self.is_flag \
                 and self.curr_element.frame is not None \
                 and self.curr_element.frame.is_generator_frame
