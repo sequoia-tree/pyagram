@@ -271,7 +271,7 @@ class Encoder:
             ],
         }
 
-    def encode_mapping(self, object, *, keyless=False, is_bindings=False, take=lambda key: True):
+    def encode_mapping(self, object, *, keyless=False, is_bindings=False):
         """
         """
         if keyless:
@@ -289,7 +289,6 @@ class Encoder:
                     'value': self.encode_reference(value),
                 }
                 for key, value in object.items()
-                if take(key)
             ]
         if is_bindings:
             return items
@@ -325,9 +324,8 @@ class Encoder:
                 'name': f'Frame {object.number}',
                 'parent': repr(object.parent),
                 'bindings': self.encode_mapping(
-                    inspect.getgeneratorlocals(object.generator),
+                    object.bindings,
                     is_bindings=True,
-                    take=utils.is_genuine_binding,
                 ),
                 'is_curr_element':
                     False
@@ -376,7 +374,6 @@ class Encoder:
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,
-                take=lambda key: key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS,
             ),
             'return_value': None,
             'from': None,

@@ -419,23 +419,9 @@ class MemoryState:
                 iterable = utils.get_iterable(object)
                 referents = [] if iterable is None else [iterable]
             elif object_type is enum.ObjectTypes.GENERATOR:
-                referents = [
-                    value
-                    for variable, value in inspect.getgeneratorlocals(object.generator).items()
-                    if utils.is_genuine_binding(variable)
-                ]
-                results = object.results
-                if results is not None:
-                    return_value, yield_from = results
-                    referents.append(return_value)
-                    if yield_from is not None:
-                        referents.append(yield_from)
+                referents = []
             elif object_type is enum.ObjectTypes.USER_CLASS:
-                referents = [
-                    value
-                    for key, value in object.bindings.items()
-                    if key not in pyagram_wrapped_object.PyagramClassFrame.HIDDEN_BINDINGS
-                ]
+                referents = object.bindings.values()
             elif object_type is enum.ObjectTypes.BLTN_CLASS:
                 referents = []
             elif object_type is enum.ObjectTypes.INSTANCE:
@@ -497,5 +483,5 @@ class MemoryState:
         """
         pyagram_class_frame = self.pg_class_frames[frame_object]
         pyagram_class_frame.wrap_object(class_object)
-        pyagram_class_frame.bindings = class_object.__dict__
+        pyagram_class_frame.locals = class_object.__dict__
         pyagram_class_frame.parents = class_object.__bases__

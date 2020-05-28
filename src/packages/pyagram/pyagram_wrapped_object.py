@@ -34,6 +34,12 @@ class PyagramGeneratorFrame(PyagramWrappedObject):
         self.curr_frame = None
 
     @property
+    def bindings(self):
+        """
+        """
+        return {} if self.curr_frame is None else self.curr_frame.bindings
+
+    @property
     def results(self):
         """
         """
@@ -60,5 +66,15 @@ class PyagramClassFrame(PyagramWrappedObject):
         super().__init__(state)
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
-        self.bindings = frame.f_locals
+        self.locals = frame.f_locals # TODO: Come up with a better name than locals.
         self.parents = None
+
+    @property
+    def bindings(self):
+        """
+        """
+        return {
+            variable: value
+            for variable, value in self.locals.items()
+            if variable not in PyagramClassFrame.HIDDEN_BINDINGS
+        }

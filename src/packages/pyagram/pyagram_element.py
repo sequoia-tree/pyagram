@@ -341,7 +341,7 @@ class PyagramFrame(PyagramElement):
     def step(self):
         """
         """
-        if not self.is_hidden():
+        if self.is_generator_frame or not self.is_hidden():
             referents = []
             if self.function is not None:
                 referents.append(self.function)
@@ -352,6 +352,8 @@ class PyagramFrame(PyagramElement):
                 referents.extend(self.bindings.values())
             if self.shows_return_value:
                 referents.append(self.return_value)
+            if self.is_generator_frame and self.yield_from is not None:
+                referents.append(self.yield_from)
             for referent in referents:
                 self.state.memory_state.track(referent)
         super().step()
@@ -375,6 +377,7 @@ class PyagramFrame(PyagramElement):
         return {
             variable: self.frame.f_locals[variable]
             for variable in sorted_binding_names
+            # if not self.is_generator_frame or utils.is_genuine_binding(variable) # TODO: Revisit this when you get around to re-implementing generator comprehensions. If you don't need utils.is_genuine_bindings anymore, delete it.
         }
 
     def close(self, return_value, *, is_gen_exc=False):
