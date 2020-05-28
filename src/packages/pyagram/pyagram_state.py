@@ -423,11 +423,12 @@ class MemoryState:
                     for variable, value in inspect.getgeneratorlocals(object.generator).items()
                     if utils.is_genuine_binding(variable)
                 ]
-                # TODO: The return value is tracked in PyagramFrame.step right?
-                # if object in self.latest_gen_frames and self.latest_gen_frames[object].shows_return_value:
-                #     referents.append(self.latest_gen_frames[object].return_value)
-                if object.generator.gi_yieldfrom is not None:
-                    referents.append(object.generator.gi_yieldfrom)
+                results = object.results
+                if results is not None:
+                    return_value, yield_from = results
+                    referents.append(return_value)
+                    if yield_from is not None:
+                        referents.append(yield_from)
             elif object_type is enum.ObjectTypes.USER_CLASS:
                 referents = [
                     value
@@ -486,7 +487,7 @@ class MemoryState:
         """
         """
         self.track(generator)
-        pg_generator_frame = self.pg_generator_frames[generator] # TODO: See if you still need this.
+        pg_generator_frame = self.pg_generator_frames[generator]
         pg_generator_frame.prev_frame = pg_generator_frame.curr_frame
         pg_generator_frame.curr_frame = pyagram_frame
 

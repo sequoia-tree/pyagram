@@ -34,10 +34,14 @@ class PyagramGeneratorFrame(PyagramWrappedObject):
         self.curr_frame = None
 
     @property
-    def return_frame(self):
+    def results(self):
         """
         """
-        return self.curr_frame if self.curr_frame.shows_return_value else self.prev_frame
+        if self.curr_frame is not None and self.curr_frame.shows_return_value:
+            return self.curr_frame.return_value, self.curr_frame.yield_from
+        if self.prev_frame is not None and self.prev_frame.shows_return_value:
+            return self.prev_frame.return_value, self.prev_frame.yield_from
+        return None
 
 class PyagramClassFrame(PyagramWrappedObject):
     """

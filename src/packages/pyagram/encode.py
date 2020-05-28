@@ -315,46 +315,34 @@ class Encoder:
     def encode_generator(self, object):
         """
         """
-        frame_encoding = {
-            'type': 'generator',
-            'name': f'Frame {object.number}',
-            'parent': repr(object.parent),
-            'bindings': self.encode_mapping(
-                inspect.getgeneratorlocals(object.generator),
-                is_bindings=True,
-                take=utils.is_genuine_binding,
-            ),
-            'flags': [],
-        }
-        # if object in latest_gen_frames:
-        #     frame = latest_gen_frames[object]
-        #     frame_encoding.update({
-        #         'is_curr_element': frame is self.state.program_state.curr_element,
-        #         'return_value':
-        #             self.encode_reference(frame.return_value)
-        #             if frame.shows_return_value
-        #             else None,
-        #         'from': None if object.gi_yieldfrom is None else self.encode_reference(object.gi_yieldfrom),
-        #     })
-        # TODO
-        if object.curr_frame is not None:
-            frame_encoding.update({
-                'is_curr_element': object.curr_frame is self.state.program_state.curr_element,
-                'return_value':
-                    self.encode_reference(object.return_frame.return_value)
-                    if object.return_frame is not None and object.return_frame.shows_return_value
-                    else None, # TODO
-                'from': None, # TODO
-            })
-        else:
-            frame_encoding.update({
-                'is_curr_element': False,
-                'return_value': None,
-                'from': None,
-            })
+        results = object.results
+        if results is not None:
+            return_value, yield_from = results
         return {
             'name': object.generator.__name__,
-            'frame': frame_encoding,
+            'frame': {
+                'type': 'generator',
+                'name': f'Frame {object.number}',
+                'parent': repr(object.parent),
+                'bindings': self.encode_mapping(
+                    inspect.getgeneratorlocals(object.generator),
+                    is_bindings=True,
+                    take=utils.is_genuine_binding,
+                ),
+                'is_curr_element':
+                    False
+                    if object.curr_frame is None
+                    else (object.curr_frame is self.state.program_state.curr_element),
+                'return_value':
+                    None
+                    if results is None
+                    else self.encode_reference(return_value),
+                'from':
+                    None
+                    if results is None or yield_from is None
+                    else self.encode_reference(yield_from),
+                'flags': [],
+            },
         }
 
     def encode_bltn_class(self, object):
