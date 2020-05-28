@@ -232,15 +232,16 @@ class ProgramState:
             self.exception_index = len(self.state.snapshots)
             is_placeholder_exception = self.is_frame \
                 and self.curr_element.is_placeholder_frame # TODO: Revisit this after revisiting comprehensions.
-            is_generator_exception = self.is_flag \
-                and self.curr_element.frame is not None \
-                and self.curr_element.frame.is_generator_frame
+            is_generator_exception = self.is_frame \
+                and len(self.curr_element.flags) == 1 \
+                and self.curr_element.flags[0].frame is not None \
+                and self.curr_element.flags[0].frame.is_generator_frame
             if is_placeholder_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.opened_by.opened_by
             if is_generator_exception:
                 exception_element = self.curr_element
-                self.curr_element = self.curr_element.frame
+                self.curr_element = self.curr_element.flags[0].frame
             def finish_step():
                 if is_placeholder_exception or is_generator_exception:
                     self.curr_element = exception_element
