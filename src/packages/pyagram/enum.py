@@ -56,7 +56,7 @@ class FrameTypes(Enum):
         else:
             raise FrameTypes.illegal_enum(step_code)
 
-class FlagTypes(Enum):
+class PyagramFlagTypes(Enum):
     """
     """
 

@@ -62,8 +62,8 @@ class ProgramState:
         self.state = state
         self.global_frame = pyagram_element.PyagramFrame(
             None,
-            global_frame,
             enum.PyagramFrameTypes.GLOBAL,
+            global_frame,
             state=state,
         )
         self.curr_element = self.global_frame
@@ -273,14 +273,22 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-        self.curr_element = self.curr_element.add_flag(banner_summary, **init_args)
+        self.curr_element = self.curr_element.add_flag(
+            enum.PyagramFlagTypes.CALL,
+            banner_summary,
+            **init_args,
+        )
 
-    def open_pyagram_frame(self, frame, frame_type, **init_args):
+    def open_pyagram_frame(self, frame, pyagram_frame_type, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        self.curr_element = self.curr_element.add_frame(frame, frame_type, **init_args)
-        if frame_type is enum.PyagramFrameTypes.BUILTIN:
+        self.curr_element = self.curr_element.add_frame(
+            pyagram_frame_type,
+            frame,
+            **init_args,
+        )
+        if pyagram_frame_type is enum.PyagramFrameTypes.BUILTIN:
             self.state.snapshot()
 
     def open_class_frame(self, frame):

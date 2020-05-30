@@ -20,10 +20,10 @@ class PyagramElement:
         for flag in self.flags:
             flag.step()
 
-    def add_flag(self, banner_summary, **init_args):
+    def add_flag(self, pyagram_flag_type, banner_summary, **init_args):
         """
         """
-        flag = PyagramFlag(self, banner_summary, **init_args)
+        flag = PyagramFlag(self, pyagram_flag_type, banner_summary, **init_args)
         self.flags.append(flag)
         return flag
 
@@ -31,9 +31,10 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, banner_elements, hidden_snapshot=math.inf, *, state=None):
+    def __init__(self, opened_by, flag_type, banner_elements, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag.
+        # TODO: Use flag_type.
+        # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag. Also consider whether you need hide_flags -- or whether you'll must make it so that a hidden flag's subflags are hidden regardless.
         self.banner_elements = [] if banner_elements is None else banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
@@ -182,11 +183,11 @@ class PyagramFlag(PyagramElement):
         assert 0 < len(self.banner_bindings)
         self.banner_bindings.append(argument)
 
-    def add_frame(self, frame, frame_type, **init_args):
+    def add_frame(self, pyagram_frame_type, frame, **init_args):
         """
         """
         assert self.banner_is_complete
-        frame = PyagramFrame(self, frame, frame_type, **init_args)
+        frame = PyagramFrame(self, pyagram_frame_type, frame, **init_args)
         self.frame = frame
         return frame
 
@@ -202,7 +203,7 @@ class PyagramFrame(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, frame, frame_type, is_implicit=False, *, state=None, function=None, generator=None):
+    def __init__(self, opened_by, frame_type, frame, is_implicit=False, *, state=None, function=None, generator=None):
         super().__init__(opened_by, state)
         self.frame = frame
         self.function = function
