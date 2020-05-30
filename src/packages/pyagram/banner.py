@@ -6,17 +6,32 @@ class Banner:
     """
     """
 
-    def __init__(self, code, node):
+    def __init__(self, code):
         self.code = code
         self.elements = []
+
+    @property
+    def summary(self):
+        """
+        """
+        return ast.List(
+            elts=self.elements,
+            ctx=ast.Load(),
+        )
+
+    def source(self, node):
+        return ast.get_source_segment(self.code, node).strip('\n')
+
+class FunctionCallBanner(Banner):
+    """
+    """
+
+    def __init__(self, code, node):
+        super().__init__(code)
         self.binding_index = 0
         self.add_func_info(node.func)
         self.add_args_info(node.args)
         self.add_kwds_info(node.keywords)
-        self.elements = ast.List(
-            elts=self.elements,
-            ctx=ast.Load(),
-        )
 
     def add_func_info(self, func):
         """
@@ -45,13 +60,13 @@ class Banner:
                 keyword.value,
                 constants.DOUBLY_UNPACKED_ARG if is_unpacked else constants.NORMAL_ARG,
                 code_prefix='**' if is_unpacked else f'{keyword.arg}=',
-                kwd=keyword.arg,
+                keyword=keyword.arg,
             )
 
-    def add_bindings(self, node, unpacking_code, *, kwd=None, code_prefix=None, code_suffix=None):
+    def add_bindings(self, node, unpacking_code, *, keyword=None, code_prefix=None, code_suffix=None):
         """
         """
-        code = ast.get_source_segment(self.code, node).strip('\n')
+        code = self.source(node)
         if code_prefix is not None:
             code = ''.join((code_prefix, code))
         if code_suffix is not None:
@@ -63,7 +78,7 @@ class Banner:
                     kind=None,
                 ),
                 ast.Constant(
-                    value=kwd,
+                    value=keyword,
                     kind=None,
                 ),
                 ast.Constant(
@@ -78,3 +93,21 @@ class Banner:
             ctx=ast.Load(),
         ))
         self.binding_index += 1
+
+class ComprehensionBanner(Banner):
+    """
+    """
+
+    def __init__(self, code, node):
+        super().__init__(code)
+        self.add_comp_info(node)
+
+    def add_comp_info(self, comprehension):
+        """
+        """
+        self.elements.append(
+            ast.Constant(
+                value=self.source(comprehension),
+                kind=None,
+            )
+        )

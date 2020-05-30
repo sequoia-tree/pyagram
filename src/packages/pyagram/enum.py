@@ -30,6 +30,7 @@ class FrameTypes(Enum):
     SRC_CALL_PRECURSOR = object()
     SRC_CALL_SUCCESSOR = object()
     CLASS_DEFINITION = object()
+    COMP_PRECURSOR = object()
     COMPREHENSION = object()
 
     @staticmethod
@@ -48,10 +49,19 @@ class FrameTypes(Enum):
             return FrameTypes.SRC_CALL_SUCCESSOR
         elif step_code == constants.CLASS_DEFN_LINENO:
             return FrameTypes.CLASS_DEFINITION
+        elif step_code == constants.INNER_COMP_LINENO:
+            return FrameTypes.COMP_PRECURSOR
         elif step_code == constants.CNTNR_COMP_LINENO:
             return FrameTypes.COMPREHENSION
         else:
             raise FrameTypes.illegal_enum(step_code)
+
+class FlagTypes(Enum):
+    """
+    """
+
+    CALL = object()
+    COMP = object()
 
 class PyagramFrameTypes(Enum):
     """

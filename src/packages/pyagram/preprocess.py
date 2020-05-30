@@ -81,7 +81,7 @@ class CodeWrapper(ast.NodeTransformer):
         """
 
         # f(x, y, z) --> (lambda info, call: call)( # wrapper
-        #                    (lambda: flag_info)(), # banner
+        #                    (lambda: info)(),      # banner
         #                    (lambda: f)()(         # function
         #                        (lambda: x)(),     # arg
         #                        (lambda: y)(),     # arg
@@ -92,7 +92,7 @@ class CodeWrapper(ast.NodeTransformer):
         banner_call = self.insert_eager_call(
             node.lineno,
             constants.INNER_CALL_LINENO,
-            banner.Banner(self.preprocessor.code, node).elements,
+            banner.FunctionCallBanner(self.preprocessor.code, node).summary,
         )
         self.generic_visit(node)
         function_call = ast.Call(
@@ -161,23 +161,35 @@ class CodeWrapper(ast.NodeTransformer):
     def visit_ListComp(self, node):
         """
         """
+
+        # [x for y in z] --> (lambda info, comp: comp)( # wrapper
+        #                        (lambda: info)(),      # banner
+        #                        [x for y in z]         # comp
+        #                    )
+
+        banner_call = self.insert_eager_call(
+            node.lineno,
+            constants.INNER_COMP_LINENO,
+            banner.ComprehensionBanner(self.preprocessor.code, node).summary,
+        )
         self.generic_visit(node)
-        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
-        return node
+        wrapper_call = self.insert_lazy_call(
+            node.lineno,
+            constants.CNTNR_COMP_LINENO,
+            ('info', banner_call),
+            ('comp', node),
+        )
+        return wrapper_call
 
     def visit_SetComp(self, node):
         """
         """
-        self.generic_visit(node)
-        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
-        return node
+        return self.visit_ListComp(node)
 
     def visit_DictComp(self, node):
         """
         """
-        self.generic_visit(node)
-        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
-        return node
+        return self.visit_ListComp(node)
 
     def insert_call(self, lineno, step_code, return_node, *, params, args):
         """

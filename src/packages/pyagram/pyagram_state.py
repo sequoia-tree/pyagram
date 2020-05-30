@@ -193,6 +193,8 @@ class ProgramState:
             pass
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
+        elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
+            pass # TODO
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.open_comprehension(frame)
         else:
@@ -215,6 +217,11 @@ class ProgramState:
             self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
+        elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
+            pass # TODO
+            # TODO: Make an enum.FlagTypes.{FUNCTION_CALL, COMPREHENSION}. When you make a COMPREHENSION flag, read its banner differently. Open the flag when you see the CNTNR_COMP_PRECURSOR (corresponding to the INNER_COMP_LINENO); open the frame when you see the CNTNR_COMP (corresponding to the CNTNR_COMP_LINENO).
+            # TODO: In PyagramFlag, account for whether it's an enum.PyagramFlagTypes.CALL or .COMP.
+            # TODO: Give PyagramFlags is_call_flag and is_comp_flag @properties (aking to PyagramFrame's is_global_frame etc). In this file make use of those properties where appropriate.
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.close_comprehension(frame, return_value)
         else:
