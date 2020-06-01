@@ -23,7 +23,7 @@ export const ELEMENT_TEMPLATE = compile(`
 
 export const FLAG_TEMPLATE = compile(`
 <div class="pyagram-flag m-3">
-  <div class="pyagram-banner {{#if is_curr_element}} curr-element {{/if}}">
+  <div class="pyagram-banner mr-3 {{#if is_curr_element}} curr-element {{/if}}">
     <table class="text-center">
       {{#if (isEqual type 'call')}}
         <tr>

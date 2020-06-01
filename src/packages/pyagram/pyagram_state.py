@@ -196,10 +196,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
             pass
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-
-            pass # self.open_comprehension(frame) # TODO: Open comp frame.
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.CNTNR_COMP)
-
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -224,11 +221,8 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
             self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-
-            pass # self.close_comprehension(frame, return_value) # TODO: Close comp frame & flag.
             self.close_pyagram_frame(frame, return_value)
 
-            # TODO: Handle COMPREHENSION flag banners differently.
             # TODO: In this file make use of the is_call_flag and is_comp_flag @properties where appropriate (e.g. in the relevant assert statements).
             # TODO: Do something about the implicit bindings .0, .1, etc.
 
