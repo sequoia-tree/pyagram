@@ -175,7 +175,8 @@ class ProgramState:
             generator = utils.get_generator(frame)
             if is_implicit:
                 self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, None)
-                self.curr_element.fix_implicit_banner(function, frame.f_locals)
+                if function is not None:
+                    self.curr_element.fix_implicit_banner(function, frame.f_locals)
             self.open_pyagram_frame(
                 frame,
                 None,
@@ -222,10 +223,6 @@ class ProgramState:
             self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
             self.close_pyagram_frame(frame, return_value)
-
-            # TODO: In this file make use of the is_call_flag and is_comp_flag @properties where appropriate (e.g. in the relevant assert statements).
-            # TODO: Do something about the implicit bindings .0, .1, etc.
-
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -242,7 +239,7 @@ class ProgramState:
             is_generator_exception = self.is_frame \
                 and len(self.curr_element.flags) == 1 \
                 and self.curr_element.flags[0].frame is not None \
-                and self.curr_element.flags[0].frame.is_generator_frame # TODO: Revisit this later.
+                and self.curr_element.flags[0].frame.is_generator_frame
             if is_generator_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.flags[0].frame
