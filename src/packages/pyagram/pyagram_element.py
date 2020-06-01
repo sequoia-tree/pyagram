@@ -33,8 +33,8 @@ class PyagramFlag(PyagramElement):
 
     def __init__(self, opened_by, flag_type, banner_elements, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
-        # TODO: Use flag_type.
         # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag. Also consider whether you need hide_flags -- or whether you'll must make it so that a hidden flag's subflags are hidden regardless.
+        self.flag_type = flag_type
         self.banner_elements = [] if banner_elements is None else banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
@@ -43,14 +43,31 @@ class PyagramFlag(PyagramElement):
         self.frame = None
 
     @property
+    def is_call_flag(self):
+        """
+        """
+        return self.flag_type is enum.PyagramFlagTypes.CALL
+
+    @property
+    def is_comp_flag(self):
+        """
+        """
+        return self.flag_type is enum.PyagramFlagTypes.COMP
+
+    @property
     def banner_is_complete(self):
         """
         """
-        if len(self.banner_elements) == 0:
+        if self.is_call_flag:
+            if len(self.banner_elements) == 0:
+                return True
+            else:
+                _, _, last_binding_idx, _ = self.banner_elements[-1]
+                return last_binding_idx < len(self.banner_bindings)
+        elif self.is_comp_flag:
             return True
         else:
-            _, _, last_binding_idx, _ = self.banner_elements[-1]
-            return last_binding_idx < len(self.banner_bindings)
+            raise enum.PyagramFlagTypes.illegal_enum(self.flag_type)
 
     @property
     def has_returned(self):
@@ -82,26 +99,31 @@ class PyagramFlag(PyagramElement):
     def step(self):
         """
         """
-        if not self.is_hidden():
-            referents = []
-            for banner_element in self.banner_elements:
-                _, _, binding_idx, unpacking_code = banner_element
-                if binding_idx < len(self.banner_bindings):
-                    binding = self.banner_bindings[binding_idx]
-                    unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-                    if unpacking_type is enum.UnpackingTypes.NORMAL:
-                        referents.append(binding)
-                    elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                        for element in [*binding]:
-                            referents.append(element)
-                    elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                        for key, value in {**binding}.items():
-                            referents.append(key)
-                            referents.append(value)
-                    else:
-                        raise enum.UnpackingTypes.illegal_enum(unpacking_type)
-            for referent in referents:
-                self.state.memory_state.track(referent)
+        if self.is_call_flag:
+            if not self.is_hidden():
+                referents = []
+                for banner_element in self.banner_elements:
+                    _, _, binding_idx, unpacking_code = banner_element
+                    if binding_idx < len(self.banner_bindings):
+                        binding = self.banner_bindings[binding_idx]
+                        unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                        if unpacking_type is enum.UnpackingTypes.NORMAL:
+                            referents.append(binding)
+                        elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                            for element in [*binding]:
+                                referents.append(element)
+                        elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                            for key, value in {**binding}.items():
+                                referents.append(key)
+                                referents.append(value)
+                        else:
+                            raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+                for referent in referents:
+                    self.state.memory_state.track(referent)
+        elif self.is_comp_flag:
+            pass
+        else:
+            raise enum.PyagramFlagTypes.illegal_enum(self.flag_type)
         if self.frame is not None:
             self.frame.step()
         super().step()
@@ -228,8 +250,8 @@ class PyagramFrame(PyagramElement):
             self.hide_from(0)
             self.yield_from = None
             self.throws_exc = False
-        elif self.is_placeholder_frame:
-            pass
+        elif self.is_comprehension_frame:
+            self.frame_number = self.state.program_state.register_frame()
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
         self.has_returned = False
@@ -246,8 +268,8 @@ class PyagramFrame(PyagramElement):
             return f'Frame {self.frame_number}'
         elif self.is_generator_frame:
             return f'Frame {self.state.memory_state.pg_generator_frames[self.generator].number}'
-        elif self.is_placeholder_frame:
-            return '...'
+        elif self.is_comprehension_frame:
+            return f'Frame {self.frame_number}'
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
@@ -276,10 +298,10 @@ class PyagramFrame(PyagramElement):
         return self.frame_type is enum.PyagramFrameTypes.GENERATOR
 
     @property
-    def is_placeholder_frame(self):
+    def is_comprehension_frame(self):
         """
         """
-        return self.frame_type is enum.PyagramFrameTypes.PLACEHOLDER
+        return self.frame_type is enum.PyagramFrameTypes.CNTNR_COMP
 
     @property
     def parent(self):
@@ -293,8 +315,11 @@ class PyagramFrame(PyagramElement):
             return self.state.memory_state.function_parents[self.function]
         elif self.is_generator_frame:
             return self.state.memory_state.pg_generator_frames[self.generator].parent
-        elif self.is_placeholder_frame:
-            return None
+        elif self.is_comprehension_frame:
+            parent = self.opened_by
+            while isinstance(parent, PyagramFlag):
+                parent = parent.opened_by
+            return parent
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 
@@ -304,7 +329,8 @@ class PyagramFrame(PyagramElement):
         """
         return self.is_global_frame \
             or self.is_function_frame \
-            or self.is_generator_frame
+            or self.is_generator_frame \
+            or self.is_comprehension_frame
 
     @property
     def shows_return_value(self):
@@ -318,8 +344,8 @@ class PyagramFrame(PyagramElement):
             return self.has_returned
         elif self.is_generator_frame:
             return self.has_returned and not self.throws_exc
-        elif self.is_placeholder_frame:
-            return False
+        elif self.is_comprehension_frame:
+            return self.has_returned
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.frame_type)
 

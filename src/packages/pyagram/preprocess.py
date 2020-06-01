@@ -173,9 +173,10 @@ class CodeWrapper(ast.NodeTransformer):
             banner.ComprehensionBanner(self.preprocessor.code, node).summary,
         )
         self.generic_visit(node)
+        self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
         wrapper_call = self.insert_lazy_call(
             node.lineno,
-            constants.CNTNR_COMP_LINENO,
+            constants.OUTER_CALL_LINENO, # TODO: Rename to PG_WRAPPER_LINENO or something like that? In fact, maybe rename all the enums to make them align better with their use cases ... .
             ('info', banner_call),
             ('comp', node),
         )

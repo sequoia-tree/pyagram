@@ -25,68 +25,78 @@ export const FLAG_TEMPLATE = compile(`
 <div class="pyagram-flag m-3">
   <div class="pyagram-banner {{#if is_curr_element}} curr-element {{/if}}">
     <table class="text-center">
-      <tr>
-        {{#each banner}}
-          <td colspan="{{n_cols}}">
-            {{escape code}}
-          </td>
-          {{#if @first}}
-            {{#if @last}}
-              <td>()</td>
-            {{else}}
-              <td>(</td>
-            {{/if}}
-          {{else}}
-            {{#if @last}}
-              <td>)</td>
-            {{else}}
-              <td>,</td>
-            {{/if}}
-          {{/if}}
-        {{/each}}
-      </tr>
-      <tr>
-        {{#each banner}}
-          {{#if (isNull bindings)}}
-            <td class="pyagram-value pyagram-placeholder">
-              -
+      {{#if (isEqual type 'call')}}
+        <tr>
+          {{#each banner}}
+            <td colspan="{{n_cols}}">
+              {{escape code}}
             </td>
-          {{else if (isEmpty bindings)}}
-            <td></td>
-          {{else}}
-            {{#each bindings}}
-              {{#unless (isNull key)}}
-                <td class="banner-text">{{decodeReferenceSnapshot key}}=</td>
-              {{/unless}}
-              <td class="pyagram-value">
-                {{decodeReferenceSnapshot value}}
-              </td>
-              {{#unless @last}}
-                <td class="banner-text">,</td>
-              {{/unless}}
-            {{/each}}
-          {{/if}}
-          {{#if @first}}
-            {{#if @last}}
-              <td>()</td>
+            {{#if @first}}
+              {{#if @last}}
+                <td>()</td>
+              {{else}}
+                <td>(</td>
+              {{/if}}
             {{else}}
-              <td>(</td>
-            {{/if}}
-          {{else}}
-            {{#if @last}}
-              <td>)</td>
-            {{else}}
-              {{#if (isNull bindings)}}
-                <td>,</td>
-              {{else if (isEmpty bindings)}}
-                <td></td>
+              {{#if @last}}
+                <td>)</td>
               {{else}}
                 <td>,</td>
               {{/if}}
             {{/if}}
-          {{/if}}
-        {{/each}}
-      </tr>
+          {{/each}}
+        </tr>
+        <tr>
+          {{#each banner}}
+            {{#if (isNull bindings)}}
+              <td class="pyagram-value pyagram-placeholder">
+                -
+              </td>
+            {{else if (isEmpty bindings)}}
+              <td></td>
+            {{else}}
+              {{#each bindings}}
+                {{#unless (isNull key)}}
+                  <td class="banner-text">{{decodeReferenceSnapshot key}}=</td>
+                {{/unless}}
+                <td class="pyagram-value">
+                  {{decodeReferenceSnapshot value}}
+                </td>
+                {{#unless @last}}
+                  <td class="banner-text">,</td>
+                {{/unless}}
+              {{/each}}
+            {{/if}}
+            {{#if @first}}
+              {{#if @last}}
+                <td>()</td>
+              {{else}}
+                <td>(</td>
+              {{/if}}
+            {{else}}
+              {{#if @last}}
+                <td>)</td>
+              {{else}}
+                {{#if (isNull bindings)}}
+                  <td>,</td>
+                {{else if (isEmpty bindings)}}
+                  <td></td>
+                {{else}}
+                  <td>,</td>
+                {{/if}}
+              {{/if}}
+            {{/if}}
+          {{/each}}
+        </tr>
+      {{else if (isEqual type 'comp')}}
+        <tr>
+          {{#each banner}}
+            <td>
+              {{escape code}}
+            </td>
+          {{/each}}
+        </tr>
+      {{/if}}
     </table>
   </div>
   {{decodeElementSnapshot this}}

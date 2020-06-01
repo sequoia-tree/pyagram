@@ -174,7 +174,7 @@ class ProgramState:
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
             if is_implicit:
-                self.open_pyagram_flag(frame, None)
+                self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, None)
                 self.curr_element.fix_implicit_banner(function, frame.f_locals)
             self.open_pyagram_frame(
                 frame,
@@ -194,9 +194,12 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
-            pass # TODO
+            pass
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            self.open_comprehension(frame)
+
+            pass # self.open_comprehension(frame) # TODO: Open comp frame.
+            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.CNTNR_COMP)
+
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -210,20 +213,25 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
             self.register_argument(frame, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
-            self.open_pyagram_flag(frame, return_value)
+            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             if self.curr_element is self.global_frame:
+                # TODO: Why is this necessary? Why would it recognize global like an end-flag sig?
                 return
             self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
             self.close_class_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
-            pass # TODO
-            # TODO: Make an enum.FlagTypes.{FUNCTION_CALL, COMPREHENSION}. When you make a COMPREHENSION flag, read its banner differently. Open the flag when you see the CNTNR_COMP_PRECURSOR (corresponding to the INNER_COMP_LINENO); open the frame when you see the CNTNR_COMP (corresponding to the CNTNR_COMP_LINENO).
-            # TODO: In PyagramFlag, account for whether it's an enum.PyagramFlagTypes.CALL or .COMP.
-            # TODO: Give PyagramFlags is_call_flag and is_comp_flag @properties (aking to PyagramFrame's is_global_frame etc). In this file make use of those properties where appropriate.
+            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
         elif frame_type is enum.FrameTypes.COMPREHENSION:
-            self.close_comprehension(frame, return_value)
+
+            pass # self.close_comprehension(frame, return_value) # TODO: Close comp frame & flag.
+            self.close_pyagram_frame(frame, return_value)
+
+            # TODO: Handle COMPREHENSION flag banners differently.
+            # TODO: In this file make use of the is_call_flag and is_comp_flag @properties where appropriate (e.g. in the relevant assert statements).
+            # TODO: Do something about the implicit bindings .0, .1, etc.
+
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -237,20 +245,15 @@ class ProgramState:
 
             self.caught_exc_info = caught_exc_info
             self.exception_index = len(self.state.snapshots)
-            is_placeholder_exception = self.is_frame \
-                and self.curr_element.is_placeholder_frame # TODO: Revisit this after revisiting comprehensions.
             is_generator_exception = self.is_frame \
                 and len(self.curr_element.flags) == 1 \
                 and self.curr_element.flags[0].frame is not None \
                 and self.curr_element.flags[0].frame.is_generator_frame # TODO: Revisit this later.
-            if is_placeholder_exception:
-                exception_element = self.curr_element
-                self.curr_element = self.curr_element.opened_by.opened_by
             if is_generator_exception:
                 exception_element = self.curr_element
                 self.curr_element = self.curr_element.flags[0].frame
             def finish_step():
-                if is_placeholder_exception or is_generator_exception:
+                if is_generator_exception:
                     self.curr_element = exception_element
                 self.process_traceback(frame, frame_type)
                 self.caught_exc_info = None
@@ -269,12 +272,12 @@ class ProgramState:
                 self.curr_element.hide_flags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, frame, banner_summary, **init_args):
+    def open_pyagram_flag(self, frame, pyagram_flag_type, banner_summary, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
         self.curr_element = self.curr_element.add_flag(
-            enum.PyagramFlagTypes.CALL,
+            pyagram_flag_type,
             banner_summary,
             **init_args,
         )
@@ -296,14 +299,6 @@ class ProgramState:
         """
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
-
-    def open_comprehension(self, frame):
-        """
-        """
-        # TODO: Revisit comprehension logic after the refactor.
-        assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
-        self.open_pyagram_flag(frame, None, hidden_snapshot=0)
-        self.open_pyagram_frame(frame, enum.PyagramFrameTypes.PLACEHOLDER)
 
     def close_pyagram_flag(self, frame, return_value):
         """
@@ -335,7 +330,7 @@ class ProgramState:
             finish_step()
         elif self.curr_element.is_generator_frame:
             self.defer(finish_step)
-        elif self.curr_element.is_placeholder_frame:
+        elif self.curr_element.is_comprehension_frame:
             finish_step()
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.curr_element.frame_type)
@@ -349,18 +344,6 @@ class ProgramState:
             if class_name in parent_bindings:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
         self.defer(finish_step)
-
-    def close_comprehension(self, frame, return_value):
-        """
-        """
-        # TODO: Revisit comprehension logic after the refactor.
-        raises_error = self.prev_trace_type is enum.TraceTypes.USER_EXCEPTION
-        if return_value is None and not raises_error:
-            return
-        assert self.is_ongoing_frame
-        self.close_pyagram_frame(frame, return_value)
-        self.close_pyagram_flag(frame, None)
-        # TODO: This is definitely broken now.
 
     def register_callable(self, frame, callable):
         """

@@ -30,7 +30,14 @@ class Encoder:
         """
         """
         is_hidden = pyagram_flag.is_hidden()
+        if pyagram_flag.is_call_flag:
+            flag_type = 'call'
+        elif pyagram_flag.is_comp_flag:
+            flag_type = 'comp'
+        else:
+            raise enum.PyagramFlagTypes.illegal_enum(pyagram_flag.flag_type)
         return {
+            'type': flag_type,
             'is_curr_element': pyagram_flag is self.state.program_state.curr_element,
             'banner': [
                 self.encode_banner_element(pyagram_flag, banner_element)
@@ -83,45 +90,52 @@ class Encoder:
     def encode_banner_element(self, pyagram_flag, banner_element):
         """
         """
-        code, keyword, binding_idx, unpacking_code = banner_element
-        if binding_idx < len(pyagram_flag.banner_bindings):
-            binding = pyagram_flag.banner_bindings[binding_idx]
-            unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-            if unpacking_type is enum.UnpackingTypes.NORMAL:
-                keyless = keyword is None
-                bindings = self.encode_mapping(
-                    (binding,) if keyless else {keyword: binding},
-                    keyless=keyless,
-                    is_bindings=True,
-                )
-            elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                unpacked_binding = [*binding]
-                bindings = self.encode_mapping(
-                    unpacked_binding,
-                    keyless=True,
-                    is_bindings=True,
-                )
-            elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                unpacked_binding = {**binding}
-                bindings = self.encode_mapping(
-                    unpacked_binding,
-                    is_bindings=True,
-                )
+        if pyagram_flag.is_call_flag:
+            code, keyword, binding_idx, unpacking_code = banner_element
+            if binding_idx < len(pyagram_flag.banner_bindings):
+                binding = pyagram_flag.banner_bindings[binding_idx]
+                unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+                if unpacking_type is enum.UnpackingTypes.NORMAL:
+                    keyless = keyword is None
+                    bindings = self.encode_mapping(
+                        (binding,) if keyless else {keyword: binding},
+                        keyless=keyless,
+                        is_bindings=True,
+                    )
+                elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+                    unpacked_binding = [*binding]
+                    bindings = self.encode_mapping(
+                        unpacked_binding,
+                        keyless=True,
+                        is_bindings=True,
+                    )
+                elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+                    unpacked_binding = {**binding}
+                    bindings = self.encode_mapping(
+                        unpacked_binding,
+                        is_bindings=True,
+                    )
+                else:
+                    raise enum.UnpackingTypes.illegal_enum(unpacking_type)
             else:
-                raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+                bindings = None
+            return {
+                'code': code,
+                'n_cols':
+                    2 * len(bindings) - 1 + sum(
+                        binding['key'] is not None
+                        for binding in bindings
+                    )
+                    if bindings is not None and len(bindings) > 0
+                    else 1,
+                'bindings': bindings,
+            }
+        elif pyagram_flag.is_comp_flag:
+            return {
+                'code': banner_element,
+            }
         else:
-            bindings = None
-        return {
-            'code': code,
-            'n_cols':
-                2 * len(bindings) - 1 + sum(
-                    binding['key'] is not None
-                    for binding in bindings
-                )
-                if bindings is not None and len(bindings) > 0
-                else 1,
-            'bindings': bindings,
-        }
+            raise enum.PyagramFlagTypes.illegal_enum(pyagram_flag.flag_type)
 
     def encode_caught_exc_info(self, caught_exc_info):
         """

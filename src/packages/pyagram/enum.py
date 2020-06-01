@@ -71,7 +71,7 @@ class PyagramFrameTypes(Enum):
     BUILTIN = object()
     FUNCTION = object()
     GENERATOR = object()
-    PLACEHOLDER = object()
+    CNTNR_COMP = object()
 
 class ObjectTypes(Enum):
     """
