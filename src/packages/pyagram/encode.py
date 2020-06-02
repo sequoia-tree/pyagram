@@ -366,7 +366,10 @@ class Encoder:
                 object.frame.f_code.co_name
                 if object.class_obj is None
                 else object.class_obj.__name__,
-            'parents': None, # Placeholder. # TODO: This should not be assigned in postprocessing, since a user could reassign __bases__ half-way through execution. You could assign it if possible, otherwise let it be None; also get the encoding of the parents in record_class_frame, and assign that value in postprocess.py?
+            'parents':
+                None # For postprocessing.
+                if object.class_obj is None
+                else self.encode_class_parents(object.class_obj),
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,

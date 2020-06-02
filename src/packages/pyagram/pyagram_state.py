@@ -471,3 +471,4 @@ class MemoryState:
         pyagram_class_frame = self.pg_class_frames[frame_object]
         pyagram_class_frame.wrap_object(class_object)
         pyagram_class_frame.class_obj = class_object
+        pyagram_class_frame.initial_bases = self.state.encoder.encode_class_parents(class_object)

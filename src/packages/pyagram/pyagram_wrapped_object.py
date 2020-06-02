@@ -67,6 +67,7 @@ class PyagramClassFrame(PyagramWrappedObject):
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
         self.class_obj = None
+        self.initial_bases = None
 
     @property
     def bindings(self):
