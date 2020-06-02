@@ -185,19 +185,19 @@ class ProgramState:
                 function=function,
                 generator=generator,
             )
-        elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
+        elif frame_type is enum.FrameTypes.CALL_BANNER:
             pass
-        elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
+        elif frame_type is enum.FrameTypes.COMP_BANNER:
             pass
-        elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enum.FrameTypes.FN_WRAPPER:
             pass
-        elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enum.FrameTypes.RG_WRAPPER:
             pass
-        elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
+        elif frame_type is enum.FrameTypes.PG_WRAPPER:
+            pass
+        elif frame_type is enum.FrameTypes.CLASS_DEFN:
             self.open_class_frame(frame)
-        elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
-            pass
-        elif frame_type is enum.FrameTypes.COMPREHENSION:
+        elif frame_type is enum.FrameTypes.CNTNR_COMP:
             self.open_pyagram_frame(frame, enum.PyagramFrameTypes.CNTNR_COMP)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
@@ -207,21 +207,21 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             self.close_pyagram_frame(frame, return_value)
-        elif frame_type is enum.FrameTypes.SRC_CALL_FN_WRAPPER:
-            self.register_callable(frame, return_value)
-        elif frame_type is enum.FrameTypes.SRC_CALL_RG_WRAPPER:
-            self.register_argument(frame, return_value)
-        elif frame_type is enum.FrameTypes.SRC_CALL_PRECURSOR:
+        elif frame_type is enum.FrameTypes.CALL_BANNER:
             self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, return_value)
-        elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
+        elif frame_type is enum.FrameTypes.COMP_BANNER:
+            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
+        elif frame_type is enum.FrameTypes.FN_WRAPPER:
+            self.register_callable(frame, return_value)
+        elif frame_type is enum.FrameTypes.RG_WRAPPER:
+            self.register_argument(frame, return_value)
+        elif frame_type is enum.FrameTypes.PG_WRAPPER:
             if self.curr_element is self.global_frame:
                 return
             self.close_pyagram_flag(frame, return_value)
-        elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
+        elif frame_type is enum.FrameTypes.CLASS_DEFN:
             self.close_class_frame(frame, return_value)
-        elif frame_type is enum.FrameTypes.COMP_PRECURSOR:
-            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
-        elif frame_type is enum.FrameTypes.COMPREHENSION:
+        elif frame_type is enum.FrameTypes.CNTNR_COMP:
             self.close_pyagram_frame(frame, return_value)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)

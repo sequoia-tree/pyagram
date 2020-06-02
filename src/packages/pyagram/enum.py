@@ -25,13 +25,13 @@ class FrameTypes(Enum):
     """
 
     SRC_CALL = object()
-    SRC_CALL_FN_WRAPPER = object()
-    SRC_CALL_RG_WRAPPER = object()
-    SRC_CALL_PRECURSOR = object()
-    SRC_CALL_SUCCESSOR = object()
-    CLASS_DEFINITION = object()
-    COMP_PRECURSOR = object()
-    COMPREHENSION = object()
+    CALL_BANNER = object()
+    COMP_BANNER = object()
+    FN_WRAPPER = object()
+    RG_WRAPPER = object()
+    PG_WRAPPER = object()
+    CLASS_DEFN = object()
+    CNTNR_COMP = object()
 
     @staticmethod
     def identify_frame_type(step_code):
@@ -39,20 +39,20 @@ class FrameTypes(Enum):
         """
         if step_code == constants.UNMODIFIED_LINENO:
             return FrameTypes.SRC_CALL
-        elif step_code == constants.FN_WRAPPER_LINENO:
-            return FrameTypes.SRC_CALL_FN_WRAPPER
-        elif step_code == constants.RG_WRAPPER_LINENO:
-            return FrameTypes.SRC_CALL_RG_WRAPPER
         elif step_code == constants.INNER_CALL_LINENO:
-            return FrameTypes.SRC_CALL_PRECURSOR
-        elif step_code == constants.OUTER_CALL_LINENO:
-            return FrameTypes.SRC_CALL_SUCCESSOR
-        elif step_code == constants.CLASS_DEFN_LINENO:
-            return FrameTypes.CLASS_DEFINITION
+            return FrameTypes.CALL_BANNER
         elif step_code == constants.INNER_COMP_LINENO:
-            return FrameTypes.COMP_PRECURSOR
+            return FrameTypes.COMP_BANNER
+        elif step_code == constants.FN_WRAPPER_LINENO:
+            return FrameTypes.FN_WRAPPER
+        elif step_code == constants.RG_WRAPPER_LINENO:
+            return FrameTypes.RG_WRAPPER
+        elif step_code == constants.PG_WRAPPER_LINENO:
+            return FrameTypes.PG_WRAPPER
+        elif step_code == constants.CLASS_DEFN_LINENO:
+            return FrameTypes.CLASS_DEFN
         elif step_code == constants.CNTNR_COMP_LINENO:
-            return FrameTypes.COMPREHENSION
+            return FrameTypes.CNTNR_COMP
         else:
             raise FrameTypes.illegal_enum(step_code)
 

@@ -135,7 +135,7 @@ class CodeWrapper(ast.NodeTransformer):
         )
         wrapper_call = self.insert_lazy_call(
             node.lineno,
-            constants.OUTER_CALL_LINENO,
+            constants.PG_WRAPPER_LINENO,
             ('info', banner_call),
             ('call', function_call),
         )
@@ -176,7 +176,7 @@ class CodeWrapper(ast.NodeTransformer):
         self.mod_lineno(node, constants.CNTNR_COMP_LINENO)
         wrapper_call = self.insert_lazy_call(
             node.lineno,
-            constants.OUTER_CALL_LINENO, # TODO: Rename to PG_WRAPPER_LINENO or something like that? In fact, maybe rename all the enums to make them align better with their use cases ... .
+            constants.PG_WRAPPER_LINENO,
             ('info', banner_call),
             ('comp', node),
         )
