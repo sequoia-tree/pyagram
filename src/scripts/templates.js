@@ -171,14 +171,16 @@ export const FRAME_TEMPLATE = compile(`
         <td class="text-left pyagram-value pyagram-frame-value">
           {{decodeReferenceSnapshot return_value}}
         </td>
-        {{#unless (isNull from)}}
-          <td class="text-left font-family-sans-serif">
-            from
-          </td>
-          <td class="text-left pyagram-value">
-            {{decodeReferenceSnapshot from}}
-          </td>
-        {{/unless}}
+        {{#if (isEqual type 'generator')}}
+          {{#unless (isNull from)}}
+            <td class="text-left font-family-sans-serif">
+              from
+            </td>
+            <td class="text-left pyagram-value">
+              {{decodeReferenceSnapshot from}}
+            </td>
+          {{/unless}}
+        {{/if}}
       </tr>
     {{/unless}}
   </table>

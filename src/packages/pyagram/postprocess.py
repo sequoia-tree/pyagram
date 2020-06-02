@@ -84,9 +84,9 @@ class Postprocessor:
         for encode_object in memory_snapshot:
             encoding = encode_object['object']['encoding']
             snapshot = encode_object['object']['data']
-            if encoding == 'obj_class' and 'self' in snapshot:
+            if encoding == 'class' and 'self' in snapshot:
                 class_frame = snapshot.pop('self')
-                snapshot['parents'] = None if class_frame.parents is None else [parent.__name__ for parent in class_frame.parents]
+                snapshot['parents'] = None if class_frame.cls_obj is None else self.state.encoder.encode_class_parents(class_frame.cls_obj)
 
     def kill_hidden_snapshots(self):
         """

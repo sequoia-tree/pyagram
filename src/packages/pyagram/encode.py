@@ -79,7 +79,6 @@ class Encoder:
                 self.encode_reference(pyagram_frame.return_value)
                 if pyagram_frame.shows_return_value
                 else None,
-            'from': None,
             'flags': [
                 self.encode_pyagram_flag(flag)
                 for flag in pyagram_frame.flags
@@ -190,14 +189,14 @@ class Encoder:
             encoding = 'generator'
             data = self.encode_generator(object)
         elif object_type is enum.ObjectTypes.USER_CLASS:
-            encoding = 'obj_class'
-            data = self.encode_obj_class(object)
+            encoding = 'class'
+            data = self.encode_user_class(object)
         elif object_type is enum.ObjectTypes.BLTN_CLASS:
-            encoding = 'obj_class'
+            encoding = 'class'
             data = self.encode_bltn_class(object)
         elif object_type is enum.ObjectTypes.INSTANCE:
-            encoding = 'obj_inst'
-            data = self.encode_obj_inst(object)
+            encoding = 'instance'
+            data = self.encode_instance(object)
         elif object_type is enum.ObjectTypes.OTHER:
             encoding = 'other'
             data = self.encode_other(object)
@@ -356,45 +355,50 @@ class Encoder:
             },
         }
 
-    def encode_bltn_class(self, object):
-        """
-        """
-        # TODO: This is sloppy. Find a better way to encode all frame types with minimal cruft.
-        return {
-            'type': 'class',
-            'bltn': True,
-            'is_curr_element': False,
-            'name': object.__name__,
-            'parents': [parent.__name__ for parent in object.__bases__],
-            'bindings': self.encode_mapping(
-                {},
-                is_bindings=True,
-            ),
-            'return_value': None,
-            'from': None,
-            'flags': [],
-        }
-
-    def encode_obj_class(self, object):
+    def encode_user_class(self, object):
         """
         """
         return {
             'type': 'class',
             'bltn': False,
             'is_curr_element': False,
-            'name': object.frame.f_code.co_name,
-            'parents': None, # Placeholder.
+            'name':
+                object.frame.f_code.co_name
+                if object.cls_obj is None
+                else object.cls_obj.__name__,
+            'parents': None, # Placeholder. # TODO: This should not be assigned in postprocessing, since a user could reassign __bases__ half-way through execution. Maybe do something like you did for __name__? Or you could assign it if possible, otherwise copy it over from the first snapshot with it assigned?
             'bindings': self.encode_mapping(
                 object.bindings,
                 is_bindings=True,
             ),
             'return_value': None,
-            'from': None,
             'flags': [],
             'self': object, # For postprocessing.
         }
 
-    def encode_obj_inst(self, object):
+    def encode_bltn_class(self, object):
+        """
+        """
+        return {
+            'type': 'class',
+            'bltn': True,
+            'is_curr_element': False,
+            'name': object.__name__,
+            'parents': self.encode_class_parents(object),
+            'bindings': self.encode_mapping(
+                {},
+                is_bindings=True,
+            ),
+            'return_value': None,
+            'flags': [],
+        }
+
+    def encode_class_parents(self, class_obj):
+        """
+        """
+        return [parent.__name__ for parent in class_obj.__bases__]
+
+    def encode_instance(self, object):
         """
         """
         return {
@@ -407,7 +411,6 @@ class Encoder:
                 is_bindings=True,
             ),
             'return_value': None,
-            'from': None,
             'flags': [],
         }
 

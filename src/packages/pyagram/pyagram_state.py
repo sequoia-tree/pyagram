@@ -470,5 +470,4 @@ class MemoryState:
         """
         pyagram_class_frame = self.pg_class_frames[frame_object]
         pyagram_class_frame.wrap_object(class_object)
-        pyagram_class_frame.locals = class_object.__dict__
-        pyagram_class_frame.parents = class_object.__bases__
+        pyagram_class_frame.cls_obj = class_object

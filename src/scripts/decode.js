@@ -91,9 +91,9 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
             return Templates.ITERATOR_TEMPLATE(encodedObjectSnapshot.data);
         case 'generator':
             return Templates.GENERATOR_TEMPLATE(encodedObjectSnapshot.data);
-        case 'obj_class':
+        case 'class':
             return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
-        case 'obj_inst':
+        case 'instance':
             return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
         case 'other':
             return Templates.OTHER_TEMPLATE(encodedObjectSnapshot.data);

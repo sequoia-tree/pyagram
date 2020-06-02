@@ -66,15 +66,15 @@ class PyagramClassFrame(PyagramWrappedObject):
         super().__init__(state)
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
-        self.locals = frame.f_locals # TODO: Come up with a better name than locals.
-        self.parents = None
+        self.cls_obj = None # TODO: Rename to class_obj.
 
     @property
     def bindings(self):
         """
         """
+        bindings = self.frame.f_locals if self.cls_obj is None else self.cls_obj.__dict__
         return {
             variable: value
-            for variable, value in self.locals.items()
+            for variable, value in bindings.items()
             if variable not in PyagramClassFrame.HIDDEN_BINDINGS
         }
