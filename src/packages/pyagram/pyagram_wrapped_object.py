@@ -66,13 +66,13 @@ class PyagramClassFrame(PyagramWrappedObject):
         super().__init__(state)
         state.memory_state.pg_class_frames[frame] = self
         self.frame = frame
-        self.cls_obj = None # TODO: Rename to class_obj.
+        self.class_obj = None
 
     @property
     def bindings(self):
         """
         """
-        bindings = self.frame.f_locals if self.cls_obj is None else self.cls_obj.__dict__
+        bindings = self.frame.f_locals if self.class_obj is None else self.class_obj.__dict__
         return {
             variable: value
             for variable, value in bindings.items()
