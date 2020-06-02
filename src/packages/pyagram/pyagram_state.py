@@ -175,7 +175,9 @@ class ProgramState:
             generator = utils.get_generator(frame)
             if is_implicit:
                 self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, None)
-                if function is not None:
+                if function is None:
+                    self.curr_element.hide_from(0)
+                else:
                     self.curr_element.fix_implicit_banner(function, frame.f_locals)
             self.open_pyagram_frame(
                 frame,

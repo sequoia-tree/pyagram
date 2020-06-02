@@ -333,6 +333,12 @@ class PyagramFrame(PyagramElement):
             or self.is_comprehension_frame
 
     @property
+    def shows_hidden_bindings(self):
+        """
+        """
+        return not (self.is_generator_frame or self.is_comprehension_frame)
+
+    @property
     def shows_return_value(self):
         """
         """
@@ -399,7 +405,7 @@ class PyagramFrame(PyagramElement):
         return {
             variable: self.frame.f_locals[variable]
             for variable in sorted_binding_names
-            # if not self.is_generator_frame or utils.is_genuine_binding(variable) # TODO: Revisit this when you get around to re-implementing generator comprehensions. If you don't need utils.is_genuine_bindings anymore, delete it.
+            if self.shows_hidden_bindings or utils.is_genuine_binding(variable)
         }
 
     def close(self, return_value, *, is_gen_exc=False):
