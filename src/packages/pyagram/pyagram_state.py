@@ -39,7 +39,7 @@ class State:
         # (*) PS: Right now it takes an eternity to run, since you're taking a million snapshots and then filtering out duplicates in postprocess.py.
         # (*) Don't take the last snapshot where curr_elem is None.
         self.take_snapshot = True
-        # TODO: Before working on this bit, or comment out kill_static_snapshots in postprocess.py.
+        # TODO: Before working on this bit, comment out kill_static_snapshots in postprocess.py.
         # ------------------------------------------------------------------------------------------
         if self.take_snapshot:
             self.snapshot()
@@ -216,7 +216,6 @@ class ProgramState:
             self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, return_value)
         elif frame_type is enum.FrameTypes.SRC_CALL_SUCCESSOR:
             if self.curr_element is self.global_frame:
-                # TODO: Why is this necessary? Why would it recognize global like an end-flag sig?
                 return
             self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFINITION:
@@ -401,10 +400,9 @@ class MemoryState:
             elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
                 referents = list(object)
             elif object_type is enum.ObjectTypes.MAPPING:
-                keys, values = list(object.keys()), list(object.values())
                 referents = [
-                    *keys,
-                    *values,
+                    *object.keys(),
+                    *object.values(),
                 ]
             elif object_type is enum.ObjectTypes.ITERATOR:
                 iterable = utils.get_iterable(object)
@@ -416,8 +414,10 @@ class MemoryState:
             elif object_type is enum.ObjectTypes.BLTN_CLASS:
                 referents = []
             elif object_type is enum.ObjectTypes.INSTANCE:
-                # TODO: What if the user writes instance.__dict__ = {(1, 2, 3): (4, 5, 6)}?
-                referents = object.__dict__.values()
+                referents = [
+                    *object.__dict__.keys(),
+                    *object.__dict__.values(),
+                ]
             elif object_type is enum.ObjectTypes.OTHER:
                 referents = []
             else:
