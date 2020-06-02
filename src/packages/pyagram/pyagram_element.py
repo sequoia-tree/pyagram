@@ -133,14 +133,14 @@ class PyagramFlag(PyagramElement):
         """
         assert 0 < len(self.banner_elements)
         _, keyword, binding_idx, unpacking_code = self.banner_elements[0]
-        code = '__init__'
+        new_fn_code = '__init__'
         self.banner_elements[0] = (
-            code,
+            new_fn_code,
             keyword,
             binding_idx,
             unpacking_code,
         )
-        self.state.encoder.new_flag_fn_code[self] = code # TODO: Maybe don't keep this in the Encoder?
+        self.state.program_state.new_banners[self] = new_fn_code
 
     def fix_implicit_banner(self, function, bindings):
         """
@@ -170,7 +170,6 @@ class PyagramFlag(PyagramElement):
                 raise enum.Enum.illegal_enum(parameter.kind)
         num_bindings = 0
         num_bindings = add_banner_element(function.__name__, num_bindings, constants.NORMAL_ARG)
-        # TODO: Implicit lambdas, eg in min(..., key=lambda ...), should not appear as "<lambda>". They should appear as the lambda symbol, with the proper subscript.
         if 0 < len(args):
             num_bindings = add_banner_element('...', num_bindings, constants.SINGLY_UNPACKED_ARG)
         if 0 < len(kwds):

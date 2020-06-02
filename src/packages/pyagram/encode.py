@@ -15,7 +15,6 @@ class Encoder:
         num_lines, lambdas_per_line = preprocessor_summary
         self.num_lines = num_lines
         self.lambdas_per_line = lambdas_per_line
-        self.new_flag_fn_code = {}
 
     def object_id(self, object):
         """

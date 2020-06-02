@@ -68,9 +68,9 @@ class ProgramState:
         )
         self.curr_element = self.global_frame
         self.curr_line_no = 0
-        self.prev_trace_type = None
         self.curr_trace_type = None
         self.caught_exc_info = None
+        self.new_banners = {}
         self.finish_prev = None
         self.frame_types = {}
         self.frame_count = 0
@@ -162,7 +162,6 @@ class ProgramState:
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             caught_exc_info, = step_info
             self.process_exception(frame, frame_type, caught_exc_info)
-        self.prev_trace_type = trace_type
 
     def process_frame_open(self, frame, frame_type):
         """

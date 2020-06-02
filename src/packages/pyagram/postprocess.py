@@ -59,12 +59,12 @@ class Postprocessor:
             else:
                 return constants.HIDDEN_FLAG_CODE
 
-        if pyagram_flag in self.state.encoder.new_flag_fn_code:
+        if pyagram_flag in self.state.program_state.new_banners:
             # TODO: Kinda messy, maybe at least abstract it.
             old_fn_code = flag_snapshot['banner'][0]['code']
-            new_fn_code = self.state.encoder.new_flag_fn_code[pyagram_flag]
+            new_fn_code = self.state.program_state.new_banners[pyagram_flag]
             if old_fn_code == new_fn_code:
-                del self.state.encoder.new_flag_fn_code[pyagram_flag]
+                del self.state.program_state.new_banners[pyagram_flag]
             else:
                 flag_snapshot['banner'][0]['code'] = new_fn_code
 
