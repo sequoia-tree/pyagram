@@ -366,8 +366,6 @@ class MemoryState:
     """
 
     def __init__(self, state):
-        # ------------------------------------------------------------------------------------------
-        # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
         self.obj_ids = set()
@@ -375,7 +373,6 @@ class MemoryState:
         self.pg_class_frames = {}
         self.pg_generator_frames = {}
         self.function_parents = {}
-        # ------------------------------------------------------------------------------------------
 
     def step(self):
         """
