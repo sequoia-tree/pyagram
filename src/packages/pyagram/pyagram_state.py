@@ -370,7 +370,7 @@ class MemoryState:
         # TODO: Do you really need ALL these attributes?
         self.state = state
         self.objects = []
-        self.tracked_obj_ids = set() # TODO: To see if an object is tracked, just use `object in self.objects`. In practice there will be very few (less than 50) objects, so it'll be sufficiently fast without adding any memory overhead.
+        self.obj_ids = set()
         self.wrapped_obj_ids = {}
         self.pg_class_frames = {}
         self.pg_generator_frames = {}
@@ -439,7 +439,7 @@ class MemoryState:
     def track(self, object):
         """
         """
-        is_tracked = id(object) in self.tracked_obj_ids
+        is_tracked = id(object) in self.obj_ids
         is_wrapped = id(object) in self.wrapped_obj_ids
         if not is_tracked and not is_wrapped:
             object_type = enum.ObjectTypes.identify_raw_object_type(object)
@@ -449,7 +449,7 @@ class MemoryState:
                 pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
             else:
                 self.objects.append(object)
-                self.tracked_obj_ids.add(id(object))
+                self.obj_ids.add(id(object))
 
     def record_function(self, function):
         """
