@@ -26,7 +26,7 @@ class Postprocessor:
         """
         """
         if self.terminal_ex:
-            while self.state.snapshots[-1]['exception'] is None:
+            while self.state.snapshots[-1]['exception'] is None: # TODO: Do you still need this?
                 self.state.snapshots.pop()
 
     def postprocess_snapshots(self):
