@@ -270,7 +270,13 @@ class Encoder:
     def encode_builtin(self, object):
         """
         """
-        return object.__name__
+        return {
+            'name': object.__name__,
+            'instance':
+                self.encode_reference(object.__self__)
+                if hasattr(object, '__self__') and not inspect.ismodule(object.__self__)
+                else None,
+        }
 
     def encode_collection(self, object):
         """

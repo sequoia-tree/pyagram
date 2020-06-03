@@ -289,9 +289,20 @@ export const METHOD_TEMPLATE = compile(`
 
 export const BUILTIN_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
-  function
+  {{#if (isNull instance)}}
+    function
+  {{else}}
+    method
+  {{/if}}
 </span>
-{{escape this}}(...)
+{{escape name}}(...)
+{{~#unless (isNull instance)~}}
+  <span class="font-family-sans-serif">
+    bound to
+  </span><span class="pyagram-value">
+    {{~decodeReferenceSnapshot instance~}}
+  </span>
+{{~/unless~}}
 `);
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`

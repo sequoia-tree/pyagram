@@ -392,7 +392,10 @@ class MemoryState:
                     *utils.get_defaults(function),
                 ]
             elif object_type is enum.ObjectTypes.BUILTIN:
-                referents = []
+                if hasattr(object, '__self__') and not inspect.ismodule(object.__self__):
+                    referents = [object.__self__]
+                else:
+                    referents = []
             elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
                 referents = list(object)
             elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
