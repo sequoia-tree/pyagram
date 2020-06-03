@@ -278,14 +278,11 @@ export const FUNCTION_TEMPLATE = compile(`
 export const METHOD_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   method
-</span>
-<span class="pyagram-value">
+</span><span class="pyagram-value">
   {{~decodeReferenceSnapshot function~}}
-</span>
-<span class="font-family-sans-serif">
+</span><span class="font-family-sans-serif">
   bound to
-</span>
-<span class="pyagram-value">
+</span><span class="pyagram-value">
   {{~decodeReferenceSnapshot instance~}}
 </span>
 `);
@@ -373,13 +370,12 @@ export const ITERATOR_TEMPLATE = compile(`
 {{else}}
   <span class="font-family-sans-serif">
     iterator over
-  </span>
-  <span class="pyagram-value">
+  </span><span class="pyagram-value">
     {{~decodeReferenceSnapshot object~}}
   </span>
   {{~#unless (isNull annotation)~}}
     <span class="font-family-sans-serif">
-      {{escapeannotation}}
+      {{escape annotation}}
     </span>
   {{~/unless~}}
   <div class="font-family-sans-serif">
