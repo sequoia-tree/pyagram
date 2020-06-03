@@ -162,6 +162,8 @@ class ProgramState:
         elif trace_type is enum.TraceTypes.USER_EXCEPTION:
             caught_exc_info, = step_info
             self.process_exception(frame, frame_type, caught_exc_info)
+        else:
+            raise enum.TraceTypes.illegal_enum(trace_type)
 
     def process_frame_open(self, frame, frame_type):
         """
