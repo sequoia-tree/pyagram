@@ -3,13 +3,13 @@ import * as Templates from './templates.js';
 var objNumbers;
 
 var splitView;
-var showFlags;
+var completedFlags;
 
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
 export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     objNumbers = globalData.obj_numbers;
     splitView = visOptions.splitView.checked;
-    showFlags = visOptions.showFlags.checked;
+    completedFlags = visOptions.completedFlags.checked;
     return {
         'stackHTML': decodeStackSnapshot(pyagramSnapshot.global_frame),
         'heapHTML': decodeHeapSnapshot(pyagramSnapshot.memory_state),
