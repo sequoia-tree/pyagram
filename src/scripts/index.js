@@ -16,7 +16,7 @@ const SLIDER_ID = 'slider-snapshots';
 const SLIDER_LABEL_ID = 'slider-snapshots-label';
 const SLIDER_L_BUTTON_ID = 'slider-snapshots-l';
 const SLIDER_R_BUTTON_ID = 'slider-snapshots-r';
-const VIS_OPTIONS_TEXT_POINTERS_ID = 'options-vis-option-text-ptrs';
+const VIS_OPTIONS_SPLIT_VIEW_ID = 'options-vis-option-split-view';
 const VIS_OPTIONS_SHOW_FLAGS_ID = 'options-vis-option-show-flags';
 const OUTPUT_OVERLAY_ID = 'overlay-output';
 const DRAW_PYAGRAM_BUTTON_ID = 'button-draw';
@@ -37,7 +37,7 @@ var slider = document.getElementById(SLIDER_ID);
 var sliderLabel = document.getElementById(SLIDER_LABEL_ID);
 var sliderButtonL = document.getElementById(SLIDER_L_BUTTON_ID);
 var sliderButtonR = document.getElementById(SLIDER_R_BUTTON_ID);
-var visOptionsTextPointers = document.getElementById(VIS_OPTIONS_TEXT_POINTERS_ID);
+var visOptionsSplitView = document.getElementById(VIS_OPTIONS_SPLIT_VIEW_ID);
 var visOptionsShowFlags = document.getElementById(VIS_OPTIONS_SHOW_FLAGS_ID);
 var outputOverlay = document.getElementById(OUTPUT_OVERLAY_ID);
 var drawPyagramButton = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
@@ -53,7 +53,7 @@ var pyagramStack = unifiedViewPyagramStack;
 var pyagramHeap = unifiedViewPyagramHeap;
 
 var visOptions = {
-    'textPointers': visOptionsTextPointers,
+    'splitView': visOptionsSplitView,
     'showFlags': visOptionsShowFlags,
 };
 
@@ -112,8 +112,8 @@ Object.keys(visOptions).forEach(function(visOptionID) {
     visOptions[visOptionID].onclick = visOptionClick;
 });
 
-visOptions.textPointers.onclick = function() {
-    if (visOptions.textPointers.checked) {
+visOptions.splitView.onclick = function() {
+    if (visOptions.splitView.checked) {
         Switch.select(pyagramStackHeapSwitch, PYAGRAM_TRACK_DIVIDED_VIEW_ID);
         pyagramStack = dividedViewPyagramStack;
         pyagramHeap = dividedViewPyagramHeap;

@@ -61,7 +61,7 @@ function drawSVGs(visOptions) {
     var SVGCanvas = document.getElementById(PYAGRAM_SVG_CANVAS_ID);
     clearSVGCanvas(SVGCanvas);
     SVGCanvas = $(SVGCanvas);
-    if (!visOptions.textPointers.checked) {
+    if (!visOptions.splitView.checked) {
         $(
             `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
         ).removeClass('text-left').addClass('text-center');

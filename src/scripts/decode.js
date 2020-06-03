@@ -2,13 +2,13 @@ import * as Templates from './templates.js';
 
 var objNumbers;
 
-var textPointers;
+var splitView;
 var showFlags;
 
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
 export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     objNumbers = globalData.obj_numbers;
-    textPointers = visOptions.textPointers.checked;
+    splitView = visOptions.splitView.checked;
     showFlags = visOptions.showFlags.checked;
     return {
         'stackHTML': decodeStackSnapshot(pyagramSnapshot.global_frame),
@@ -40,7 +40,7 @@ export function decodeFrameSnapshot(frameSnapshot) {
 
 Handlebars.registerHelper('decodeHeapSnapshot', decodeHeapSnapshot);
 export function decodeHeapSnapshot(heapSnapshot) {
-    if (textPointers) {
+    if (splitView) {
         return Templates.HEAP_TEMPLATE_TEXTPOINTERS_T(heapSnapshot);
     } else {
         return Templates.HEAP_TEMPLATE_TEXTPOINTERS_F(heapSnapshot);
@@ -58,7 +58,7 @@ export function decodeReferenceSnapshot(referenceSnapshot) {
         case 'string':
             return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
         case 'number':
-            if (textPointers) {
+            if (splitView) {
                 return Templates.REFERENT_TEMPLATE_TEXTPOINTERS_T(referenceSnapshot);
             } else {
                 return Templates.REFERENT_TEMPLATE_TEXTPOINTERS_F(referenceSnapshot);
