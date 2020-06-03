@@ -4,12 +4,14 @@ var objNumbers;
 
 var splitView;
 var completedFlags;
+var oldObjects;
 
 Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
 export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     objNumbers = globalData.obj_numbers;
     splitView = visOptions.splitView.checked;
     completedFlags = visOptions.completedFlags.checked;
+    oldObjects = visOptions.oldObjects.checked;
     return {
         'stackHTML': decodeStackSnapshot(pyagramSnapshot.global_frame),
         'heapHTML': decodeHeapSnapshot(pyagramSnapshot.memory_state),
