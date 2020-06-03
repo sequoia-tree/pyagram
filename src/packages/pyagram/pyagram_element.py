@@ -188,11 +188,17 @@ class PyagramFlag(PyagramElement):
         """
         """
         assert 0 == len(self.banner_bindings)
-        if type(callable) is type:
-            self.fix_init_banner()
+        is_new_instance = type(callable) is type
+        if is_new_instance:
             callable = callable.__init__
+        is_user_defined = utils.is_user_defined(callable)
+        if is_new_instance:
+            if is_user_defined:
+                self.fix_init_banner()
+            else:
+                self.hide_from(0)
         self.banner_bindings.append(callable)
-        if not utils.is_user_defined(callable) or inspect.isgeneratorfunction(callable):
+        if not is_user_defined or inspect.isgeneratorfunction(callable):
 
             # BDB doesn't expose a frame when you call a built-in function or a generator function.
 
