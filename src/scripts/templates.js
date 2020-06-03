@@ -126,12 +126,12 @@ export const FRAME_TEMPLATE = compile(`
         class
       </span>
       {{~escape name~}}
-      {{#if (isNull parents)}}
+      {{~#if (isNull parents)~}}
         <span class="font-family-sans-serif">
           [parent: <span class="font-family-monospace">{{decodeUnknownSnapshot this}}</span>]
         </span>
-      {{else if (isEmpty parents)}}
-      {{else}}
+      {{~else if (isEmpty parents)~}}
+      {{~else~}}
         <span class="font-family-sans-serif">
           [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
           {{#each parents}}
@@ -140,7 +140,7 @@ export const FRAME_TEMPLATE = compile(`
           {{~/each~}}
           ]
         </span>
-      {{/if}}
+      {{~/if~}}
     {{else if (isEqual type 'instance')}}
       {{~escape name~}}
       <span class="font-family-sans-serif">
