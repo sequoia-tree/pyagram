@@ -90,7 +90,7 @@ def is_user_defined(callable):
         # TODO: Maybe make USERCODE_FILENAME something more unique, like '<pyagram>'.
         return inspect.getfile(callable) == constants.USERCODE_FILENAME
     except TypeError:
-        return None
+        return False
 
 def is_genuine_binding(variable):
     """
