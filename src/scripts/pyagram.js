@@ -7,7 +7,7 @@ const POINTERS_SVG_GROUP_ID = 'pointers';
 const OBJECT_CLASS_NAME = 'pyagram-object';
 const POINTER_CLASS_NAME = 'pyagram-pointer';
 const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
-const REFERENCE_CLASS_NAME = 'pyagram-reference';
+const REFERENCE_CLASS_NAME = 'pyagram-pointer';
 
 const ARROWHEAD_PADDING = 12;
 const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);

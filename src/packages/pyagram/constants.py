@@ -1,4 +1,3 @@
-import fractions
 import types
 
 USERCODE_FILENAME = 'main.py'
@@ -23,7 +22,7 @@ PRIMITIVE_TYPES = {
     int,
     float,
     complex,
-    fractions.Fraction,
+    bytes,
     bool,
     str,
 }
@@ -40,7 +39,7 @@ BUILTIN_TYPES = {
 ORDERED_COLLECTION_TYPES = {
     list,
     tuple,
-    str,
+    bytearray,
 }
 UNORDERED_COLLECTION_TYPES = {
     set,

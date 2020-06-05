@@ -12,7 +12,7 @@ class PyagramWrappedObject:
     def wrap_object(self, object):
         """
         """
-        self.state.memory_state.wrapped_obj_ids[id(object)] = id(self)
+        self.state.memory_state.redirect(object, self)
 
 class PyagramGeneratorFrame(PyagramWrappedObject):
     """

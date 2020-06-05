@@ -239,7 +239,7 @@ export const REFERENT_TEMPLATE_TEXTPOINTERS_T = compile(`
 `);
 
 export const REFERENT_TEMPLATE_TEXTPOINTERS_F = compile(`
-<span class="pyagram-placeholder pyagram-reference reference-{{decodeObjectIdSnapshot this}}">-</span>
+<span class="pyagram-placeholder pyagram-pointer reference-{{decodeObjectIdSnapshot this}}">-</span>
 `);
 
 export const OBJECT_ID_TEMPLATE = compile(`
@@ -273,18 +273,6 @@ export const FUNCTION_TEMPLATE = compile(`
 <div class="font-family-sans-serif">
   [parent: {{escape parent}}]
 </div>
-`);
-
-export const METHOD_TEMPLATE = compile(`
-<span class="font-family-sans-serif">
-  method
-</span><span class="pyagram-value">
-  {{~decodeReferenceSnapshot function~}}
-</span><span class="font-family-sans-serif">
-  bound to
-</span><span class="pyagram-value">
-  {{~decodeReferenceSnapshot instance~}}
-</span>
 `);
 
 export const BUILTIN_TEMPLATE = compile(`

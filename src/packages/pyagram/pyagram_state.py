@@ -383,19 +383,9 @@ class MemoryState:
             if object_type is enum.ObjectTypes.FUNCTION:
                 self.record_function(object)
                 referents = utils.get_defaults(object)
-            elif object_type is enum.ObjectTypes.METHOD:
-                function = object.__func__
-                instance = object.__self__
-                self.record_function(function)
-                referents = [
-                    instance,
-                    *utils.get_defaults(function),
-                ]
             elif object_type is enum.ObjectTypes.BUILTIN:
-                if hasattr(object, '__self__') and not inspect.ismodule(object.__self__):
-                    referents = [object.__self__]
-                else:
-                    referents = []
+                # TODO: Maybe if it's a builtin method, track the __func__. Maybe in lieu?
+                referents = []
             elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
                 referents = list(object)
             elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
@@ -446,11 +436,19 @@ class MemoryState:
             object_type = enum.ObjectTypes.identify_raw_object_type(object)
             if object_type is enum.ObjectTypes.PRIMITIVE:
                 pass
+            elif object_type is enum.ObjectTypes.METHOD:
+                self.track(object.__func__)
+                self.redirect(object, object.__func__)
             elif object_type is enum.ObjectTypes.GENERATOR:
                 pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
             else:
                 self.objects.append(object)
                 self.obj_ids.add(id(object))
+
+    def redirect(self, from_object, to_object):
+        """
+        """
+        self.wrapped_obj_ids[id(from_object)] = id(to_object)
 
     def record_function(self, function):
         """
