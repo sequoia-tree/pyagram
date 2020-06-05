@@ -383,6 +383,15 @@ class MemoryState:
             if object_type is enum.ObjectTypes.FUNCTION:
                 self.record_function(object)
                 referents = utils.get_defaults(object)
+            elif object_type is enum.ObjectTypes.METHOD:
+                function = object.__func__
+                instance = object.__self__
+                self.record_function(function)
+                referents = [
+                    function,
+                    *utils.get_defaults(function),
+                    instance,
+                ]
             elif object_type is enum.ObjectTypes.BUILTIN:
                 if hasattr(object, '__self__') and not inspect.ismodule(object.__self__):
                     referents = [object.__self__]
@@ -438,9 +447,6 @@ class MemoryState:
             object_type = enum.ObjectTypes.identify_raw_object_type(object)
             if object_type is enum.ObjectTypes.PRIMITIVE:
                 pass
-            elif object_type is enum.ObjectTypes.METHOD:
-                self.track(object.__func__)
-                self.redirect(object, object.__func__)
             elif object_type is enum.ObjectTypes.GENERATOR:
                 pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
             else:

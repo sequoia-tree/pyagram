@@ -167,6 +167,9 @@ class Encoder:
         if object_type is enum.ObjectTypes.FUNCTION:
             encoding = 'function'
             data = self.encode_function(object)
+        elif object_type is enum.ObjectTypes.METHOD:
+            encoding = 'method'
+            data = self.encode_method(object)
         elif object_type is enum.ObjectTypes.BUILTIN:
             encoding = 'builtin'
             data = self.encode_builtin(object)
@@ -254,6 +257,14 @@ class Encoder:
                 else None,
             'parameters': parameters,
             'parent': repr(self.state.memory_state.function_parents[object]),
+        }
+
+    def encode_method(self, object):
+        """
+        """
+        return {
+            'function': self.encode_reference(object.__func__),
+            'instance': self.encode_reference(object.__self__),
         }
 
     def encode_builtin(self, object):

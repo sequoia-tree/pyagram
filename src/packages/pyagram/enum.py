@@ -137,7 +137,6 @@ class ObjectTypes(Enum):
         else:
             assert raw_object_type not in {
                 ObjectTypes.PRIMITIVE,
-                ObjectTypes.METHOD,
                 ObjectTypes.GENERATOR,
                 ObjectTypes.USER_CLASS,
                 ObjectTypes.BLTN_CLASS,
