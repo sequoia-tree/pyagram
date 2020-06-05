@@ -384,8 +384,10 @@ class MemoryState:
                 self.record_function(object)
                 referents = utils.get_defaults(object)
             elif object_type is enum.ObjectTypes.BUILTIN:
-                # TODO: Maybe if it's a builtin method, track the __func__. Maybe in lieu?
-                referents = []
+                if hasattr(object, '__self__') and not inspect.ismodule(object.__self__):
+                    referents = [object.__self__]
+                else:
+                    referents = []
             elif object_type is enum.ObjectTypes.ORDERED_COLLECTION:
                 referents = list(object)
             elif object_type is enum.ObjectTypes.UNORDERED_COLLECTION:
