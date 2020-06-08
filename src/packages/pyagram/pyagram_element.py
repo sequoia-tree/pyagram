@@ -36,6 +36,7 @@ class PyagramFlag(PyagramElement):
         # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag. Also consider whether you need hide_flags -- or whether you'll must make it so that a hidden flag's subflags are hidden regardless.
         self.flag_type = flag_type
         if banner_summary is None:
+            # TODO: Use a constant equal to -1 for the code_col_offset, instead of None.
             code_col_offset, banner_elements = None, []
         else:
             code_col_offset, banner_elements = banner_summary
