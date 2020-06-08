@@ -154,7 +154,7 @@ export const FRAME_TEMPLATE = compile(`
         <td class="text-right">
           {{decodeReferenceSnapshot key}}
         </td>
-        <td class="text-left pyagram-value pyagram-frame-value" {{#unless (isNull ../from)}} colspan="3" {{/unless}}>
+        <td class="text-left pyagram-value pyagram-frame-value" {{#if (isEqual ../type 'generator')}}{{#unless (isNull ../from)}} colspan="3" {{/unless}}{{/if}}>
           {{decodeReferenceSnapshot value}}
         </td>
       </tr>
