@@ -31,11 +31,16 @@ class PyagramFlag(PyagramElement):
     """
     """
 
-    def __init__(self, opened_by, flag_type, banner_elements, hidden_snapshot=math.inf, *, state=None):
+    def __init__(self, opened_by, flag_type, banner_summary, hidden_snapshot=math.inf, *, state=None):
         super().__init__(opened_by, state)
         # TODO: When you're done refactoring everything, see if you still need the infrastructure for hiding PyagramFlags, and whether you still need to postprocess each PyagramFlag. Also consider whether you need hide_flags -- or whether you'll must make it so that a hidden flag's subflags are hidden regardless.
         self.flag_type = flag_type
-        self.banner_elements = [] if banner_elements is None else banner_elements
+        if banner_summary is None:
+            code_col_offset, banner_elements = None, []
+        else:
+            code_col_offset, banner_elements = banner_summary
+        self.code_col_offset = code_col_offset
+        self.banner_elements = banner_elements
         self.banner_bindings = []
         self.hidden_snapshot = hidden_snapshot
         self.hide_flags = False

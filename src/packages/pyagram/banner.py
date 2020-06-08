@@ -6,16 +6,26 @@ class Banner:
     """
     """
 
-    def __init__(self, code):
+    def __init__(self, code, node):
         self.code = code
+        self.node = node
         self.elements = []
 
     @property
     def summary(self):
         """
         """
-        return ast.List(
-            elts=self.elements,
+        return ast.Tuple(
+            elts=[
+                ast.Constant(
+                    value=self.node.col_offset,
+                    kind=None,
+                ),
+                ast.List(
+                    elts=self.elements,
+                    ctx=ast.Load(),
+                ),
+            ],
             ctx=ast.Load(),
         )
 
@@ -27,7 +37,7 @@ class FunctionCallBanner(Banner):
     """
 
     def __init__(self, code, node):
-        super().__init__(code)
+        super().__init__(code, node)
         self.binding_index = 0
         self.add_func_info(node.func)
         self.add_args_info(node.args)
@@ -99,7 +109,7 @@ class ComprehensionBanner(Banner):
     """
 
     def __init__(self, code, node):
-        super().__init__(code)
+        super().__init__(code, node)
         self.add_comp_info(node)
 
     def add_comp_info(self, comprehension):

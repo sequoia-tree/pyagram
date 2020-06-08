@@ -8,12 +8,13 @@ class Preprocessor:
     """
     """
 
-    def __init__(self, code):
+    def __init__(self, code, exempt_fn_locs):
         self.code = code
         self.num_lines = len(code.split('\n'))
         self.ast = ast.parse(code)
         self.new_node_linenos = []
         self.lambdas_by_line = {}
+        self.exempt_fn_locs = exempt_fn_locs
 
     @property
     def summary(self):
@@ -71,6 +72,14 @@ class CodeWrapper(ast.NodeTransformer):
         super().__init__()
         self.preprocessor = preprocessor
 
+    def is_exempt(self, node):
+        """
+        """
+        for lineno, col_offset in self.preprocessor.exempt_fn_locs:
+            if node.lineno == lineno and node.col_offset == col_offset:
+                return True
+        return False
+
     def mod_lineno(self, node, step_code):
         """
         """
@@ -88,6 +97,10 @@ class CodeWrapper(ast.NodeTransformer):
         #                        (lambda: z)(),     # arg
         #                    ),
         #                )
+
+        if self.is_exempt(node):
+            self.generic_visit(node)
+            return node
 
         banner_call = self.insert_eager_call(
             node.lineno,
