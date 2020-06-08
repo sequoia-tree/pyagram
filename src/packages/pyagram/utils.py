@@ -83,12 +83,12 @@ def get_iterable(iterator):
             iterable = referent
     return iterable
 
-def is_user_defined(callable):
+def is_user_defined(function):
     """
     """
     try:
         # TODO: Maybe make USERCODE_FILENAME something more unique, like '<pyagram>'.
-        return inspect.getfile(callable) == constants.USERCODE_FILENAME
+        return inspect.getfile(function) == constants.USERCODE_FILENAME
     except TypeError:
         return False
 

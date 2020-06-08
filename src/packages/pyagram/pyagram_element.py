@@ -189,9 +189,12 @@ class PyagramFlag(PyagramElement):
         """
         assert 0 == len(self.banner_bindings)
         self.banner_bindings.append(callable)
-        if not utils.is_user_defined(callable) or inspect.isgeneratorfunction(callable):
+        if inspect.isclass(callable) or (inspect.isfunction(callable) and (
+            inspect.isgeneratorfunction(callable)
+            or not utils.is_user_defined(callable)
+        )):
 
-            # BDB doesn't expose a frame when you call a built-in function or a generator function.
+            # BDB doesn't expose a frame for classes, built-in functions, or generator functions.
 
             self.is_builtin = True
 
