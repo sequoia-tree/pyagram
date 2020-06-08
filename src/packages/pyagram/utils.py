@@ -7,18 +7,6 @@ import types
 from . import constants
 from . import enum
 
-# def with_stdout(function):
-#     """
-#     """
-#     def function_with_stdout(*args, **kwargs):
-#         old_stdout = sys.stdout
-#         new_stdout = io.StringIO()
-#         sys.stdout = new_stdout
-#         return_val = function(*args, **kwargs, stdout=new_stdout)
-#         sys.stdout = old_stdout
-#         return return_val
-#     return function_with_stdout
-
 def pair_naturals(x, y, *, max_x):
     """
     """
