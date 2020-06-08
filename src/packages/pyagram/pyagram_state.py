@@ -341,6 +341,46 @@ class ProgramState:
     def register_callable(self, frame, callable):
         """
         """
+
+        # if self.is_ongoing_flag_sans_frame:
+        #     assert self.is_ongoing_flag_sans_frame
+        #     self.curr_element.register_callable(callable)
+
+        # assert self.is_ongoing_flag_sans_frame, self.curr_element
+        # self.curr_element.register_callable(callable)
+        # if callable is super:
+        #     if self.curr_element.banner_is_complete:
+        #         self.close_pyagram_flag(frame, None)
+        #         print(self.curr_element)
+
+        # TODO: The problem is that you're treating super() like a normal function call.
+        # TODO: super(cls, obj) works like a normal function call, so it doesn't have any problems.
+        # TODO: But Python handles super() specially. I suspect you're encoutering an exception because you wrap super() during preprocessing, and somehow this confuses Python ...
+        # >>> class A:
+        # ...     def __init__(self):
+        # ...             (lambda: super())().__init__()
+        # ...
+        # >>> a = A()
+        # Traceback (most recent call last):
+        #   File "<stdin>", line 1, in <module>
+        #   File "<stdin>", line 3, in __init__
+        #   File "<stdin>", line 3, in <lambda>
+        # RuntimeError: super(): no arguments
+        # >>>
+        # >>> 'versus ...'
+        # 'versus ...'
+        # >>>
+        # >>> class A:
+        # ...     def __init__(self):
+        # ...             super().__init__()
+        # ...
+        # >>> a = A()
+        # >>>
+        # TODO: It is not sufficient to avoid wrapping anything named 'super', since a user could write `x = super` and then x() could take the place of super().
+        # TODO: Some worst-case solutions:
+        # TODO: (*) Raise a PyagramError and ask the user to change super() to super(cls, obj).
+        # TODO: (*) Log the (lineno, col offset). Then take it from the top, but this time during preprocessing, don't wrap the call that occurs at the specified (lineno, col offset).
+
         assert self.is_ongoing_flag_sans_frame
         self.curr_element.register_callable(callable)
 
