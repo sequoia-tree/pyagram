@@ -54,6 +54,7 @@ class PyagramClassFrame(PyagramWrappedObject):
     """
 
     HIDDEN_BINDINGS = {
+        '__classcell__',
         '__dict__',
         '__doc__',
         '__module__',
