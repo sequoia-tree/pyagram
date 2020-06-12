@@ -52,13 +52,15 @@ class Pyagram:
                         },
                     }
             except Exception as exc:
+                sys.stdout = initial_stdout
                 if debug:
                     print(new_stdout.getvalue())
                     raise exc
                 self.encoding = 'pyagram_error'
                 self.data = 'TODO' # TODO
+            else:
+                sys.stdout = initial_stdout
             break
-        sys.stdout = initial_stdout
 
     def serialize(self):
         """

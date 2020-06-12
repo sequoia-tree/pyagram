@@ -1,4 +1,5 @@
 from . import enum
+from . import pyagram_element
 from . import utils
 
 class PyagramWrappedObject:
@@ -26,6 +27,8 @@ class PyagramGeneratorFrame(PyagramWrappedObject):
         generator_function = utils.get_function(generator.gi_frame)
         if generator_function is None:
             parent = state.program_state.curr_element
+            while isinstance(parent, pyagram_element.PyagramFlag):
+                parent = parent.opened_by
         else:
             parent = state.memory_state.function_parents[generator_function]
         self.number = self.state.program_state.register_frame()
