@@ -22,7 +22,6 @@ PRIMITIVE_TYPES = {
     int,
     float,
     complex,
-    bytes,
     bool,
     str,
 }
@@ -37,9 +36,10 @@ BUILTIN_TYPES = {
     types.BuiltinMethodType,
 }
 ORDERED_COLLECTION_TYPES = {
+    bytearray,
+    bytes,
     list,
     tuple,
-    bytearray,
 }
 UNORDERED_COLLECTION_TYPES = {
     set,
