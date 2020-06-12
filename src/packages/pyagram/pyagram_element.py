@@ -3,6 +3,7 @@ import math
 
 from . import constants
 from . import enum
+from . import exception
 from . import utils
 
 class PyagramElement:
@@ -194,6 +195,13 @@ class PyagramFlag(PyagramElement):
         """
         """
         assert 0 == len(self.banner_bindings)
+        if callable is help:
+            pass # TODO: Stop here. Postprocess the snapshots we have so far, and send them to the front-end, along with an error message that indicates this function is unsupported.
+        if callable is super and len(self.banner_elements) == 1:
+            raise exception.CallWrapperException(
+                self.state.program_state.curr_line_no,
+                self.code_col_offset,
+            )
         self.banner_bindings.append(callable)
         if not inspect.isfunction(callable) \
             or inspect.isgeneratorfunction(callable) \

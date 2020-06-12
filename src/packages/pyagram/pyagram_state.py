@@ -4,7 +4,6 @@ import inspect
 from . import constants
 from . import encode
 from . import enum
-from . import exception
 from . import pyagram_element
 from . import pyagram_wrapped_object
 from . import utils
@@ -343,13 +342,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        if callable is super and len(self.curr_element.banner_elements) == 1:
-            raise exception.CallWrapperException(
-                self.curr_line_no,
-                self.curr_element.code_col_offset,
-            )
-        else:
-            self.curr_element.register_callable(callable)
+        self.curr_element.register_callable(callable)
 
     def register_argument(self, frame, argument):
         """
