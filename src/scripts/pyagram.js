@@ -54,6 +54,8 @@ export function drawPyagram(slider, pyagram) {
 
 export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
     switch (dataType) {
+        case undefined:
+            break;
         case 'pyagram':
             var snapshot = snapshots[snapshotIndex];
             var pyagramHTML = Decode.decodePyagramSnapshot(
@@ -77,8 +79,6 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
             pyagramException.innerHTML = '';
             printOutput.innerHTML = '';
 
-            break;
-        default:
             break;
     }
 }
