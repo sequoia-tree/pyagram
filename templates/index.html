@@ -35,13 +35,27 @@
             ),
             (
               'html',
-              utils.split(
-                'runtime',
-                'vertical',
-                [
-                  ('vm', 'template', 'pyagram'),
-                  ('sys', 'template', 'print-output'),
-                ],
+              utils.switch(
+                'data',
+                (
+                  (
+                    'pyagram',
+                    'html',
+                    utils.split(
+                      'runtime',
+                      'vertical',
+                      [
+                        ('vm', 'template', 'pyagram'),
+                        ('sys', 'template', 'print-output'),
+                      ],
+                    ),
+                  ),
+                  (
+                    'error',
+                    'html',
+                    '',
+                  ),
+                ),
               ),
             ),
             start_active=True,

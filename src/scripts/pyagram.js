@@ -1,6 +1,11 @@
 import * as Decode from './decode.js';
 import * as Slider from './slider.js';
+import * as Switch from './switch.js';
 
+// TODO: Migrate all the constants into a file called constants.js.
+const PYAGRAM_OUTPUT_SWITCH_ID = 'switch-data';
+const OUTPUT_TRACK_PYAGRAM_ID = 'switch-data-track-pyagram';
+const OUTPUT_TRACK_ERROR_ID = 'switch-data-track-error';
 const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
 const POINTERS_SVG_GROUP_ID = 'pointers';
 
@@ -16,6 +21,9 @@ const LEFT_VPTR_MARGIN = 50;
 const RIGHT_PTR_MARGIN = 50;
 const POINTER_BUFFER_X = 25;
 const POINTER_BUFFER_Y = 25;
+
+var pyagramOutputSwitch = document.getElementById(PYAGRAM_OUTPUT_SWITCH_ID);
+var outputTrackError = document.getElementById(OUTPUT_TRACK_ERROR_ID); // TODO: New variable name.
 
 var dataType;
 var snapshots;
@@ -52,11 +60,14 @@ export function drawPyagram(slider, pyagram) {
     Slider.reset(slider);
 }
 
-export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
+export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) { // TODO: pyagramException and printOutput should not be params, since they never change. Simply evaluate them in this file, rather than index.js.
     switch (dataType) {
         case undefined:
             break;
         case 'pyagram':
+
+            Switch.select(pyagramOutputSwitch, OUTPUT_TRACK_PYAGRAM_ID);
+
             var snapshot = snapshots[snapshotIndex];
             var pyagramHTML = Decode.decodePyagramSnapshot(
                 snapshot,
@@ -72,12 +83,10 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
             break;
         case 'error':
 
+            Switch.select(pyagramOutputSwitch, OUTPUT_TRACK_ERROR_ID);
+
             var pyagramHTML = Decode.decodePyagramError(pgErrorInfo);
-            // TODO
-            pyagramStack.innerHTML = pyagramHTML;
-            pyagramHeap.innerHTML = '';
-            pyagramException.innerHTML = '';
-            printOutput.innerHTML = '';
+            outputTrackError.innerHTML = 'hi';
 
             break;
     }
