@@ -9,6 +9,14 @@ export const ESCAPE = Handlebars.compile(`
 {{~this~}}
 `);
 
+export const PYAGRAM_ERROR_TEMPLATE = compile(`
+<div class="font-family-monospace">
+  TODO
+  {{escape this}}
+  TODO
+</div>
+`);
+
 export const STACK_TEMPLATE = compile(`
 <div class="font-family-monospace">
   {{decodeFrameSnapshot this}}

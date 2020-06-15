@@ -17,43 +17,69 @@ const RIGHT_PTR_MARGIN = 50;
 const POINTER_BUFFER_X = 25;
 const POINTER_BUFFER_Y = 25;
 
+var dataType;
 var snapshots;
 var globalData;
+var pgErrorInfo;
 
 export function drawPyagram(slider, pyagram) {
     switch (pyagram.encoding) {
         case 'pyagram':
+            dataType = 'pyagram';
             snapshots = pyagram.data.snapshots;
             globalData = pyagram.data.global_data;
+            pgErrorInfo = undefined;
             slider.min = 0;
             slider.max = snapshots.length - 1;
-            Slider.reset(slider);
             break;
         case 'syntax_error':
-            // TODO
+            dataType = 'error';
+            snapshots = undefined;
+            globalData = undefined;
+            pgErrorInfo = pyagram.data;
+            slider.min = 0;
+            slider.max = 0;
             break;
         case 'pyagram_error':
-            // TODO
-            break;
-        default:
+            dataType = 'error';
+            snapshots = undefined;
+            globalData = undefined;
+            pgErrorInfo = pyagram.data;
+            slider.min = 0;
+            slider.max = 0;
             break;
     }
+    Slider.reset(slider);
 }
 
 export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) {
-    if (typeof snapshots !== 'undefined') {
-        var snapshot = snapshots[snapshotIndex];
-        var pyagramHTML = Decode.decodePyagramSnapshot(
-            snapshot,
-            globalData,
-            visOptions,
-        );
-        pyagramStack.innerHTML = pyagramHTML.stackHTML;
-        pyagramHeap.innerHTML = pyagramHTML.heapHTML;
-        pyagramException.innerHTML = pyagramHTML.exceptionHTML;
-        printOutput.innerHTML = pyagramHTML.printOutputHTML;
-        // TODO: Use snapshot.curr_line_no.
-        drawSVGs(visOptions);
+    switch (dataType) {
+        case 'pyagram':
+            var snapshot = snapshots[snapshotIndex];
+            var pyagramHTML = Decode.decodePyagramSnapshot(
+                snapshot,
+                globalData,
+                visOptions,
+            );
+            pyagramStack.innerHTML = pyagramHTML.stackHTML;
+            pyagramHeap.innerHTML = pyagramHTML.heapHTML;
+            pyagramException.innerHTML = pyagramHTML.exceptionHTML;
+            printOutput.innerHTML = pyagramHTML.printOutputHTML;
+            // TODO: Use snapshot.curr_line_no.
+            drawSVGs(visOptions);
+            break;
+        case 'error':
+
+            var pyagramHTML = Decode.decodePyagramError(pgErrorInfo);
+            // TODO
+            pyagramStack.innerHTML = pyagramHTML;
+            pyagramHeap.innerHTML = '';
+            pyagramException.innerHTML = '';
+            printOutput.innerHTML = '';
+
+            break;
+        default:
+            break;
     }
 }
 

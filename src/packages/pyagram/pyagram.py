@@ -22,7 +22,11 @@ class Pyagram:
                     preprocessor.preprocess()
                 except SyntaxError as exc:
                     self.encoding = 'syntax_error'
-                    self.data = 'TODO' # TODO
+                    self.data = {
+                        'lineno': exc.lineno,
+                        'offset': exc.offset,
+                        'code': exc.text.strip('\n'),
+                    }
                 else:
                     bindings = {}
                     state = pyagram_state.State(preprocessor.summary, new_stdout)

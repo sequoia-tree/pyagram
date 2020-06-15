@@ -20,6 +20,11 @@ export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     };
 }
 
+Handlebars.registerHelper('decodePyagramError', decodePyagramError);
+export function decodePyagramError(pyagramError) {
+    return Templates.PYAGRAM_ERROR_TEMPLATE(pyagramError);
+}
+
 Handlebars.registerHelper('decodeStackSnapshot', decodeStackSnapshot);
 export function decodeStackSnapshot(stackSnapshot) {
     return Templates.STACK_TEMPLATE(stackSnapshot);
