@@ -10,10 +10,12 @@ export const ESCAPE = Handlebars.compile(`
 `);
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
-<div class="h-100 w-100 p-3 pyagram-exception font-family-monospace">
+<div class="h-100 w-100 pyagram-exception text-unformatted font-family-monospace">
+  {{~noOp~}}
   TODO
   {{escape this}}
   TODO
+  {{~noOp~}}
 </div>
 `);
 

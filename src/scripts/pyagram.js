@@ -60,7 +60,7 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
         case 'error':
             Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_ERROR_VIEW_ID);
             var pyagramHTML = Decode.decodePyagramError(pgErrorInfo);
-            Constants.PG_DATA_ERROR_VIEW.innerHTML = pyagramHTML;
+            Constants.PG_DATA_ERROR_PANEL.innerHTML = pyagramHTML;
             break;
     }
 }

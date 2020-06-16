@@ -109,7 +109,7 @@
   <div class="switch h-100 w-100" id="switch-{{ id }}">
     {% for i in range(elements|length) %}
       {% set element_id, element_encoding, element_context = elements[i] %}
-      <div id="switch-{{ id }}-track-{{ element_id }}" class="h-100 w-100 {% if i == 0 %} active {% else %} inactive {% endif %}">
+      <div id="switch-{{ id }}-track-{{ element_id }}" class="h-100 w-100 {% if i == 0 %} active {% endif %}">
         {{ decode_content(element_id, element_encoding, element_context, **kwargs) }}
       </div>
     {% endfor %}
