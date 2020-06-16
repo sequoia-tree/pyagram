@@ -23,7 +23,7 @@ export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
 Handlebars.registerHelper('decodePyagramError', decodePyagramError);
 export function decodePyagramError(pyagramError) {
     return Templates.PYAGRAM_ERROR_TEMPLATE(pyagramError);
-}
+} // TODO: Do you use this?
 
 Handlebars.registerHelper('decodeStackSnapshot', decodeStackSnapshot);
 export function decodeStackSnapshot(stackSnapshot) {

@@ -1,3 +1,4 @@
+import * as Constants from './constants.js';
 import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 import * as Switch from './switch.js';
@@ -22,8 +23,8 @@ const RIGHT_PTR_MARGIN = 50;
 const POINTER_BUFFER_X = 25;
 const POINTER_BUFFER_Y = 25;
 
-var pyagramOutputSwitch = document.getElementById(PYAGRAM_OUTPUT_SWITCH_ID);
-var outputTrackError = document.getElementById(OUTPUT_TRACK_ERROR_ID); // TODO: New variable name.
+const pyagramOutputSwitch = document.getElementById(PYAGRAM_OUTPUT_SWITCH_ID);
+const outputTrackError = document.getElementById(OUTPUT_TRACK_ERROR_ID); // TODO: New variable name.
 
 var dataType;
 var snapshots;
