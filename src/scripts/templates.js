@@ -1,8 +1,15 @@
 function compile(template) {
-    return Handlebars.compile(template.trim(), {
-        noEscape: true,
-        assumeObjects: true,
-    });
+    return Handlebars.compile(
+        template.split('\n').map(function(line) {
+            line = line.replace(/^\s+/, '');
+            line = line.replace(/\s+$/, '');
+            return line;
+        }).join(''),
+        {
+            noEscape: true,
+            assumeObjects: true,
+        },
+    );
 }
 
 export const ESCAPE = Handlebars.compile(`
@@ -11,9 +18,7 @@ export const ESCAPE = Handlebars.compile(`
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
 <div class="pyagram-error-text p-3 text-unformatted font-family-monospace">
-  {{~noOp~}}
   TODO
-  {{~noOp~}}
 </div>
 `);
 
