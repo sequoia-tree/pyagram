@@ -4,7 +4,7 @@
 
 @mixin fit-to-text() {
   width: min-content;
-  white-space: nowrap;
+  white-space: pre;
 }
 
 // TODO: You should extend the builtin bootstrap padding map.
@@ -83,7 +83,7 @@
 
 .pyagram-exception {
   background: rgba($bright-red, 0.5);
-  .pyagram-error-text {
-    width: min-content; // TODO: If you included fit-to-text(), could you get rid of text-unformatted?
+  .pyagram-error-text { // TODO: Rename this.
+    @include fit-to-text(); // TODO: If you included fit-to-text(), could you get rid of text-unformatted? Could you even replace text-unformatted where its used in the print output?
   }
 }
