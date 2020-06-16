@@ -3,29 +3,6 @@ import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 import * as Switch from './switch.js';
 
-// TODO: Migrate all the constants into a file called constants.js.
-const PYAGRAM_OUTPUT_SWITCH_ID = 'switch-data';
-const OUTPUT_TRACK_PYAGRAM_ID = 'switch-data-track-pyagram';
-const OUTPUT_TRACK_ERROR_ID = 'switch-data-track-error';
-const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
-const POINTERS_SVG_GROUP_ID = 'pointers';
-
-const OBJECT_CLASS_NAME = 'pyagram-object';
-const POINTER_CLASS_NAME = 'pyagram-pointer';
-const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
-const REFERENCE_CLASS_NAME = 'pyagram-pointer';
-
-const ARROWHEAD_PADDING = 12;
-const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);
-const DIAGONAL_PADDING = 10;
-const LEFT_VPTR_MARGIN = 50;
-const RIGHT_PTR_MARGIN = 50;
-const POINTER_BUFFER_X = 25;
-const POINTER_BUFFER_Y = 25;
-
-const pyagramOutputSwitch = document.getElementById(PYAGRAM_OUTPUT_SWITCH_ID);
-const outputTrackError = document.getElementById(OUTPUT_TRACK_ERROR_ID); // TODO: New variable name.
-
 var dataType;
 var snapshots;
 var globalData;
@@ -61,14 +38,12 @@ export function drawPyagram(slider, pyagram) {
     Slider.reset(slider);
 }
 
-export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap, pyagramException, printOutput) { // TODO: pyagramException and printOutput should not be params, since they never change. Simply evaluate them in this file, rather than index.js.
+export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap) {
     switch (dataType) {
         case undefined:
             break;
         case 'pyagram':
-
-            Switch.select(pyagramOutputSwitch, OUTPUT_TRACK_PYAGRAM_ID);
-
+            Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_RESULT_VIEW_ID);
             var snapshot = snapshots[snapshotIndex];
             var pyagramHTML = Decode.decodePyagramSnapshot(
                 snapshot,
@@ -77,29 +52,26 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
             );
             pyagramStack.innerHTML = pyagramHTML.stackHTML;
             pyagramHeap.innerHTML = pyagramHTML.heapHTML;
-            pyagramException.innerHTML = pyagramHTML.exceptionHTML;
-            printOutput.innerHTML = pyagramHTML.printOutputHTML;
+            Constants.EXCEPTION_VIEW.innerHTML = pyagramHTML.exceptionHTML;
+            Constants.PRINT_OUTPUT_VIEW.innerHTML = pyagramHTML.printOutputHTML;
             // TODO: Use snapshot.curr_line_no.
             drawSVGs(visOptions);
             break;
         case 'error':
-
-            Switch.select(pyagramOutputSwitch, OUTPUT_TRACK_ERROR_ID);
-
+            Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_ERROR_VIEW_ID);
             var pyagramHTML = Decode.decodePyagramError(pgErrorInfo);
-            outputTrackError.innerHTML = 'hi';
-
+            Constants.PG_DATA_ERROR_VIEW.innerHTML = pyagramHTML;
             break;
     }
 }
 
 function drawSVGs(visOptions) {
-    var SVGCanvas = document.getElementById(PYAGRAM_SVG_CANVAS_ID);
+    var SVGCanvas = document.getElementById(Constants.PYAGRAM_SVG_CANVAS_ID);
     clearSVGCanvas(SVGCanvas);
     SVGCanvas = $(SVGCanvas);
     if (!visOptions.splitView.checked) {
         $(
-            `.${FRAME_VALUE_CLASS_NAME}:has(.${REFERENCE_CLASS_NAME})`
+            `.${Constants.FRAME_VALUE_CLASS_NAME}:has(.${Constants.REFERENCE_CLASS_NAME})`
         ).removeClass('text-left').addClass('text-center');
         drawPointers(SVGCanvas);
     }
@@ -118,7 +90,7 @@ function drawPointers(SVGCanvas) {
     var objects;
     var object;
     var id;
-    objects = document.getElementsByClassName(OBJECT_CLASS_NAME);
+    objects = document.getElementsByClassName(Constants.OBJECT_CLASS_NAME);
     for (object of objects) {
         id = object.id.replace(/^object-/, '');
         references = document.getElementsByClassName('reference-'.concat(id));
@@ -139,71 +111,71 @@ function drawPointer(SVGCanvas, reference, object) {
     };
     var endCoordinateTL = {
         pre: {
-            x: -POINTER_BUFFER_X,
-            y: -POINTER_BUFFER_Y,
+            x: -Constants.POINTER_BUFFER_X,
+            y: -Constants.POINTER_BUFFER_Y,
         },
         loc: {
-            x: object.offset().left - ARROWHEAD_DIAG_PADDING,
-            y: object.offset().top + DIAGONAL_PADDING - ARROWHEAD_DIAG_PADDING,
+            x: object.offset().left - Constants.ARROWHEAD_DIAG_PADDING,
+            y: object.offset().top + Constants.DIAGONAL_PADDING - Constants.ARROWHEAD_DIAG_PADDING,
         },
     };
     var endCoordinateL = {
         pre: {
-            x: -POINTER_BUFFER_X,
+            x: -Constants.POINTER_BUFFER_X,
             y: 0,
         },
         loc: {
-            x: object.offset().left - ARROWHEAD_PADDING,
+            x: object.offset().left - Constants.ARROWHEAD_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
     var endCoordinateBL = {
         pre: {
-            x: -POINTER_BUFFER_X,
-            y: +POINTER_BUFFER_Y,
+            x: -Constants.POINTER_BUFFER_X,
+            y: +Constants.POINTER_BUFFER_Y,
         },
         loc: {
-            x: object.offset().left - ARROWHEAD_DIAG_PADDING,
-            y: object.offset().top + object.height() - DIAGONAL_PADDING + ARROWHEAD_DIAG_PADDING,
+            x: object.offset().left - Constants.ARROWHEAD_DIAG_PADDING,
+            y: object.offset().top + object.height() - Constants.DIAGONAL_PADDING + Constants.ARROWHEAD_DIAG_PADDING,
         },
     };
     var endCoordinateT = {
         pre: {
             x: 0,
-            y: -POINTER_BUFFER_Y,
+            y: -Constants.POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top - ARROWHEAD_PADDING,
+            y: object.offset().top - Constants.ARROWHEAD_PADDING,
         },
     };
     var endCoordinateB = {
         pre: {
             x: 0,
-            y: +POINTER_BUFFER_Y,
+            y: +Constants.POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top + object.height() + ARROWHEAD_PADDING,
+            y: object.offset().top + object.height() + Constants.ARROWHEAD_PADDING,
         },
     };
     var endCoordinateM = {
         pre: {
             x: 0,
-            y: +POINTER_BUFFER_Y,
+            y: +Constants.POINTER_BUFFER_Y,
         },
         loc: {
             x: object.offset().left + object.width() / 3,
-            y: object.offset().top + object.height() + ARROWHEAD_PADDING,
+            y: object.offset().top + object.height() + Constants.ARROWHEAD_PADDING,
         },
     }
     var endCoordinateR = {
         pre: {
-            x: +POINTER_BUFFER_X,
+            x: +Constants.POINTER_BUFFER_X,
             y: 0,
         },
         loc: {
-            x: object.offset().left + object.width() + ARROWHEAD_PADDING,
+            x: object.offset().left + object.width() + Constants.ARROWHEAD_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
@@ -212,11 +184,11 @@ function drawPointer(SVGCanvas, reference, object) {
     var isT = startCoordinate.y < endCoordinateT.loc.y;
     var isB = endCoordinateB.loc.y < startCoordinate.y;
     var endCoordinate;
-    if (startCoordinate.x + RIGHT_PTR_MARGIN > endCoordinateR.loc.x) {
+    if (startCoordinate.x + Constants.R_HPTR_MARGIN > endCoordinateR.loc.x) {
         endCoordinate = endCoordinateR;
-    } else if (isL && !isB && startCoordinate.y + LEFT_VPTR_MARGIN > endCoordinateT.loc.y) {
+    } else if (isL && !isB && startCoordinate.y + Constants.L_VPTR_MARGIN > endCoordinateT.loc.y) {
         endCoordinate = endCoordinateL;
-    } else if (isL && !isT && startCoordinate.y - LEFT_VPTR_MARGIN < endCoordinateB.loc.y) {
+    } else if (isL && !isT && startCoordinate.y - Constants.L_VPTR_MARGIN < endCoordinateB.loc.y) {
         endCoordinate = endCoordinateL;
     } else if (isL && isT) {
         endCoordinate = endCoordinateTL;
@@ -243,7 +215,7 @@ function drawPointer(SVGCanvas, reference, object) {
         (endCoordinate.loc.x) + ',' +
         (endCoordinate.loc.y);
     var pointer = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    pointer.setAttribute('class', POINTER_CLASS_NAME);
+    pointer.setAttribute('class', Constants.POINTER_CLASS_NAME);
     pointer.setAttribute('d', pathStr);
-    document.getElementById(POINTERS_SVG_GROUP_ID).appendChild(pointer);
+    document.getElementById(Constants.POINTERS_SVG_GROUP_ID).appendChild(pointer);
 }

@@ -6,7 +6,7 @@ import * as Slider from './slider.js';
 import * as Split from './split.js';
 import * as Switch from './switch.js';
 
-const editor = Editor.editor(Constants.EDITOR_ID, Constants.NUM_LINES); // TODO: ??
+const EDITOR = Editor.editor(Constants.EDITOR_ID, Constants.NUM_LINES);
 
 var visOptions = {
     'splitView': Constants.VIS_OPTIONS_SPLIT_VIEW,
@@ -23,8 +23,6 @@ function drawSnapshot(snapshotIndex) {
         visOptions,
         pyagramStack,
         pyagramHeap,
-        Constants.EXCEPTION_VIEW,
-        Constants.PRINT_OUTPUT_VIEW,
     );
 }
 
@@ -62,7 +60,7 @@ Split.split(
     [0, 0],
 );
 
-editor.session.on('change', function(delta) {
+EDITOR.session.on('change', function(delta) {
     Overlay.setTop(Constants.OUTPUT_OVERLAY);
 });
 
@@ -93,7 +91,7 @@ visOptions.splitView.onclick = function() {
 };
 
 Constants.DRAW_PYAGRAM_BUTTON.onclick = function() {
-    var code = editor.session.getValue();
+    var code = EDITOR.session.getValue();
     if (code === '') {
         alert(Constants.EMPTY_EDITOR_SANITY_CHECK_MSG);
     } else {
@@ -119,4 +117,4 @@ Constants.DRAW_PYAGRAM_BUTTON.onclick = function() {
     }
 };
 
-editor.focus();
+EDITOR.focus();

@@ -14,6 +14,9 @@ export const VIS_OPTIONS_COMPLETED_FLAGS_ID = 'options-vis-option-completed-flag
 export const VIS_OPTIONS_OLD_OBJECTS_ID = 'options-vis-option-old-objects';
 export const OUTPUT_OVERLAY_ID = 'overlay-output';
 export const DRAW_PYAGRAM_BUTTON_ID = 'button-draw';
+export const PYAGRAM_DATA_SWITCH_ID = 'switch-data';
+export const PG_DATA_RESULT_VIEW_ID = 'switch-data-track-result';
+export const PG_DATA_ERROR_VIEW_ID = 'switch-data-track-error';
 export const DIAGRAM_VIEW_SWITCH_ID = 'switch-vm';
 export const DIAGRAM_UNIFIED_VIEW_ID = 'switch-vm-track-unified';
 export const DIAGRAM_DIVIDED_VIEW_ID = 'switch-vm-track-divided';
@@ -40,6 +43,9 @@ export const VIS_OPTIONS_COMPLETED_FLAGS = document.getElementById(VIS_OPTIONS_C
 export const VIS_OPTIONS_OLD_OBJECTS = document.getElementById(VIS_OPTIONS_OLD_OBJECTS_ID);
 export const OUTPUT_OVERLAY = document.getElementById(OUTPUT_OVERLAY_ID);
 export const DRAW_PYAGRAM_BUTTON = document.getElementById(DRAW_PYAGRAM_BUTTON_ID);
+export const PYAGRAM_DATA_SWITCH = document.getElementById(PYAGRAM_DATA_SWITCH_ID);
+export const PG_DATA_RESULT_VIEW = document.getElementById(PG_DATA_RESULT_VIEW_ID);
+export const PG_DATA_ERROR_VIEW = document.getElementById(PG_DATA_ERROR_VIEW_ID);
 export const DIAGRAM_VIEW_SWITCH = document.getElementById(DIAGRAM_VIEW_SWITCH_ID);
 export const DIAGRAM_UNIFIED_VIEW = document.getElementById(DIAGRAM_UNIFIED_VIEW_ID);
 export const DIAGRAM_DIVIDED_VIEW = document.getElementById(DIAGRAM_DIVIDED_VIEW_ID);
@@ -50,6 +56,33 @@ export const DIAGRAM_DIVIDED_HEAP = document.getElementById(DIAGRAM_DIVIDED_HEAP
 export const EXCEPTION_VIEW = document.getElementById(EXCEPTION_VIEW_ID);
 export const PRINT_OUTPUT_VIEW = document.getElementById(PRINT_OUTPUT_VIEW_ID);
 
+export const NUM_LINES = 20;
+
 export const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
 export const EMPTY_EDITOR_SANITY_CHECK_MSG = 'First write some code that you want to visualize.';
-export const NUM_LINES = 20;
+
+export const ARROWHEAD_PADDING = 12;
+export const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);
+export const DIAGONAL_PADDING = 10;
+export const POINTER_BUFFER_X = 25;
+export const POINTER_BUFFER_Y = 25;
+export const L_VPTR_MARGIN = 50;
+export const R_HPTR_MARGIN = 50;
+
+
+
+
+
+
+
+
+
+export const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
+export const POINTERS_SVG_GROUP_ID = 'pointers';
+
+export const OBJECT_CLASS_NAME = 'pyagram-object';
+export const POINTER_CLASS_NAME = 'pyagram-pointer';
+export const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
+export const REFERENCE_CLASS_NAME = 'pyagram-pointer';
+
+
