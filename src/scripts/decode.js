@@ -122,6 +122,11 @@ export function escape(snapshot) {
     return Templates.ESCAPE(snapshot);
 }
 
+Handlebars.registerHelper('noOp', noOp);
+export function noOp() {
+    return null;
+};
+
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
 });

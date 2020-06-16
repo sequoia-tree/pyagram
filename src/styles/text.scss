@@ -52,6 +52,10 @@ a, a:hover {
   font-size: $paragraph-font-size;
 }
 
+.text-unformatted {
+  white-space: pre;
+}
+
 .text-reverse {
   unicode-bidi: bidi-override;
   direction: rtl;
