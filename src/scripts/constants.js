@@ -1,3 +1,8 @@
+export const REFERENCE_CLASS_NAME = 'pyagram-pointer';
+export const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
+export const POINTER_CLASS_NAME = 'pyagram-pointer';
+export const OBJECT_CLASS_NAME = 'pyagram-object';
+
 export const SPLIT_PANEL_INPUT_ID = 'split-io-panel-input';
 export const SPLIT_PANEL_OUTPUT_ID = 'split-io-panel-output';
 export const SPLIT_PANEL_PYAGRAM_ID = 'split-runtime-panel-vm';
@@ -24,6 +29,8 @@ export const DIAGRAM_UNIFIED_STACK_ID = 'unified-stack';
 export const DIAGRAM_UNIFIED_HEAP_ID = 'unified-heap';
 export const DIAGRAM_DIVIDED_STACK_ID = 'divided-stack';
 export const DIAGRAM_DIVIDED_HEAP_ID = 'divided-heap';
+export const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
+export const POINTERS_SVG_GROUP_ID = 'pointers';
 export const EXCEPTION_VIEW_ID = 'pyagram-exception';
 export const PRINT_OUTPUT_VIEW_ID = 'print-output';
 
@@ -53,6 +60,8 @@ export const DIAGRAM_UNIFIED_STACK = document.getElementById(DIAGRAM_UNIFIED_STA
 export const DIAGRAM_UNIFIED_HEAP = document.getElementById(DIAGRAM_UNIFIED_HEAP_ID);
 export const DIAGRAM_DIVIDED_STACK = document.getElementById(DIAGRAM_DIVIDED_STACK_ID);
 export const DIAGRAM_DIVIDED_HEAP = document.getElementById(DIAGRAM_DIVIDED_HEAP_ID);
+export const PYAGRAM_SVG_CANVAS = document.getElementById(PYAGRAM_SVG_CANVAS_ID);
+export const POINTERS_SVG_GROUP = document.getElementById(POINTERS_SVG_GROUP_ID);
 export const EXCEPTION_VIEW = document.getElementById(EXCEPTION_VIEW_ID);
 export const PRINT_OUTPUT_VIEW = document.getElementById(PRINT_OUTPUT_VIEW_ID);
 
@@ -61,28 +70,10 @@ export const NUM_LINES = 20;
 export const DRAW_PYAGRAM_BUTTON_WAIT_TEXT = 'Drawing ...'
 export const EMPTY_EDITOR_SANITY_CHECK_MSG = 'First write some code that you want to visualize.';
 
-export const ARROWHEAD_PADDING = 12;
-export const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PADDING / Math.sqrt(2);
+export const ARROWHEAD_PERP_PADDING = 12;
+export const ARROWHEAD_DIAG_PADDING = ARROWHEAD_PERP_PADDING / Math.sqrt(2);
 export const DIAGONAL_PADDING = 10;
-export const POINTER_BUFFER_X = 25;
-export const POINTER_BUFFER_Y = 25;
 export const L_VPTR_MARGIN = 50;
 export const R_HPTR_MARGIN = 50;
-
-
-
-
-
-
-
-
-
-export const PYAGRAM_SVG_CANVAS_ID = 'pyagram-svg-canvas';
-export const POINTERS_SVG_GROUP_ID = 'pointers';
-
-export const OBJECT_CLASS_NAME = 'pyagram-object';
-export const POINTER_CLASS_NAME = 'pyagram-pointer';
-export const FRAME_VALUE_CLASS_NAME = 'pyagram-frame-value';
-export const REFERENCE_CLASS_NAME = 'pyagram-pointer';
-
-
+export const POINTER_BUFFER_X = 25;
+export const POINTER_BUFFER_Y = 25;

@@ -66,25 +66,23 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
 }
 
 function drawSVGs(visOptions) {
-    var SVGCanvas = document.getElementById(Constants.PYAGRAM_SVG_CANVAS_ID);
-    clearSVGCanvas(SVGCanvas);
-    SVGCanvas = $(SVGCanvas);
+    clearSVGCanvas();
     if (!visOptions.splitView.checked) {
         $(
             `.${Constants.FRAME_VALUE_CLASS_NAME}:has(.${Constants.REFERENCE_CLASS_NAME})`
         ).removeClass('text-left').addClass('text-center');
-        drawPointers(SVGCanvas);
+        drawPointers();
     }
 }
 
-function clearSVGCanvas(SVGCanvas) {
+function clearSVGCanvas() {
     var SVGGroup;
-    for (SVGGroup of SVGCanvas.getElementsByTagName('g')) {
+    for (SVGGroup of Constants.PYAGRAM_SVG_CANVAS.getElementsByTagName('g')) {
         $(SVGGroup).empty();
     }
 }
 
-function drawPointers(SVGCanvas) {
+function drawPointers() {
     var references;
     var reference;
     var objects;
@@ -95,7 +93,7 @@ function drawPointers(SVGCanvas) {
         id = object.id.replace(/^object-/, '');
         references = document.getElementsByClassName('reference-'.concat(id));
         for (reference of references) {
-            drawPointer(SVGCanvas, $(reference), $(object));
+            drawPointer($(Constants.PYAGRAM_SVG_CANVAS), $(reference), $(object));
         }
     }
 }
@@ -125,7 +123,7 @@ function drawPointer(SVGCanvas, reference, object) {
             y: 0,
         },
         loc: {
-            x: object.offset().left - Constants.ARROWHEAD_PADDING,
+            x: object.offset().left - Constants.ARROWHEAD_PERP_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
@@ -146,7 +144,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top - Constants.ARROWHEAD_PADDING,
+            y: object.offset().top - Constants.ARROWHEAD_PERP_PADDING,
         },
     };
     var endCoordinateB = {
@@ -156,7 +154,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left + object.width() / 2,
-            y: object.offset().top + object.height() + Constants.ARROWHEAD_PADDING,
+            y: object.offset().top + object.height() + Constants.ARROWHEAD_PERP_PADDING,
         },
     };
     var endCoordinateM = {
@@ -166,7 +164,7 @@ function drawPointer(SVGCanvas, reference, object) {
         },
         loc: {
             x: object.offset().left + object.width() / 3,
-            y: object.offset().top + object.height() + Constants.ARROWHEAD_PADDING,
+            y: object.offset().top + object.height() + Constants.ARROWHEAD_PERP_PADDING,
         },
     }
     var endCoordinateR = {
@@ -175,7 +173,7 @@ function drawPointer(SVGCanvas, reference, object) {
             y: 0,
         },
         loc: {
-            x: object.offset().left + object.width() + Constants.ARROWHEAD_PADDING,
+            x: object.offset().left + object.width() + Constants.ARROWHEAD_PERP_PADDING,
             y: object.offset().top + object.height() / 2,
         },
     };
@@ -217,5 +215,5 @@ function drawPointer(SVGCanvas, reference, object) {
     var pointer = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     pointer.setAttribute('class', Constants.POINTER_CLASS_NAME);
     pointer.setAttribute('d', pathStr);
-    document.getElementById(Constants.POINTERS_SVG_GROUP_ID).appendChild(pointer);
+    Constants.POINTERS_SVG_GROUP.appendChild(pointer);
 }

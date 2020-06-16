@@ -17,6 +17,10 @@ var visOptions = {
 var pyagramStack = Constants.DIAGRAM_UNIFIED_STACK;
 var pyagramHeap = Constants.DIAGRAM_UNIFIED_HEAP;
 
+function visOptionClick() {
+    drawSnapshot(Constants.SLIDER.value);
+}
+
 function drawSnapshot(snapshotIndex) {
     Pyagram.drawSnapshot(
         snapshotIndex,
@@ -24,10 +28,6 @@ function drawSnapshot(snapshotIndex) {
         pyagramStack,
         pyagramHeap,
     );
-}
-
-function visOptionClick() {
-    drawSnapshot(Constants.SLIDER.value);
 }
 
 Split.split(
