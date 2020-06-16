@@ -1,0 +1,23 @@
+{% import 'utils.html' as utils %}
+
+<div class="pyagram-exception h-100 w-100">
+  {{ utils.flex_scroll(
+    'vertical',
+    [],
+    [],
+    (
+      None,
+      'html',
+      utils.flex_scroll(
+        'horizontal',
+        [],
+        [],
+        (
+          None,
+          'html',
+          '<div id="error-panel"></div>',
+        ),
+      ),
+    ),
+  ) }}
+</div>

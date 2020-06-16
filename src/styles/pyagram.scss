@@ -83,4 +83,7 @@
 
 .pyagram-exception {
   background: rgba($bright-red, 0.5);
+  .pyagram-error-text {
+    width: min-content; // TODO: If you included fit-to-text(), could you get rid of text-unformatted?
+  }
 }
