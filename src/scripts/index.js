@@ -6,7 +6,7 @@ import * as Slider from './slider.js';
 import * as Split from './split.js';
 import * as Switch from './switch.js';
 
-const EDITOR = Editor.editor(Constants.EDITOR_ID, Constants.NUM_LINES);
+var editor = Editor.editor(Constants.EDITOR_ID, Constants.NUM_LINES);
 
 var visOptions = {
     'splitView': Constants.VIS_OPTIONS_SPLIT_VIEW,
@@ -60,7 +60,7 @@ Split.split(
     [0, 0],
 );
 
-EDITOR.session.on('change', function(delta) {
+editor.session.on('change', function(delta) {
     Overlay.setTop(Constants.OUTPUT_OVERLAY);
 });
 
@@ -91,7 +91,7 @@ visOptions.splitView.onclick = function() {
 };
 
 Constants.DRAW_PYAGRAM_BUTTON.onclick = function() {
-    var code = EDITOR.session.getValue();
+    var code = editor.session.getValue();
     if (code === '') {
         alert(Constants.EMPTY_EDITOR_SANITY_CHECK_MSG);
     } else {
@@ -117,4 +117,4 @@ Constants.DRAW_PYAGRAM_BUTTON.onclick = function() {
     }
 };
 
-EDITOR.focus();
+editor.focus();
