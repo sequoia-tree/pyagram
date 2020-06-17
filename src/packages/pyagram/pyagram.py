@@ -45,10 +45,13 @@ class Pyagram:
                         pass # TODO
                         terminal_ex = False
                     except Exception as exc:
-                        assert state.program_state.global_frame.has_returned
+                        # assert state.program_state.global_frame.has_returned
+                        assert state.program_state.curr_element.is_global_frame
+                        # TODO: You may not need terminal_ex if you don't take extraneous snapshots.
                         terminal_ex = True
                     else:
-                        assert state.program_state.global_frame.has_returned
+                        # assert state.program_state.global_frame.has_returned
+                        assert state.program_state.curr_element.is_global_frame
                         terminal_ex = False
                     postprocessor = postprocess.Postprocessor(state, terminal_ex)
                     postprocessor.postprocess()

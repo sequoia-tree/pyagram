@@ -219,9 +219,10 @@ class ProgramState:
             self.register_argument(frame, return_value)
         elif frame_type is enum.FrameTypes.PG_WRAPPER:
             if self.curr_element is self.global_frame:
+                # TODO: Why does this case ever arise, e.g. for `a = [x for x in [1, 2, 3]]`?
                 self.close_pyagram_frame(frame, return_value)
             else:
-               self.close_pyagram_flag(frame, return_value)
+                self.close_pyagram_flag(frame, return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFN:
             self.close_class_frame(frame, return_value)
         elif frame_type is enum.FrameTypes.CNTNR_COMP:
@@ -317,7 +318,7 @@ class ProgramState:
             if is_implicit:
                 self.curr_element = self.curr_element.close()
         if self.curr_element.is_global_frame:
-            finish_step()
+            pass
         elif self.curr_element.is_builtin_frame:
             finish_step()
         elif self.curr_element.is_function_frame:
