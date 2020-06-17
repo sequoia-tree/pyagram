@@ -25,8 +25,10 @@ class Pyagram:
                     self.data = {
                         'type': str(type(exc).__name__),
                         'lineno': exc.lineno,
-                        # 'offset': exc.offset,
-                        # 'code': exc.text.strip('\n'),
+                        'err_data': {
+                            'offset': exc.offset,
+                            'code': exc.text.strip('\n'),
+                        },
                     }
                 else:
                     bindings = {}
@@ -43,6 +45,8 @@ class Pyagram:
                         exempt_fn_locs.add(exc.location)
                         continue
                     except Exception as exc:
+                        # TODO: Is there a way to stop it from raising an exception in global?
+                        # TODO: Bc a problem could still occur in global, in which we should raise a PyagramError instead of concluding that everything is just fine.
                         assert state.program_state.curr_element.is_global_frame
                         terminal_ex = True
                     else:

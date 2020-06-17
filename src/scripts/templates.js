@@ -450,7 +450,7 @@ export const PRINT_OUTPUT_TEMPLATE = compile(`
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
 <div class="p-3 pyagram-readout font-family-monospace">
-  {{type}} (line {{lineno}}):
+  {{escape type}} (line {{lineno}}):
   TODO
 </div>
 `);
