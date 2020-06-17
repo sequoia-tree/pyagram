@@ -12,6 +12,12 @@ class CallWrapperException(Exception):
         """
         return (self.lineno, self.col_offset)
 
+class PyagramException(Exception):
+    """
+    """
+
+    pass
+
 class HiddenSnapshotException(Exception):
     """
     """

@@ -44,6 +44,8 @@ class Pyagram:
                     except exception.CallWrapperException as exc:
                         exempt_fn_locs.add(exc.location)
                         continue
+                    except exception.PyagramException as exc:
+                        raise exc
                     except Exception as exc:
                         terminal_ex = True
                     else:
@@ -58,7 +60,10 @@ class Pyagram:
                             'obj_numbers': postprocessor.obj_numbers,
                         },
                     }
+            except exception.PyagramException as exc:
+                pass # TODO
             except Exception as exc:
+                # TODO: Convert to a generic PyagramException.
                 sys.stdout = initial_stdout
                 if debug:
                     print(new_stdout.getvalue())

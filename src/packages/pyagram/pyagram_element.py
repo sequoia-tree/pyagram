@@ -196,7 +196,9 @@ class PyagramFlag(PyagramElement):
         """
         assert 0 == len(self.banner_bindings)
         if callable is help:
-            pass # TODO: Stop here. Postprocess the snapshots we have so far, and send them to the front-end, along with an error message that indicates this function is unsupported.
+            # TODO: Include an error message that indicates this function is unsupported.
+            raise exception.PyagramException()
+            # TODO: Replace this with `pass` to test if the catch-all except clause works.
         if callable is super and len(self.banner_elements) == 1:
             raise exception.CallWrapperException(
                 self.state.program_state.curr_line_no,
