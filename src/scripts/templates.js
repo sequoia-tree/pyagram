@@ -135,26 +135,31 @@ export const FRAME_TEMPLATE = compile(`
     {{else if (isEqual type 'class')}}
       <span class="font-family-sans-serif">
         class
+        {{space 1}}
       </span>
-      {{~escape name~}}
-      {{~#if (isNull parents)~}}
+      {{escape name}}
+      {{#if (isNull parents)}}
         <span class="font-family-sans-serif">
+          {{space 1}}
           [parent: <span class="font-family-monospace">{{decodeUnknownSnapshot this}}</span>]
         </span>
-      {{~else if (isEmpty parents)~}}
-      {{~else~}}
+      {{else if (isEmpty parents)}}
+      {{else}}
         <span class="font-family-sans-serif">
+          {{space 1}}
           [parent{{#unless (isEqual parents.length 1)}}s{{/unless}}:
+          {{space 1}}
           {{#each parents}}
             class <span class="font-family-monospace">{{escape this}}</span>
-            {{~#unless @last}}, {{/unless~}}
-          {{~/each~}}
+            {{#unless @last}}, {{/unless}}
+          {{/each}}
           ]
         </span>
-      {{~/if~}}
+      {{/if}}
     {{else if (isEqual type 'instance')}}
-      {{~escape name~}}
+      {{escape name}}
       <span class="font-family-sans-serif">
+        {{space 1}}
         instance [parent: class <span class="font-family-monospace">{{escape parent}}</span>]
       </span>
     {{/if}}
@@ -203,7 +208,9 @@ export const FRAME_TEMPLATE = compile(`
     {{/if}}
   {{/if}}
 </div>
-{{decodeElementSnapshot this}}
+{{#if (isEqual type 'function')}}
+  {{decodeElementSnapshot this}}
+{{/if}}
 `);
 
 export const HEAP_TEMPLATE_TEXTPOINTERS_T = compile(`
@@ -264,22 +271,23 @@ export const FUNCTION_TEMPLATE = compile(`
   {{else}}
     function
   {{/if}}
+  {{space 1}}
 </span>
 {{#if (isNull lambda_id)}}
-  {{~escape name~}}
+  {{escape name}}
 {{else}}
-  {{~#with lambda_id~}}
+  {{#with lambda_id}}
     &#955;<sub>{{lineno}}{{#unless single}}#{{number}}{{/unless}}</sub>
-  {{~/with~}}
+  {{/with}}
 {{/if}}
 (
-{{~#each parameters~}}
-  {{~escape name~}}
-  {{~#unless (isNull default)~}}
+{{#each parameters}}
+  {{escape name}}
+  {{#unless (isNull default)}}
     =<span class="pyagram-value">{{decodeReferenceSnapshot default}}</span>
-  {{~/unless~}}
-  {{~#unless @last}}, {{/unless~}}
-{{~/each~}}
+  {{/unless}}
+  {{#unless @last}}, {{/unless}}
+{{/each}}
 )
 <div class="font-family-sans-serif">
   [parent: {{escape parent}}]
@@ -289,12 +297,18 @@ export const FUNCTION_TEMPLATE = compile(`
 export const METHOD_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   method
-</span><span class="pyagram-value">
-  {{~decodeReferenceSnapshot function~}}
-</span><span class="font-family-sans-serif">
+  {{space 1}}
+</span>
+<span class="pyagram-value">
+  {{decodeReferenceSnapshot function}}
+</span>
+<span class="font-family-sans-serif">
+  {{space 1}}
   bound to
-</span><span class="pyagram-value">
-  {{~decodeReferenceSnapshot instance~}}
+  {{space 1}}
+</span>
+<span class="pyagram-value">
+  {{decodeReferenceSnapshot instance}}
 </span>
 `);
 
@@ -305,15 +319,19 @@ export const BUILTIN_TEMPLATE = compile(`
   {{else}}
     method
   {{/if}}
+  {{space 1}}
 </span>
 {{escape name}}(...)
-{{~#unless (isNull instance)~}}
+{{#unless (isNull instance)}}
   <span class="font-family-sans-serif">
+    {{space 1}}
     bound to
-  </span><span class="pyagram-value">
-    {{~decodeReferenceSnapshot instance~}}
+    {{space 1}}
   </span>
-{{~/unless~}}
+  <span class="pyagram-value">
+    {{decodeReferenceSnapshot instance}}
+  </span>
+{{/unless}}
 `);
 
 export const ORDERED_COLLECTION_TEMPLATE = compile(`
@@ -392,14 +410,17 @@ export const ITERATOR_TEMPLATE = compile(`
 {{else}}
   <span class="font-family-sans-serif">
     iterator over
-  </span><span class="pyagram-value">
-    {{~decodeReferenceSnapshot object~}}
+    {{space 1}}
   </span>
-  {{~#unless (isNull annotation)~}}
+  <span class="pyagram-value">
+    {{decodeReferenceSnapshot object}}
+  </span>
+  {{#unless (isNull annotation)}}
     <span class="font-family-sans-serif">
+      {{space 1}}
       {{escape annotation}}
     </span>
-  {{~/unless~}}
+  {{/unless}}
   <div class="font-family-sans-serif">
     [next index: {{index}}]
   </div>
@@ -409,8 +430,9 @@ export const ITERATOR_TEMPLATE = compile(`
 export const GENERATOR_TEMPLATE = compile(`
 <span class="font-family-sans-serif">
   generator
+  {{space 1}}
 </span>
-{{~escape name~}}
+{{escape name}}
 {{decodeFrameSnapshot frame}}
 `);
 
@@ -421,13 +443,13 @@ export const OTHER_TEMPLATE = compile(`
 export const EXCEPTION_TEMPLATE = compile(`
 {{#unless (isNull this)}}
   <div class="px-3 py-2 pyagram-readout font-family-monospace">
-    {{~escape this~}}
+    {{escape this}}
   </div>
 {{/unless}}
 `);
 
 export const PRINT_OUTPUT_TEMPLATE = compile(`
 <div class="pyagram-readout font-family-monospace">
-  {{~escape this~}}
+  {{escape this}}
 </div>
 `);

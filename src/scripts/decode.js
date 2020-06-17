@@ -122,6 +122,11 @@ export function escape(snapshot) {
     return Templates.ESCAPE(snapshot);
 }
 
+Handlebars.registerHelper('space', space);
+export function space(n) {
+    return ' '.repeat(n);
+}
+
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
 });
