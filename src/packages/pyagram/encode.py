@@ -436,14 +436,25 @@ def encode_pyagram_result(result):
 def encode_pyagram_error(error):
     """
     """
-    pass # TODO
-    if ...:
-        lineno = ...
-    elif ...:
-        lineno = ...
+    error_type = enum.ErrorTypes.identify_error_type(error)
+    if error_type is enum.ErrorTypes.PYAGRAM:
+        encoding = 'pyagram'
+        lineno = None
+        data = {
+            'message': error.message,
+        }
+    elif error_type is enum.ErrorTypes.SYNTAX:
+        encoding = 'syntax'
+        lineno = error.lineno
+        data = {
+            'code': error.text,
+            'offset': error.offset,
+        }
     else:
-        pass # raise illegal enum
+        raise enum.ErrorTypes.illegal_enum(error_type)
     return {
         'type': str(type(error).__name__),
+        'encoding': encoding,
         'lineno': lineno,
+        'data': data,
     }

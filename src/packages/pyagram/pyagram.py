@@ -1,6 +1,7 @@
 import io
 import sys
 
+from . import encode
 from . import exception
 from . import postprocess
 from . import preprocess
@@ -22,17 +23,7 @@ class Pyagram:
                     preprocessor.preprocess()
                 except SyntaxError as exc:
                     self.encoding = 'error'
-                    self.data = {
-                        'type': str(type(exc).__name__),
-                        'lineno': exc.lineno,
-                        'encoding': 'syntax',
-                        'data': {
-                            'code': exc.text,
-                            'offset': exc.offset,
-                        },
-                        # TODO: Move this to encode.py.
-                        # TODO: Do the same for the other assignments to self.data below.
-                    }
+                    self.data = encode.encode_pyagram_error(exc)
                 else:
                     bindings = {}
                     state = pyagram_state.State(preprocessor.summary, new_stdout)
@@ -62,32 +53,17 @@ class Pyagram:
                         'global_data': {
                             'obj_numbers': postprocessor.obj_numbers,
                         },
-                    }
+                    } # TODO: Abstract into encode.encode_pyagram_result.
             except exception.PyagramError as exc:
                 self.encoding = 'error'
-                self.data = {
-                    'type': str(type(exc).__name__),
-                    'lineno': None,
-                    'encoding': 'pyagram',
-                    'data': {
-                        'message': exc.message,
-                    },
-                }
+                self.data = encode.encode_pyagram_error(exc)
             except Exception as exc:
                 sys.stdout = initial_stdout
                 if debug:
                     print(new_stdout.getvalue())
                     raise exc
-                exc = exception.PyagramError('message <a href="github.com">test</a>') # TODO: Pick a different variable name.
                 self.encoding = 'error'
-                self.data = {
-                    'type': str(type(exc).__name__),
-                    'lineno': None,
-                    'encoding': 'pyagram',
-                    'data': {
-                        'message': exc.message,
-                    },
-                }
+                self.data = encode.encode_pyagram_error(exception.PyagramError('message <a href="github.com">test</a>')) # TODO: Revise message; link to issues page. (Maybe instantiate the text in constants.py.)
             else:
                 sys.stdout = initial_stdout
             break

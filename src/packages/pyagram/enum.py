@@ -1,6 +1,7 @@
 import inspect
 
 from . import constants
+from . import exception
 from . import pyagram_wrapped_object
 
 class Enum:
@@ -164,3 +165,20 @@ class UnpackingTypes(Enum):
             return UnpackingTypes.DOUBLY_UNPACKED
         else:
             raise UnpackingTypes.illegal_enum(unpacking_code)
+
+class ErrorTypes(Enum):
+    """
+    """
+
+    PYAGRAM = object()
+    SYNTAX = object()
+
+    @staticmethod
+    def identify_error_type(error):
+        error_type = type(error)
+        if error_type is exception.PyagramError:
+            return ErrorTypes.PYAGRAM
+        elif issubclass(error_type, SyntaxError):
+            return ErrorTypes.SYNTAX
+        else:
+            raise ErrorTypes.illegal_enum(error_type)
