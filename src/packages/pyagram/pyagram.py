@@ -29,7 +29,9 @@ class Pyagram:
                         'data': {
                             'code': exc.text,
                             'offset': exc.offset,
-                        }, # TODO: Move this (and the assignments to self.data below) to encode.py.
+                        },
+                        # TODO: Move this to encode.py.
+                        # TODO: Do the same for the other assignments to self.data below.
                     }
                 else:
                     bindings = {}
