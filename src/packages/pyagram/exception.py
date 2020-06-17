@@ -16,9 +16,17 @@ class PyagramException(Exception):
     """
     """
 
+    # A PyagramException means the entire diagram (even already-encoded snapshots) may be compromised.
+
     pass
 
 class HiddenSnapshotException(Exception):
+    """
+    """
+
+    pass
+
+class UnsupportedOperatorException(Exception):
     """
     """
 
