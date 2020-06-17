@@ -27,6 +27,7 @@ class Postprocessor:
         """
         if self.terminal_ex:
             while self.state.snapshots[-1]['exception'] is None: # TODO: Do you still need this?
+                # TODO: Instead of deleting snapshots in reverse order from the end, maybe you can leverage the state.program_state.exception_index?
                 self.state.snapshots.pop()
 
     def postprocess_snapshots(self):

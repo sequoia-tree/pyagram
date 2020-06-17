@@ -423,11 +423,10 @@ class PyagramFrame(PyagramElement):
     def close(self, return_value, *, is_gen_exc=False):
         """
         """
-        if not self.is_global_frame:
-            if self.is_generator_frame:
-                self.yield_from = self.generator.gi_yieldfrom
-                self.throws_exc = is_gen_exc
-            self.has_returned = True
-            self.return_value = return_value
+        self.has_returned = True
+        self.return_value = return_value
+        if self.is_generator_frame:
+            self.yield_from = self.generator.gi_yieldfrom
+            self.throws_exc = is_gen_exc
         self.state.step()
         return self.opened_by
