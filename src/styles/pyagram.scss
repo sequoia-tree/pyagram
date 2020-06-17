@@ -87,4 +87,9 @@
 
 .pyagram-exception {
   background: rgba($bright-red, 0.5);
+  a, a:hover {
+    color: black;
+    text-decoration: underline;
+    font-weight: bold;
+  }
 }

@@ -1,6 +1,7 @@
 import io
 import sys
 
+from . import constants
 from . import encode
 from . import exception
 from . import postprocess
@@ -62,8 +63,9 @@ class Pyagram:
                 if debug:
                     print(new_stdout.getvalue())
                     raise exc
+                pyagram_error = exception.PyagramError(constants.GENERIC_ERROR_MSG)
                 self.encoding = 'error'
-                self.data = encode.encode_pyagram_error(exception.PyagramError('message <a href="github.com">test</a>')) # TODO: Revise message; link to issues page. (Maybe instantiate the text in constants.py.)
+                self.data = encode.encode_pyagram_error(pyagram_error)
             else:
                 sys.stdout = initial_stdout
             break

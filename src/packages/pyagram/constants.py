@@ -2,6 +2,11 @@ import types
 
 USERCODE_FILENAME = 'main.py'
 
+GENERIC_ERROR_MSG = """
+A problem occurred while drawing the pyagram.
+You can file an issue <a href="{issues}">here</a>. Please include your code in its entirety.
+""".format(issues='https://github.com/sequoia-tree/pyagram/issues').strip('\n')
+
 UNMODIFIED_LINENO = 0
 INNER_CALL_LINENO = 1
 INNER_COMP_LINENO = 2

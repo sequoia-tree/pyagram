@@ -462,9 +462,7 @@ export const ERROR_TEMPLATE = compile(`
 `);
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
-<div class="font-family-sans-serif">
-  {{message}}
-</div>
+{{message}}
 `)
 
 export const SYNTAX_ERROR_TEMPLATE = compile(`
