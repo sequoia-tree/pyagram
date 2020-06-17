@@ -428,10 +428,16 @@ class Encoder:
         """
         return repr(object)
 
-def encode_pyagram_result(result):
+def encode_pyagram_result(*result):
     """
     """
-    pass # TODO
+    state, postprocessor = result
+    return {
+        'snapshots': state.snapshots,
+        'global_data': {
+            'obj_numbers': postprocessor.obj_numbers,
+        },
+    }
 
 def encode_pyagram_error(error):
     """
