@@ -30,6 +30,7 @@ class Pyagram:
                     tracer = trace.Tracer(state)
                     bindings = {}
                     sys.stdout = new_stdout
+                    terminal_ex = False
                     try:
                         tracer.run(
                             preprocessor.ast,
@@ -43,16 +44,14 @@ class Pyagram:
                         continue
                     except exception.UnsupportedOperatorException as exc:
                         pass # TODO
-                        terminal_ex = False
                     except Exception as exc:
+                        terminal_ex = True
                         # assert state.program_state.global_frame.has_returned
                         assert state.program_state.curr_element.is_global_frame
-                        # TODO: You may not need terminal_ex if you don't take extraneous snapshots.
-                        terminal_ex = True
+                        # TODO: You won't need terminal_ex if you don't take extraneous snapshots.
                     else:
                         # assert state.program_state.global_frame.has_returned
                         assert state.program_state.curr_element.is_global_frame
-                        terminal_ex = False
                     postprocessor = postprocess.Postprocessor(state, terminal_ex)
                     postprocessor.postprocess()
                     self.encoding = 'result'
