@@ -219,7 +219,6 @@ class ProgramState:
             self.register_argument(return_value)
         elif frame_type is enum.FrameTypes.PG_WRAPPER:
             if self.curr_element is self.global_frame:
-                # TODO: Why does this case ever arise, e.g. for `a = [x for x in [1, 2, 3]]`?
                 self.close_pyagram_frame(return_value)
             else:
                 self.close_pyagram_flag(return_value)

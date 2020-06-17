@@ -51,11 +51,9 @@ class Pyagram:
                         state.step()
                     except Exception as exc:
                         terminal_ex = True
-                        # assert state.program_state.global_frame.has_returned
                         assert state.program_state.curr_element.is_global_frame
                         # TODO: You won't need terminal_ex if you don't take extraneous snapshots.
                     else:
-                        # assert state.program_state.global_frame.has_returned
                         assert state.program_state.curr_element.is_global_frame
                     postprocessor = postprocess.Postprocessor(state, terminal_ex)
                     postprocessor.postprocess()
