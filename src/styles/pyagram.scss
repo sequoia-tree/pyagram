@@ -81,9 +81,10 @@
   color: transparent;
 }
 
+.pyagram-readout {
+  @include fit-to-text();
+}
+
 .pyagram-exception {
   background: rgba($bright-red, 0.5);
-  .pyagram-error-text { // TODO: Rename this.
-    @include fit-to-text(); // TODO: If you included fit-to-text(), could you get rid of text-unformatted? Could you even replace text-unformatted where its used in the print output?
-  }
 }
