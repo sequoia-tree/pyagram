@@ -462,12 +462,14 @@ export const ERROR_TEMPLATE = compile(`
 `);
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
-TODO
+<div class="font-family-sans-serif">
+  {{message}}
+</div>
 `)
 
 export const SYNTAX_ERROR_TEMPLATE = compile(`
 <div>
-  {{code}}
+  {{escape code}}
 </div>
 <div>
   {{space offset}}^

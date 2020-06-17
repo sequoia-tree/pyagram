@@ -47,7 +47,7 @@ class Pyagram:
                     except exception.CallWrapperException as exc:
                         exempt_fn_locs.add(exc.location)
                         continue
-                    except exception.PyagramException as exc:
+                    except exception.PyagramError as exc:
                         raise exc
                     except Exception as exc:
                         terminal_ex = True
@@ -63,22 +63,31 @@ class Pyagram:
                             'obj_numbers': postprocessor.obj_numbers,
                         },
                     }
-            except exception.PyagramException as exc:
+            except exception.PyagramError as exc:
                 self.encoding = 'error'
                 self.data = {
                     'type': str(type(exc).__name__),
                     'lineno': None,
                     'encoding': 'pyagram',
-                    'data': {},
+                    'data': {
+                        'message': exc.message,
+                    },
                 }
             except Exception as exc:
-                # TODO: Convert to a generic PyagramException.
                 sys.stdout = initial_stdout
                 if debug:
                     print(new_stdout.getvalue())
                     raise exc
+                exc = exception.PyagramError('message <a href="github.com">test</a>') # TODO: Pick a different variable name.
                 self.encoding = 'error'
-                self.data = 'TODO' # TODO
+                self.data = {
+                    'type': str(type(exc).__name__),
+                    'lineno': None,
+                    'encoding': 'pyagram',
+                    'data': {
+                        'message': exc.message,
+                    },
+                }
             else:
                 sys.stdout = initial_stdout
             break

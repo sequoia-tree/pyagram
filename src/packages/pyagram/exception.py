@@ -1,3 +1,12 @@
+class PyagramError(Exception):
+    """
+    """
+
+    # A PyagramError means the entire diagram (even already-encoded snapshots) may be compromised.
+
+    def __init__(self, message):
+        self.message = message
+
 class CallWrapperException(Exception):
     """
     """
@@ -11,14 +20,6 @@ class CallWrapperException(Exception):
         """
         """
         return (self.lineno, self.col_offset)
-
-class PyagramException(Exception):
-    """
-    """
-
-    # A PyagramException means the entire diagram (even already-encoded snapshots) may be compromised.
-
-    pass
 
 class HiddenSnapshotException(Exception):
     """
