@@ -27,8 +27,8 @@ class Pyagram:
                         'lineno': exc.lineno,
                         'encoding': 'syntax',
                         'data': {
+                            'code': exc.text,
                             'offset': exc.offset,
-                            'code': exc.text.strip('\n'),
                         }, # TODO: Move this (and the assignments to self.data below) to encode.py.
                     }
                 else:

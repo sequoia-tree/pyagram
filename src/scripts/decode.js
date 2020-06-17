@@ -124,6 +124,9 @@ export function decodePyagramError(pyagramError) {
 
 Handlebars.registerHelper('decodeSyntaxError', decodeSyntaxError);
 export function decodeSyntaxError(syntaxError) {
+    var whitespace = syntaxError.code.search(/\S|$/);
+    syntaxError.code = syntaxError.code.trim();
+    syntaxError.offset -= whitespace + 1;
     return Templates.SYNTAX_ERROR_TEMPLATE(syntaxError);
 }
 

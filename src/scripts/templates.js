@@ -453,20 +453,23 @@ export const ERROR_TEMPLATE = compile(`
   <div>
     {{escape type}}{{#unless (isNull lineno)}} (line {{lineno}}){{/unless}}:
   </div>
-  <div>
-    {{#if (isEqual encoding 'pyagram')}}
-      {{decodePyagramError data}}
-    {{elif (isEqual encoding 'syntax')}}
-      {{decodeSyntaxError data}}
-    {{/if}}
-  </div>
+  {{#if (isEqual encoding 'pyagram')}}
+    {{decodePyagramError data}}
+  {{else if (isEqual encoding 'syntax')}}
+    {{decodeSyntaxError data}}
+  {{/if}}
 </div>
 `);
 
 export const PYAGRAM_ERROR_TEMPLATE = compile(`
-  TODO
+TODO
 `)
 
 export const SYNTAX_ERROR_TEMPLATE = compile(`
-  TODO
+<div>
+  {{code}}
+</div>
+<div>
+  {{space offset}}^
+</div>
 `)
