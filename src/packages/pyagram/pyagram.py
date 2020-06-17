@@ -26,9 +26,9 @@ class Pyagram:
                     self.encoding = 'error'
                     self.data = encode.encode_pyagram_error(exc)
                 else:
-                    bindings = {}
                     state = pyagram_state.State(preprocessor.summary, new_stdout)
                     tracer = trace.Tracer(state)
+                    bindings = {}
                     sys.stdout = new_stdout
                     try:
                         tracer.run(
@@ -36,16 +36,20 @@ class Pyagram:
                             globals=bindings,
                             locals=bindings,
                         )
+                    except exception.PyagramError as exc:
+                        raise exc
                     except exception.CallWrapperException as exc:
                         exempt_fn_locs.add(exc.location)
                         continue
-                    except exception.PyagramError as exc:
-                        raise exc
+                    except exception.UnsupportedOperatorException as exc:
+                        pass # TODO
+                        terminal_ex = False
                     except Exception as exc:
+                        assert state.program_state.global_frame.has_returned
                         terminal_ex = True
                     else:
+                        assert state.program_state.global_frame.has_returned
                         terminal_ex = False
-                    assert state.program_state.global_frame.has_returned
                     postprocessor = postprocess.Postprocessor(state, terminal_ex)
                     postprocessor.postprocess()
                     self.encoding = 'result'
