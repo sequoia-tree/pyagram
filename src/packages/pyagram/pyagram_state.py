@@ -170,19 +170,19 @@ class ProgramState:
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
             if self.is_builtin_flag:
-                self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+                self.open_pyagram_frame(enum.PyagramFrameTypes.BUILTIN, frame)
             is_implicit = self.is_ongoing_frame
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
             if is_implicit:
-                self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, None)
+                self.open_pyagram_flag(enum.PyagramFlagTypes.CALL, None)
                 if function is None:
                     self.curr_element.hide_from(0)
                 else:
                     self.curr_element.fix_implicit_banner(function, frame.f_locals)
             self.open_pyagram_frame(
-                frame,
                 None,
+                frame,
                 is_implicit=is_implicit,
                 function=function,
                 generator=generator,
@@ -200,7 +200,7 @@ class ProgramState:
         elif frame_type is enum.FrameTypes.CLASS_DEFN:
             self.open_class_frame(frame)
         elif frame_type is enum.FrameTypes.CNTNR_COMP:
-            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.CNTNR_COMP)
+            self.open_pyagram_frame(enum.PyagramFrameTypes.CNTNR_COMP, frame)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -208,25 +208,25 @@ class ProgramState:
         """
         """
         if frame_type is enum.FrameTypes.SRC_CALL:
-            self.close_pyagram_frame(frame, return_value)
+            self.close_pyagram_frame(return_value)
         elif frame_type is enum.FrameTypes.CALL_BANNER:
-            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.CALL, return_value)
+            self.open_pyagram_flag(enum.PyagramFlagTypes.CALL, return_value)
         elif frame_type is enum.FrameTypes.COMP_BANNER:
-            self.open_pyagram_flag(frame, enum.PyagramFlagTypes.COMP, return_value)
+            self.open_pyagram_flag(enum.PyagramFlagTypes.COMP, return_value)
         elif frame_type is enum.FrameTypes.FN_WRAPPER:
-            self.register_callable(frame, return_value)
+            self.register_callable(return_value)
         elif frame_type is enum.FrameTypes.RG_WRAPPER:
-            self.register_argument(frame, return_value)
+            self.register_argument(return_value)
         elif frame_type is enum.FrameTypes.PG_WRAPPER:
             if self.curr_element is self.global_frame:
                 # TODO: Why does this case ever arise, e.g. for `a = [x for x in [1, 2, 3]]`?
-                self.close_pyagram_frame(frame, return_value)
+                self.close_pyagram_frame(return_value)
             else:
-                self.close_pyagram_flag(frame, return_value)
+                self.close_pyagram_flag(return_value)
         elif frame_type is enum.FrameTypes.CLASS_DEFN:
-            self.close_class_frame(frame, return_value)
+            self.close_class_frame(frame)
         elif frame_type is enum.FrameTypes.CNTNR_COMP:
-            self.close_pyagram_frame(frame, return_value)
+            self.close_pyagram_frame(return_value)
         else:
             raise enum.FrameTypes.illegal_enum(frame_type)
 
@@ -267,7 +267,7 @@ class ProgramState:
                 self.curr_element.hide_flags = True
             self.curr_element = self.curr_element.opened_by
 
-    def open_pyagram_flag(self, frame, pyagram_flag_type, banner_summary, **init_args):
+    def open_pyagram_flag(self, pyagram_flag_type, banner_summary, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame or self.is_ongoing_frame
@@ -277,7 +277,7 @@ class ProgramState:
             **init_args,
         )
 
-    def open_pyagram_frame(self, frame, pyagram_frame_type, **init_args):
+    def open_pyagram_frame(self, pyagram_frame_type, frame, **init_args):
         """
         """
         assert self.is_ongoing_flag_sans_frame
@@ -295,17 +295,17 @@ class ProgramState:
         assert self.is_ongoing_frame
         pyagram_wrapped_object.PyagramClassFrame(frame, state=self.state)
 
-    def close_pyagram_flag(self, frame, return_value):
+    def close_pyagram_flag(self, return_value):
         """
         """
         if self.is_builtin_flag:
-            self.open_pyagram_frame(frame, enum.PyagramFrameTypes.BUILTIN)
+            self.open_pyagram_frame(enum.PyagramFrameTypes.BUILTIN, None)
         if self.is_frame:
-            self.close_pyagram_frame(frame, return_value)
+            self.close_pyagram_frame(return_value)
         assert self.is_flag
         self.curr_element = self.curr_element.close()
 
-    def close_pyagram_frame(self, frame, return_value):
+    def close_pyagram_frame(self, return_value):
         """
         """
         assert self.is_ongoing_frame
@@ -330,7 +330,7 @@ class ProgramState:
         else:
             raise enum.PyagramFrameTypes.illegal_enum(self.curr_element.frame_type)
 
-    def close_class_frame(self, frame, return_value):
+    def close_class_frame(self, frame):
         """
         """
         assert self.is_ongoing_frame
@@ -340,13 +340,13 @@ class ProgramState:
                 self.state.memory_state.record_class_frame(frame, parent_bindings[class_name])
         self.defer(finish_step)
 
-    def register_callable(self, frame, callable):
+    def register_callable(self, callable):
         """
         """
         assert self.is_ongoing_flag_sans_frame
         self.curr_element.register_callable(callable)
 
-    def register_argument(self, frame, argument):
+    def register_argument(self, argument):
         """
         """
         assert self.is_ongoing_flag_sans_frame
