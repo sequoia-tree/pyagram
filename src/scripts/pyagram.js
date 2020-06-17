@@ -36,7 +36,7 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
         case 'result':
             Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_RESULT_VIEW_ID);
             var snapshot = snapshots[snapshotIndex];
-            var pyagramHTML = Decode.decodePyagramSnapshot(
+            var pyagramHTML = Decode.decodeSnapshot(
                 snapshot,
                 globalData,
                 visOptions,
@@ -50,7 +50,7 @@ export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHea
             break;
         case 'error':
             Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_ERROR_VIEW_ID);
-            var pyagramHTML = Decode.decodePyagramError(pgErrorInfo);
+            var pyagramHTML = Decode.decodeError(pgErrorInfo);
             Constants.PG_DATA_ERROR_PANEL.innerHTML = pyagramHTML;
             break;
     }

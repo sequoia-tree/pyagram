@@ -448,9 +448,25 @@ export const PRINT_OUTPUT_TEMPLATE = compile(`
 </div>
 `);
 
-export const PYAGRAM_ERROR_TEMPLATE = compile(`
+export const ERROR_TEMPLATE = compile(`
 <div class="p-3 pyagram-readout font-family-monospace">
-  {{escape type}} (line {{lineno}}):
-  TODO
+  <div>
+    {{escape type}}{{#unless (isNull lineno)}} (line {{lineno}}){{/unless}}:
+  </div>
+  <div>
+    {{#if (isEqual encoding 'pyagram')}}
+      {{decodePyagramError data}}
+    {{elif (isEqual encoding 'syntax')}}
+      {{decodeSyntaxError data}}
+    {{/if}}
+  </div>
 </div>
 `);
+
+export const PYAGRAM_ERROR_TEMPLATE = compile(`
+  TODO
+`)
+
+export const SYNTAX_ERROR_TEMPLATE = compile(`
+  TODO
+`)

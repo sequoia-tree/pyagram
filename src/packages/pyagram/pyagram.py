@@ -25,7 +25,8 @@ class Pyagram:
                     self.data = {
                         'type': str(type(exc).__name__),
                         'lineno': exc.lineno,
-                        'err_data': {
+                        'encoding': 'syntax',
+                        'data': {
                             'offset': exc.offset,
                             'code': exc.text.strip('\n'),
                         }, # TODO: Move this (and the assignments to self.data below) to encode.py.
@@ -61,7 +62,13 @@ class Pyagram:
                         },
                     }
             except exception.PyagramException as exc:
-                pass # TODO
+                self.encoding = 'error'
+                self.data = {
+                    'type': str(type(exc).__name__),
+                    'lineno': None,
+                    'encoding': 'pyagram',
+                    'data': {},
+                }
             except Exception as exc:
                 # TODO: Convert to a generic PyagramException.
                 sys.stdout = initial_stdout

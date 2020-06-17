@@ -6,8 +6,8 @@ var splitView;
 var completedFlags;
 var oldObjects;
 
-Handlebars.registerHelper('decodePyagramSnapshot', decodePyagramSnapshot);
-export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
+Handlebars.registerHelper('decodeSnapshot', decodeSnapshot);
+export function decodeSnapshot(pyagramSnapshot, globalData, visOptions) {
     objNumbers = globalData.obj_numbers;
     splitView = visOptions.splitView.checked;
     completedFlags = visOptions.completedFlags.checked;
@@ -112,9 +112,19 @@ export function decodePrintOutputSnapshot(printOutputSnapshot) {
     return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);
 }
 
+Handlebars.registerHelper('decodeError', decodeError);
+export function decodeError(error) {
+    return Templates.ERROR_TEMPLATE(error);
+}
+
 Handlebars.registerHelper('decodePyagramError', decodePyagramError);
 export function decodePyagramError(pyagramError) {
     return Templates.PYAGRAM_ERROR_TEMPLATE(pyagramError);
+}
+
+Handlebars.registerHelper('decodeSyntaxError', decodeSyntaxError);
+export function decodeSyntaxError(syntaxError) {
+    return Templates.SYNTAX_ERROR_TEMPLATE(syntaxError);
 }
 
 Handlebars.registerHelper('escape', function escape(snapshot) {

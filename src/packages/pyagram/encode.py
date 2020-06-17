@@ -427,3 +427,23 @@ class Encoder:
         """
         """
         return repr(object)
+
+def encode_pyagram_result(result):
+    """
+    """
+    pass # TODO
+
+def encode_pyagram_error(error):
+    """
+    """
+    pass # TODO
+    if ...:
+        lineno = ...
+    elif ...:
+        lineno = ...
+    else:
+        pass # raise illegal enum
+    return {
+        'type': str(type(error).__name__),
+        'lineno': lineno,
+    }
