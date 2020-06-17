@@ -20,11 +20,6 @@ export function decodePyagramSnapshot(pyagramSnapshot, globalData, visOptions) {
     };
 }
 
-Handlebars.registerHelper('decodePyagramError', decodePyagramError);
-export function decodePyagramError(pyagramError) {
-    return Templates.PYAGRAM_ERROR_TEMPLATE(pyagramError);
-}
-
 Handlebars.registerHelper('decodeStackSnapshot', decodeStackSnapshot);
 export function decodeStackSnapshot(stackSnapshot) {
     return Templates.STACK_TEMPLATE(stackSnapshot);
@@ -115,6 +110,11 @@ export function decodeExceptionSnapshot(exceptionSnapshot) {
 Handlebars.registerHelper('decodePrintOutputSnapshot', decodePrintOutputSnapshot);
 export function decodePrintOutputSnapshot(printOutputSnapshot) {
     return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);
+}
+
+Handlebars.registerHelper('decodePyagramError', decodePyagramError);
+export function decodePyagramError(pyagramError) {
+    return Templates.PYAGRAM_ERROR_TEMPLATE(pyagramError);
 }
 
 Handlebars.registerHelper('escape', function escape(snapshot) {

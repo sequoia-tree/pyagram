@@ -14,12 +14,6 @@ function compile(template) {
 
 export const ESCAPE = Handlebars.compile(`{{this}}`);
 
-export const PYAGRAM_ERROR_TEMPLATE = compile(`
-<div class="p-3 pyagram-readout font-family-monospace">
-  TODO
-</div>
-`);
-
 export const STACK_TEMPLATE = compile(`
 <div class="font-family-monospace">
   {{decodeFrameSnapshot this}}
@@ -451,5 +445,12 @@ export const EXCEPTION_TEMPLATE = compile(`
 export const PRINT_OUTPUT_TEMPLATE = compile(`
 <div class="pyagram-readout font-family-monospace">
   {{escape this}}
+</div>
+`);
+
+export const PYAGRAM_ERROR_TEMPLATE = compile(`
+<div class="p-3 pyagram-readout font-family-monospace">
+  {{type}} (line {{lineno}}):
+  TODO
 </div>
 `);

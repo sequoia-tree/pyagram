@@ -3,31 +3,22 @@ import * as Decode from './decode.js';
 import * as Slider from './slider.js';
 import * as Switch from './switch.js';
 
-var dataType;
+var encoding;
 var snapshots;
 var globalData;
 var pgErrorInfo;
 
 export function drawPyagram(slider, pyagram) {
+    encoding = pyagram.encoding;
     switch (pyagram.encoding) {
-        case 'pyagram':
-            dataType = 'pyagram';
+        case 'result':
             snapshots = pyagram.data.snapshots;
             globalData = pyagram.data.global_data;
             pgErrorInfo = undefined;
             slider.min = 0;
             slider.max = snapshots.length - 1;
             break;
-        case 'syntax_error':
-            dataType = 'error';
-            snapshots = undefined;
-            globalData = undefined;
-            pgErrorInfo = pyagram.data;
-            slider.min = 0;
-            slider.max = 0;
-            break;
-        case 'pyagram_error':
-            dataType = 'error';
+        case 'error':
             snapshots = undefined;
             globalData = undefined;
             pgErrorInfo = pyagram.data;
@@ -39,10 +30,10 @@ export function drawPyagram(slider, pyagram) {
 }
 
 export function drawSnapshot(snapshotIndex, visOptions, pyagramStack, pyagramHeap) {
-    switch (dataType) {
+    switch (encoding) {
         case undefined:
             break;
-        case 'pyagram':
+        case 'result':
             Switch.select(Constants.PYAGRAM_DATA_SWITCH, Constants.PG_DATA_RESULT_VIEW_ID);
             var snapshot = snapshots[snapshotIndex];
             var pyagramHTML = Decode.decodePyagramSnapshot(

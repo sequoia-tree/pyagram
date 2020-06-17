@@ -21,11 +21,12 @@ class Pyagram:
                     preprocessor = preprocess.Preprocessor(code, exempt_fn_locs)
                     preprocessor.preprocess()
                 except SyntaxError as exc:
-                    self.encoding = 'syntax_error'
+                    self.encoding = 'error'
                     self.data = {
+                        'type': str(type(exc).__name__),
                         'lineno': exc.lineno,
-                        'offset': exc.offset,
-                        'code': exc.text.strip('\n'),
+                        # 'offset': exc.offset,
+                        # 'code': exc.text.strip('\n'),
                     }
                 else:
                     bindings = {}
@@ -48,7 +49,7 @@ class Pyagram:
                         terminal_ex = False
                     postprocessor = postprocess.Postprocessor(state, terminal_ex)
                     postprocessor.postprocess()
-                    self.encoding = 'pyagram'
+                    self.encoding = 'result'
                     self.data = {
                         'snapshots': state.snapshots,
                         'global_data': {
@@ -60,7 +61,7 @@ class Pyagram:
                 if debug:
                     print(new_stdout.getvalue())
                     raise exc
-                self.encoding = 'pyagram_error'
+                self.encoding = 'error'
                 self.data = 'TODO' # TODO
             else:
                 sys.stdout = initial_stdout
