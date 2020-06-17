@@ -44,7 +44,7 @@ class Pyagram:
                         continue
                     except exception.UnsupportedOperatorException as exc:
                         state.program_state.caught_exc_info = (
-                            exception.UnsupportedOperatorException,
+                            type(exc),
                             exc.message,
                             state.program_state.curr_line_no,
                         )
