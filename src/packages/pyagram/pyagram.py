@@ -43,7 +43,12 @@ class Pyagram:
                         exempt_fn_locs.add(exc.location)
                         continue
                     except exception.UnsupportedOperatorException as exc:
-                        pass # TODO
+                        state.program_state.caught_exc_info = (
+                            exception.UnsupportedOperatorException,
+                            exc.message,
+                            state.program_state.curr_line_no,
+                        )
+                        state.step()
                     except Exception as exc:
                         terminal_ex = True
                         # assert state.program_state.global_frame.has_returned

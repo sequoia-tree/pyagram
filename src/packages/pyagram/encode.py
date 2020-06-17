@@ -141,15 +141,18 @@ class Encoder:
         if caught_exc_info is None:
             return None
         else:
-            type, value, traceback = caught_exc_info
+            ex_type, value, tb_or_lineno = caught_exc_info
             ex_cause = str(value)
             if len(ex_cause) > 0:
                 ex_cause = f': {ex_cause}'
-            lineno, _, _ = utils.decode_lineno(
-                traceback.tb_lineno,
-                max_lineno=self.num_lines,
-            )
-            return f'{type.__name__} (line {lineno}){ex_cause}'
+            if type(tb_or_lineno) is int:
+                lineno = tb_or_lineno
+            else:
+                lineno, _, _ = utils.decode_lineno(
+                    tb_or_lineno.tb_lineno,
+                    max_lineno=self.num_lines,
+                )
+            return f'{ex_type.__name__} (line {lineno}){ex_cause}'
 
     def encode_reference(self, object, *, is_bindings=False):
         """

@@ -31,4 +31,11 @@ class UnsupportedOperatorException(Exception):
     """
     """
 
-    pass
+    def __init__(self, fn_name):
+        self.fn_name = fn_name
+
+    @property
+    def message(self):
+        """
+        """
+        return f'Pyagram does not support the interactive function `{self.fn_name}`'

@@ -195,8 +195,9 @@ class PyagramFlag(PyagramElement):
         """
         """
         assert 0 == len(self.banner_bindings)
+        self.banner_bindings.append(callable)
         if callable is help:
-            raise exception.UnsupportedOperatorException()
+            raise exception.UnsupportedOperatorException('help')
             # TODO: Stop the execution, postprocess the snapshots you have so far, and produce this error at the end -- along with a message indicating this function is not supported in Pyagram.
             # TODO: The distinction is that a PyagramError invalidates the snapshots you have so far, whereas an UnsupportedOperatorException does not.
         if callable is super and len(self.banner_elements) == 1:
@@ -204,7 +205,6 @@ class PyagramFlag(PyagramElement):
                 self.state.program_state.curr_line_no,
                 self.code_col_offset,
             )
-        self.banner_bindings.append(callable)
         if not inspect.isfunction(callable) \
             or inspect.isgeneratorfunction(callable) \
             or not utils.is_user_defined(callable):
