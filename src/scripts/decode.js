@@ -117,15 +117,13 @@ export function decodePrintOutputSnapshot(printOutputSnapshot) {
     return Templates.PRINT_OUTPUT_TEMPLATE(printOutputSnapshot);
 }
 
-Handlebars.registerHelper('escape', escape);
-export function escape(snapshot) {
+Handlebars.registerHelper('escape', function escape(snapshot) {
     return Templates.ESCAPE(snapshot);
-}
+});
 
-Handlebars.registerHelper('space', space);
-export function space(n) {
+Handlebars.registerHelper('space', function space(n) {
     return ' '.repeat(n);
-}
+});
 
 Handlebars.registerHelper('isNull', function(object) {
     return object === null;
