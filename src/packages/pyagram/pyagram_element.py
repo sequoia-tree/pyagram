@@ -117,10 +117,10 @@ class PyagramFlag(PyagramElement):
                         if unpacking_type is enum.UnpackingTypes.NORMAL:
                             referents.append(binding)
                         elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                            for element in [*binding]:
+                            for element in binding:
                                 referents.append(element)
                         elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                            for key, value in {**binding}.items():
+                            for key, value in binding.items():
                                 referents.append(key)
                                 referents.append(value)
                         else:
@@ -194,7 +194,7 @@ class PyagramFlag(PyagramElement):
     def register_callable(self, callable):
         """
         """
-        assert 0 == len(self.banner_bindings)
+        assert 0 == len(self.banner_bindings) < len(self.banner_elements)
         self.banner_bindings.append(callable)
         if callable is help:
             raise exception.UnsupportedOperatorException('help')
@@ -218,8 +218,19 @@ class PyagramFlag(PyagramElement):
     def register_argument(self, argument):
         """
         """
-        assert 0 < len(self.banner_bindings)
-        self.banner_bindings.append(argument)
+        assert 0 < len(self.banner_bindings) < len(self.banner_elements)
+        binding_idx = len(self.banner_bindings)
+        _, _, _, unpacking_code = self.banner_elements[binding_idx]
+        unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+        if unpacking_type is enum.UnpackingTypes.NORMAL:
+            binding = argument
+        elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+            binding = (*argument,)
+        elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+            binding = {**argument}
+        else:
+            raise enum.UnpackingTypes.illegal_enum(unpacking_type)
+        self.banner_bindings.append(binding)
 
     def add_frame(self, pyagram_frame_type, frame, **init_args):
         """

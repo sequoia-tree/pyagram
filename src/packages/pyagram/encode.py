@@ -101,16 +101,14 @@ class Encoder:
                         is_bindings=True,
                     )
                 elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-                    unpacked_binding = [*binding]
                     bindings = self.encode_mapping(
-                        unpacked_binding,
+                        binding,
                         keyless=True,
                         is_bindings=True,
                     )
                 elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-                    unpacked_binding = {**binding}
                     bindings = self.encode_mapping(
-                        unpacked_binding,
+                        binding,
                         is_bindings=True,
                     )
                 else:
