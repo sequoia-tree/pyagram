@@ -430,6 +430,34 @@ export const GENERATOR_TEMPLATE = compile(`
 {{decodeFrameSnapshot frame}}
 `);
 
+export const RANGE_TEMPLATE = compile(`
+<span class="font-family-sans-serif">
+  range
+  {{space 1}}
+</span>
+[{{decodeReferenceSnapshot start}}, {{decodeReferenceSnapshot stop}})
+<span class="font-family-sans-serif">
+  {{space 1}}
+  with step size
+  {{space 1}}
+</span>
+{{decodeReferenceSnapshot step}}
+`)
+
+export const SLICE_TEMPLATE = compile(`
+<span class="font-family-sans-serif">
+  slice
+  {{space 1}}
+</span>
+[
+{{#unless (isNull start)}}{{decodeReferenceSnapshot start}}{{/unless}}
+:
+{{#unless (isNull stop)}}{{decodeReferenceSnapshot stop}}{{/unless}}
+:
+{{#unless (isNull stop)}}{{decodeReferenceSnapshot step}}{{/unless}}
+]
+`)
+
 export const OTHER_TEMPLATE = compile(`
 {{escape this}}
 `);

@@ -90,6 +90,8 @@ class ObjectTypes(Enum):
     USER_CLASS = object()
     BLTN_CLASS = object()
     INSTANCE = object()
+    RANGE = object()
+    SLICE = object()
     OTHER = object()
 
     @staticmethod
@@ -129,6 +131,10 @@ class ObjectTypes(Enum):
                 return ObjectTypes.GENERATOR
             elif object_type is pyagram_wrapped_object.PyagramClassFrame:
                 return ObjectTypes.USER_CLASS
+            elif object_type is range:
+                return ObjectTypes.RANGE
+            elif object_type is slice:
+                return ObjectTypes.SLICE
             elif object_type is type:
                 return ObjectTypes.BLTN_CLASS
             elif hasattr(object, '__dict__'):

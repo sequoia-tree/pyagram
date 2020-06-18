@@ -421,6 +421,13 @@ class MemoryState:
                     *object.__dict__.keys(),
                     *object.__dict__.values(),
                 ]
+            elif object_type is enum.ObjectTypes.RANGE:
+                referents = [object.start, object.stop, object.step]
+            elif object_type is enum.ObjectTypes.SLICE:
+                referents = filter(
+                    lambda referent: referent is not None,
+                    [object.start, object.stop, object.step],
+                )
             elif object_type is enum.ObjectTypes.OTHER:
                 referents = []
             else:

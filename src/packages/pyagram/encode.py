@@ -200,6 +200,12 @@ class Encoder:
         elif object_type is enum.ObjectTypes.INSTANCE:
             encoding = 'instance'
             data = self.encode_instance(object)
+        elif object_type is enum.ObjectTypes.RANGE:
+            encoding = 'range'
+            data = self.encode_range(object)
+        elif object_type is enum.ObjectTypes.SLICE:
+            encoding = 'slice'
+            data = self.encode_slice(object)
         elif object_type is enum.ObjectTypes.OTHER:
             encoding = 'other'
             data = self.encode_other(object)
@@ -424,6 +430,24 @@ class Encoder:
             ),
             'return_value': None,
             'flags': [],
+        }
+
+    def encode_range(self, object):
+        """
+        """
+        return {
+            'start': self.encode_reference(object.start),
+            'stop': self.encode_reference(object.stop),
+            'step': self.encode_reference(object.step),
+        }
+
+    def encode_slice(self, object):
+        """
+        """
+        return {
+            'start': None if object.start is None else self.encode_reference(object.start),
+            'stop': None if object.stop is None else self.encode_reference(object.stop),
+            'step': None if object.step is None else self.encode_reference(object.step),
         }
 
     def encode_other(self, object):

@@ -97,6 +97,10 @@ export function decodeEncodedObjectSnapshot(encodedObjectSnapshot) {
             return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
         case 'instance':
             return Templates.FRAME_TEMPLATE(encodedObjectSnapshot.data);
+        case 'range':
+            return Templates.RANGE_TEMPLATE(encodedObjectSnapshot.data);
+        case 'slice':
+            return Templates.SLICE_TEMPLATE(encodedObjectSnapshot.data);
         case 'other':
             return Templates.OTHER_TEMPLATE(encodedObjectSnapshot.data);
     }
