@@ -198,6 +198,10 @@ class PyagramFlag(PyagramElement):
         self.banner_bindings.append(callable)
         if callable is help:
             raise exception.UnsupportedOperatorException('help')
+        if callable is input:
+            raise exception.UnsupportedOperatorException('input')
+        if callable is open:
+            raise exception.UnsupportedOperatorException('open')
         if callable is super and len(self.banner_elements) == 1:
             raise exception.CallWrapperException(
                 self.state.program_state.curr_line_no,

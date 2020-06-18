@@ -43,6 +43,7 @@ class Pyagram:
                         exempt_fn_locs.add(exc.location)
                         continue
                     except exception.UnsupportedOperatorException as exc:
+                        state.step()
                         state.program_state.caught_exc_info = (
                             type(exc),
                             exc.message,
