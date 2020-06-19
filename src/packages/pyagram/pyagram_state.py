@@ -12,11 +12,12 @@ class State:
     """
     """
 
-    def __init__(self, preprocessor_summary, stdout):
+    def __init__(self, preprocessor_summary, stdout, *, interrupt_data):
         self.program_state = None
         self.memory_state = MemoryState(self)
         self.print_output = stdout
         self.encoder = encode.Encoder(self, preprocessor_summary)
+        self.interrupt_data = interrupt_data
         self.snapshots = []
 
     def step(self, *args):

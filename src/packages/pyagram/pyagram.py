@@ -4,6 +4,7 @@ import sys
 from . import constants
 from . import encode
 from . import exception
+from . import interruption_data
 from . import postprocess
 from . import preprocess
 from . import pyagram_state
@@ -14,19 +15,23 @@ class Pyagram:
     """
 
     def __init__(self, code, *, debug):
-        exempt_fn_locs = set()
         initial_stdout = sys.stdout
+        interrupt_data = interruption_data.InterruptionData()
         while True:
             new_stdout = io.StringIO()
             try:
                 try:
-                    preprocessor = preprocess.Preprocessor(code, exempt_fn_locs)
+                    preprocessor = preprocess.Preprocessor(code, interrupt_data=interrupt_data)
                     preprocessor.preprocess()
                 except SyntaxError as exc:
                     self.encoding = 'error'
                     self.data = encode.encode_pyagram_error(exc)
                 else:
-                    state = pyagram_state.State(preprocessor.summary, new_stdout)
+                    state = pyagram_state.State(
+                        preprocessor.summary,
+                        new_stdout,
+                        interrupt_data=interrupt_data,
+                    )
                     tracer = trace.Tracer(state)
                     bindings = {}
                     sys.stdout = new_stdout
@@ -40,7 +45,7 @@ class Pyagram:
                     except exception.PyagramError as exc:
                         raise exc
                     except exception.CallWrapperInterruption as exc:
-                        exempt_fn_locs.add(exc.location)
+                        interrupt_data.exempt_fn_locs.add(exc.location)
                         continue
                     except exception.UnsupportedOperatorException as exc:
                         state.step()

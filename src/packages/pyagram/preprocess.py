@@ -8,13 +8,13 @@ class Preprocessor:
     """
     """
 
-    def __init__(self, code, exempt_fn_locs):
+    def __init__(self, code, *, interrupt_data):
         self.code = code
         self.num_lines = len(code.split('\n'))
         self.ast = ast.parse(code)
         self.new_node_linenos = []
         self.lambdas_by_line = {}
-        self.exempt_fn_locs = exempt_fn_locs
+        self.interrupt_data = interrupt_data
 
     @property
     def summary(self):
@@ -75,7 +75,7 @@ class CodeWrapper(ast.NodeTransformer):
     def is_exempt(self, node):
         """
         """
-        for lineno, col_offset in self.preprocessor.exempt_fn_locs:
+        for lineno, col_offset in self.preprocessor.interrupt_data.exempt_fn_locs:
             if node.lineno == lineno and node.col_offset == col_offset:
                 return True
         return False
