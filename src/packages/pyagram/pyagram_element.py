@@ -113,8 +113,11 @@ class PyagramFlag(PyagramElement):
                     _, _, binding_idx, unpacking_code = banner_element
                     if binding_idx < len(self.banner_bindings):
                         binding = self.banner_bindings[binding_idx]
+                        reference_type = enum.ReferenceTypes.identify_reference_type(binding)
                         unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-                        if unpacking_type is enum.UnpackingTypes.NORMAL:
+                        if unpacking_type is enum.UnpackingTypes.NORMAL \
+                            or reference_type is enum.ReferenceTypes.OMITTED \
+                            or reference_type is enum.ReferenceTypes.UNKNOWN:
                             referents.append(binding)
                         elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
                             for element in binding:
@@ -190,6 +193,7 @@ class PyagramFlag(PyagramElement):
         if 0 < len(kwds):
             self.register_argument(kwds)
             self.state.step()
+        # TODO: If 0 < len(args) and 0 < len(kwds) there should only be one '...', not two.
 
     def register_callable(self, callable):
         """
@@ -225,8 +229,10 @@ class PyagramFlag(PyagramElement):
         if unpacking_type is enum.UnpackingTypes.NORMAL:
             binding = argument
         elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
+            # binding = enum.ReferenceTypes.OMITTED # TODO: For if it cannot be safely unpacked.
             binding = (*argument,)
         elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
+            # binding = enum.ReferenceTypes.OMITTED # TODO: For if it cannot be safely unpacked.
             binding = {**argument}
         else:
             raise enum.UnpackingTypes.illegal_enum(unpacking_type)

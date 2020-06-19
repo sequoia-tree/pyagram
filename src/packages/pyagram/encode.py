@@ -92,8 +92,11 @@ class Encoder:
             code, keyword, binding_idx, unpacking_code = banner_element
             if binding_idx < len(pyagram_flag.banner_bindings):
                 binding = pyagram_flag.banner_bindings[binding_idx]
+                reference_type = enum.ReferenceTypes.identify_reference_type(binding)
                 unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
-                if unpacking_type is enum.UnpackingTypes.NORMAL:
+                if unpacking_type is enum.UnpackingTypes.NORMAL \
+                    or reference_type is enum.ReferenceTypes.OMITTED \
+                    or reference_type is enum.ReferenceTypes.UNKNOWN:
                     keyless = keyword is None
                     bindings = self.encode_mapping(
                         (binding,) if keyless else {keyword: binding},
