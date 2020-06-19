@@ -22,11 +22,10 @@ class Encoder:
 
         # Get the ID that we use to track an object.
 
-        wrapped_id = id(object)
-        while wrapped_id in self.state.memory_state.wrapped_obj_ids:
-            wrapped_id = self.state.memory_state.wrapped_obj_ids[wrapped_id]
-        tracked_id = wrapped_id
-        return tracked_id
+        proxy_id = id(object)
+        while proxy_id in self.state.memory_state.wrapped_obj_ids:
+            proxy_id = self.state.memory_state.wrapped_obj_ids[proxy_id]
+        return proxy_id
 
     def encode_pyagram_flag(self, pyagram_flag):
         """
