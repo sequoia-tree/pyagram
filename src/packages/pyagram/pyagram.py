@@ -39,7 +39,7 @@ class Pyagram:
                         )
                     except exception.PyagramError as exc:
                         raise exc
-                    except exception.CallWrapperException as exc:
+                    except exception.CallWrapperInterruption as exc:
                         exempt_fn_locs.add(exc.location)
                         continue
                     except exception.UnsupportedOperatorException as exc:

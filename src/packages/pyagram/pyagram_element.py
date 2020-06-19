@@ -203,7 +203,7 @@ class PyagramFlag(PyagramElement):
         if callable is open:
             raise exception.UnsupportedOperatorException('open')
         if callable is super and len(self.banner_elements) == 1:
-            raise exception.CallWrapperException(
+            raise exception.CallWrapperInterruption(
                 self.state.program_state.curr_line_no,
                 self.code_col_offset,
             )
