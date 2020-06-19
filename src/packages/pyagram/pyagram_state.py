@@ -453,14 +453,22 @@ class MemoryState:
         is_tracked = id(object) in self.obj_ids
         is_wrapped = id(object) in self.wrapped_obj_ids
         if not is_tracked and not is_wrapped:
-            object_type = enum.ObjectTypes.identify_raw_object_type(object)
-            if object_type is enum.ObjectTypes.PRIMITIVE:
+            reference_type = enum.ReferenceTypes.identify_reference_type(object)
+            if reference_type is enum.ReferenceTypes.OMITTED:
                 pass
-            elif object_type is enum.ObjectTypes.GENERATOR:
-                pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
+            elif reference_type is enum.ReferenceTypes.UNKNOWN:
+                pass
+            elif reference_type is enum.ReferenceTypes.DEFAULT:
+                object_type = enum.ObjectTypes.identify_raw_object_type(object)
+                if object_type is enum.ObjectTypes.PRIMITIVE:
+                    pass
+                elif object_type is enum.ObjectTypes.GENERATOR:
+                    pyagram_wrapped_object.PyagramGeneratorFrame(object, state=self.state)
+                else:
+                    self.objects.append(object)
+                    self.obj_ids.add(id(object))
             else:
-                self.objects.append(object)
-                self.obj_ids.add(id(object))
+                raise enum.ReferenceTypes.illegal_enum(reference_type)
 
     def redirect(self, from_object, to_object):
         """

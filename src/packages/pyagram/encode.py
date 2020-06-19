@@ -155,11 +155,19 @@ class Encoder:
     def encode_reference(self, object, *, is_bindings=False):
         """
         """
-        object_type = enum.ObjectTypes.identify_raw_object_type(object)
-        if object_type is enum.ObjectTypes.PRIMITIVE:
-            return str(object) if is_bindings or type(object) is not str else repr(object)
+        reference_type = enum.ReferenceTypes.identify_reference_type(object)
+        if reference_type is enum.ReferenceTypes.OMITTED:
+            return {'type': 'omitted'}
+        elif reference_type is enum.ReferenceTypes.UNKNOWN:
+            return {'type': 'unknown'}
+        elif reference_type is enum.ReferenceTypes.DEFAULT:
+            object_type = enum.ObjectTypes.identify_raw_object_type(object)
+            if object_type is enum.ObjectTypes.PRIMITIVE:
+                return str(object) if is_bindings or type(object) is not str else repr(object)
+            else:
+                return self.object_id(object)
         else:
-            return self.object_id(object)
+            raise enum.ReferenceTypes.illegal_enum(reference_type)
 
     def encode_object(self, object):
         """

@@ -74,6 +74,44 @@ class PyagramFrameTypes(Enum):
     GENERATOR = object()
     CNTNR_COMP = object()
 
+class UnpackingTypes(Enum):
+    """
+    """
+
+    NORMAL = object()
+    SINGLY_UNPACKED = object()
+    DOUBLY_UNPACKED = object()
+
+    @staticmethod
+    def identify_unpacking_type(unpacking_code):
+        """
+        """
+        if unpacking_code == constants.NORMAL_ARG:
+            return UnpackingTypes.NORMAL
+        elif unpacking_code == constants.SINGLY_UNPACKED_ARG:
+            return UnpackingTypes.SINGLY_UNPACKED
+        elif unpacking_code == constants.DOUBLY_UNPACKED_ARG:
+            return UnpackingTypes.DOUBLY_UNPACKED
+        else:
+            raise UnpackingTypes.illegal_enum(unpacking_code)
+
+class ReferenceTypes(Enum):
+    """
+    """
+
+    OMITTED = object()
+    UNKNOWN = object()
+    DEFAULT = object()
+
+    @staticmethod
+    def identify_reference_type(object):
+        if object is ReferenceTypes.OMITTED:
+            return ReferenceTypes.OMITTED
+        elif object is ReferenceTypes.UNKNOWN:
+            return ReferenceTypes.UNKNOWN
+        else:
+            return ReferenceTypes.DEFAULT
+
 class ObjectTypes(Enum):
     """
     """
@@ -150,27 +188,6 @@ class ObjectTypes(Enum):
                 ObjectTypes.INSTANCE,
             }
             return raw_object_type
-
-class UnpackingTypes(Enum):
-    """
-    """
-
-    NORMAL = object()
-    SINGLY_UNPACKED = object()
-    DOUBLY_UNPACKED = object()
-
-    @staticmethod
-    def identify_unpacking_type(unpacking_code):
-        """
-        """
-        if unpacking_code == constants.NORMAL_ARG:
-            return UnpackingTypes.NORMAL
-        elif unpacking_code == constants.SINGLY_UNPACKED_ARG:
-            return UnpackingTypes.SINGLY_UNPACKED
-        elif unpacking_code == constants.DOUBLY_UNPACKED_ARG:
-            return UnpackingTypes.DOUBLY_UNPACKED
-        else:
-            raise UnpackingTypes.illegal_enum(unpacking_code)
 
 class ErrorTypes(Enum):
     """

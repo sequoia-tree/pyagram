@@ -57,6 +57,13 @@ export function decodeUnknownSnapshot(unknownSnapshot) {
 Handlebars.registerHelper('decodeReferenceSnapshot', decodeReferenceSnapshot);
 export function decodeReferenceSnapshot(referenceSnapshot) {
     switch (typeof referenceSnapshot) {
+        case 'object':
+            switch (referenceSnapshot.type) {
+                case 'omitted':
+                    return Templates.OMITTED_TEMPLATE(referenceSnapshot.type);
+                case 'unknown':
+                    return Templates.UNKNOWN_TEMPLATE(referenceSnapshot.type);
+            }
         case 'string':
             return Templates.PRIMITIVE_TEMPLATE(referenceSnapshot);
         case 'number':

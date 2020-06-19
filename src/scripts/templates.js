@@ -238,6 +238,10 @@ export const HEAP_TEMPLATE_TEXTPOINTERS_F = compile(`
 </table>
 `);
 
+export const OMITTED_TEMPLATE = compile(`
+<span title="This value cannot be displayed without compromising the pyagram's accuracy.">...</span>
+`)
+
 export const UNKNOWN_TEMPLATE = compile(`
 <span class="pyagram-unknown">(?)</span>
 `);
