@@ -172,7 +172,11 @@ class ProgramState:
         if frame_type is enum.FrameTypes.SRC_CALL:
             if self.is_builtin_flag:
                 self.open_pyagram_frame(enum.PyagramFrameTypes.BUILTIN, frame)
-            is_implicit = self.is_ongoing_frame
+            # TODO: Should all this go at the beginning of open_pyagram_frame?
+            is_implicit = self.is_ongoing_frame or (
+                self.is_ongoing_flag_sans_frame
+                and not self.curr_element.banner_is_complete
+            )
             function = utils.get_function(frame)
             generator = utils.get_generator(frame)
             if is_implicit:
@@ -281,6 +285,7 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
+        # TODO: If the flag is not complete, then add an implicit flag and frame.
         self.curr_element = self.curr_element.add_frame(
             pyagram_frame_type,
             frame,
