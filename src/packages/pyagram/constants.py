@@ -45,6 +45,7 @@ ORDERED_COLLECTION_TYPES = {
     bytes,
     list,
     tuple,
+    str,
 }
 UNORDERED_COLLECTION_TYPES = {
     set,
@@ -54,6 +55,9 @@ MAPPING_TYPES = {
     dict,
 }
 ITERATOR_TYPES = {
+    # TODO: Does this have to be a dict, or can it be a set? I don't think you use the values in JS.
+    type(bytearray()): bytearray,
+    type(bytes()): bytes,
     type(iter([])): list,
     type(iter(())): tuple,
     type(iter('')): str,
@@ -80,3 +84,9 @@ GENERATOR_TYPES = {
 # TODO:     map (the output of a call to `map`)
 # TODO:     range
 # TODO:     Various built-in Exceptions
+
+SAFE_UNPACKING_TYPES = {
+    *ORDERED_COLLECTION_TYPES,
+    *UNORDERED_COLLECTION_TYPES,
+    *MAPPING_TYPES,
+}

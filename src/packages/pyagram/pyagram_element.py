@@ -226,14 +226,13 @@ class PyagramFlag(PyagramElement):
         binding_idx = len(self.banner_bindings)
         _, _, _, unpacking_code = self.banner_elements[binding_idx]
         unpacking_type = enum.UnpackingTypes.identify_unpacking_type(unpacking_code)
+        safe_to_unpack = type(argument) in constants.SAFE_UNPACKING_TYPES
         if unpacking_type is enum.UnpackingTypes.NORMAL:
             binding = argument
         elif unpacking_type is enum.UnpackingTypes.SINGLY_UNPACKED:
-            # binding = enum.ReferenceTypes.OMITTED # TODO: For if it cannot be safely unpacked.
-            binding = (*argument,)
+            binding = (*argument,) if safe_to_unpack else enum.ReferenceTypes.OMITTED
         elif unpacking_type is enum.UnpackingTypes.DOUBLY_UNPACKED:
-            # binding = enum.ReferenceTypes.OMITTED # TODO: For if it cannot be safely unpacked.
-            binding = {**argument}
+            binding = {**argument} if safe_to_unpack else enum.ReferenceTypes.OMITTED
         else:
             raise enum.UnpackingTypes.illegal_enum(unpacking_type)
         self.banner_bindings.append(binding)

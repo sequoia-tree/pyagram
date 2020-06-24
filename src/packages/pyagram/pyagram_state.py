@@ -285,7 +285,6 @@ class ProgramState:
         """
         """
         assert self.is_ongoing_flag_sans_frame
-        # TODO: If the flag is not complete, then add an implicit flag and frame.
         self.curr_element = self.curr_element.add_frame(
             pyagram_frame_type,
             frame,
